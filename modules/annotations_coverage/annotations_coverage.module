@@ -4,5 +4,5 @@ declare(strict_types=1);
 
 /**
  * @file
- * DOT Coverage module.
+ * Annotations Coverage module.
  */

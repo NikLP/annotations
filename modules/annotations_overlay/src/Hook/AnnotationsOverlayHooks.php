@@ -109,7 +109,7 @@ class AnnotationsOverlayHooks {
       return;
     }
 
-    // Consumer context: only show published annotations. When dot_workflow is
+    // Consumer context: only show published annotations. When annotations_workflow is
     // not installed, entities have no moderation_state field and the 'published'
     // filter is a silent no-op — all non-empty values are returned.
     $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);

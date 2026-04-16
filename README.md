@@ -13,7 +13,8 @@ Annotations reads a Drupal site's structure — content types, fields, taxonomie
 - Drupal 11
 - PHP 8.3+
 
-No contributed module dependencies for any of the `annotations` modules.
+No contributed module dependencies for any of the `annotations` modules
+provided here.
 
 `annotations_workflows` requires the core `content_moderation` module, which optionally
 requires the contributed `diff` module.
@@ -22,7 +23,7 @@ requires the contributed `diff` module.
 
 ## Installation
 
-Install dot base module. Enable submodules as needed
+Install annotations base module; enable submodules as needed.
 
 ---
 
@@ -47,7 +48,7 @@ Install dot base module. Enable submodules as needed
 
 One `annotation_target` config entity per annotatable unit — one per content type, taxonomy vocabulary, user role, etc. Defines *scope* (which entity types and which fields are included). Deployed by config management.
 
-### annotation (Annotation)
+### annotation
 
 Stores all annotation text as content entity rows. Never touched by config sync - annotation content written on production survives deploys. Edited via `annotations_ui`.
 
@@ -121,7 +122,7 @@ A module that wants to add a flag to annotation types (e.g. "expose this type in
 
 ```yaml
 # config/schema/mymodule.schema.yml
-dot.annotation_type.*.third_party.mymodule:
+annotations.annotation_type.*.third_party.mymodule:
   type: mapping
   label: 'My module annotation type settings'
   mapping:
@@ -156,21 +157,21 @@ $show = $annotationType->getThirdPartySetting('mymodule', 'in_frontend_bot', FAL
 
 The value is stored on the config entity alongside its first-party properties and is exported with `drush cex`. From the editor's perspective the checkbox appears as part of the type edit form with no visible indication it comes from a different module.
 
-This pattern is appropriate when the contributing module owns the full lifecycle of the flag: it writes it, reads it, and acts on it. DOT's own services have no knowledge of third-party settings added by other modules.
+This pattern is appropriate when the contributing module owns the full lifecycle of the flag: it writes it, reads it, and acts on it. Annotations' own services have no knowledge of third-party settings added by other modules.
 
 #### When a plugin system would be warranted
 
-If DOT core services needed to enumerate flags across all installed modules — for example, if `ContextAssembler` needed to ask every installed module "does this annotation type affect your output?" — a plugin layer would be the right approach. The shape would be:
+If Annotations core services needed to enumerate flags across all installed modules — for example, if `ContextAssembler` needed to ask every installed module "does this annotation type affect your output?" — a plugin layer would be the right approach. The shape would be:
 
-- DOT defines an `AnnotationTypeFlag` plugin type (annotated class, manager service)
+- Annotations defines an `AnnotationTypeFlag` plugin type (annotated class, manager service)
 - Each plugin declares: ID, label, default value, and a form element definition
 - `AnnotationType` stores flag values in a `flags: {}` map in its schema
 - `annotations_type_ui` iterates discovered plugins to render the type edit form automatically
-- DOT services call `$flagManager->getDefinitions()` to iterate all registered flags
+- Annotations services call `$flagManager->getDefinitions()` to iterate all registered flags
 
-The values would still be stored on the config entity (in the flags map rather than third-party settings), and `drush cex` would capture them as normal. The cost is that DOT must build and maintain the plugin manager, and all flags — first-party and contrib — would be expressed as plugins.
+The values would still be stored on the config entity (in the flags map rather than third-party settings), and `drush cex` would capture them as normal. The cost is that Annotations must build and maintain the plugin manager, and all flags — first-party and contrib — would be expressed as plugins.
 
-Until DOT core services need that enumeration, the `ThirdPartySettingsInterface` approach above is sufficient and idiomatic.
+Until Annotations core services need that enumeration, the `ThirdPartySettingsInterface` approach above is sufficient and idiomatic.
 
 ---
 
