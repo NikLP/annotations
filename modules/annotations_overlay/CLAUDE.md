@@ -1,6 +1,6 @@
 # CLAUDE.md — annotations_overlay
 
-Submodule of DOT. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
+Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
 
 ## What this module does
 
@@ -82,14 +82,14 @@ View-page overlays fire on entity view pages (e.g. `/node/1`, `/taxonomy/term/4`
 
 ### Prerequisites before writing any code
 
-**1. `in_view_context` flag on `DotAnnotationType`**
+**1. `in_view_context` flag on `AnnotationType`**
 
 Add boolean `in_view_context` to the config entity. Allows `editorial` to show on view pages while `technical` and `rules` stay admin-only. Steps:
 
-- `config/schema/dot.schema.yml` — add `in_view_context: boolean` to the `dot.annotation_type.*` mapping
+- `config/schema/annotations.schema.yml` — add `in_view_context: boolean` to the `annotations.annotation_type.*` mapping
 - `AnnotationTypeInterface` — add `includeInViewContext(): bool`
-- `DotAnnotationType` — implement, read from `$this->in_view_context ?? FALSE`
-- `AnnotationTypeForm` (in `dot_type_ui`) — add checkbox to the behavior fieldset via `hook_form_annotation_type_form_alter`, same pattern as `dot_coverage` uses for `affects_status` and `dot_ai_context` uses for `in_ai_context`
+- `AnnotationType` — implement, read from `$this->in_view_context ?? FALSE`
+- `AnnotationTypeForm` (in `annotations_type_ui`) — add checkbox to the behavior fieldset via `hook_form_annotation_type_form_alter`, same pattern as `annotations_coverage` uses for `affects_status` and `annotations_ai_context` uses for `in_ai_context`
 - Default config YML files — set `in_view_context: true` for `editorial`, `false` for `technical` and `rules`
 - No update hooks — reinstall after schema changes
 
@@ -197,9 +197,9 @@ When this is built, test that the view-page overlay does not fire on rendered pa
 
 `hook_preprocess_node_add_list` and `hook_preprocess_entity_add_list` inject bundle-level annotation text as supplementary description text on entity type chooser pages (e.g. `/node/add`, `/block/add`, `/media/add`). Visibility is gated by `view annotations overlay` + per-type `consume {type} annotations` permissions. The `entity_add_list` hook derives the entity type from the `entity_type_id` route parameter, covering all entities using `EntityController::addPage()`.
 
-## Workflow integration (dot_workflow)
+## Workflow integration (annotations_workflows)
 
-All `getForTarget()` calls in `AnnotationsOverlayHooks` pass `TRUE` as `$published_only`. When `dot_workflow` is installed only published annotations appear in overlays. When `dot_workflow` is not installed the filter is a no-op and all non-empty annotations appear as before.
+All `getForTarget()` calls in `AnnotationsOverlayHooks` pass `TRUE` as `$published_only`. When `annotations_workflows` is installed only published annotations appear in overlays. When `annotations_workflows` is not installed the filter is a no-op and all non-empty annotations appear as before.
 
 ## Current status
 

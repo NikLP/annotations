@@ -1,6 +1,6 @@
-# DOT — Drupal Onboarding Tool
+# Annotations
 
-DOT reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and exposes that information as/to a structured annotation system. The annotations can be consumed in several ways:
+Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and exposes that information as/to a structured annotation system. The annotations can be consumed in several ways:
 
 - in-context help overlays while editing
 - human- or machine-readable documentation export
@@ -13,7 +13,7 @@ DOT reads a Drupal site's structure — content types, fields, taxonomies, user 
 - Drupal 11
 - PHP 8.3+
 
-No contributed module dependencies for the core `dot` module.
+No contributed module dependencies for the core `annotations` module.
 
 ---
 
@@ -27,9 +27,9 @@ Install dot base module. Enable submodules as needed
 
 | Module | Who it is for | Purpose |
 | --- | --- | --- |
-| `dot` | All | Core - entities, plugin system, scope UI. Always required. |
-| `dot_type_ui` | Agency / dev only | UI for creating and managing annotation types. Site-building only — never touched by editors. |
-| `dot_annotation` | Agency + editors | Annotation editing UI. Used pre-launch to populate context and post-launch by editors maintaining it. |
+| `annotations` | All | Core - entities, plugin system, scope UI. Always required. |
+| `annotations_type_ui` | Agency / dev only | UI for creating and managing annotation types. Site-building only — never touched by editors. |
+| `annotations_ui` | Agency + editors | Annotation editing UI. Used pre-launch to populate context and post-launch by editors maintaining it. |
 | `annotations_coverage` | Agency / dev | Annotation coverage tracking and report. Owns the `affects_coverage` behaviour and exposes `CoverageService` as a public API for enforcement or CI use. |
 | `annotations_context` | Agency / dev | Assembles annotations into a renderable documentation payload. Preview and export tool; the same payload assembly is consumed by `annotations_overlay` and `annotations_ai_context`. |
 | `annotations_overlay` | Editors / end users | In-context help overlays on entity edit forms. Shows field-level and bundle-level annotations as triggered panels. |
@@ -40,25 +40,25 @@ Install dot base module. Enable submodules as needed
 
 ## Core concepts
 
-### dot_target
+### annotation_target
 
-One `dot_target` config entity per annotatable unit — one per content type, taxonomy vocabulary, user role, etc. Defines *scope* (which entity types and which fields are included). Deployed by config management.
+One `annotation_target` config entity per annotatable unit — one per content type, taxonomy vocabulary, user role, etc. Defines *scope* (which entity types and which fields are included). Deployed by config management.
 
-### dot_annotation
+### annotation (Annotation)
 
-Stores all annotation text as content entity rows. Never touched by config sync - annotation content written on production survives deploys. Edited via `dot_annotation`.
+Stores all annotation text as content entity rows. Never touched by config sync - annotation content written on production survives deploys. Edited via `annotations_ui`.
 
-### Annotation types (DotAnnotationType)
+### Annotation types (AnnotationType)
 
-Define type of annotation. Three ship by default: `editorial`, `technical`, `rules`. Types are config entities — add, rename, or remove via config management or the `dot_type_ui` browser UI.
+Define type of annotation. Three ship by default: `editorial`, `technical`, `rules`. Types are config entities — add, rename, or remove via config management or the `annotations_type_ui` browser UI.
 
 ---
 
 ## Scope management
 
-Navigate to **Admin → Config → DOT → Targets** (`/admin/config/dot/targets`).
+Navigate to **Admin → Config → Annotations → Targets** (`/admin/config/annotations/targets`).
 
-Each Drupal entity type appears as an accordion section. Select (check) a row to bring a bundle into scope — this creates a `dot_target` config entity with all available fields pre-included. Use **Configure** to adjust which fields are included.
+Each Drupal entity type appears as an accordion section. Select (check) a row to bring a bundle into scope — this creates an `annotation_target` config entity with all available fields pre-included. Use **Configure** to adjust which fields are included.
 
 ---
 
@@ -69,7 +69,7 @@ Each Drupal entity type appears as an accordion section. Select (check) a row to
 Central service for all annotation CRUD. Inject `annotations.annotation_storage`.
 
 ```php
-use Drupal\dot\AnnotationStorageService;
+use Drupal\annotations\AnnotationStorageService;
 
 // Load all annotations for a target.
 // Returns: array<field_name, array<type_id, value>>
@@ -110,7 +110,7 @@ foreach ($plugins as $entity_type_id => $plugin) {
 
 ### Extending annotation types with custom flags (ThirdPartySettingsInterface)
 
-`DotAnnotationType` implements `ThirdPartySettingsInterface`, which is the standard Drupal mechanism for contrib modules to attach their own properties to a config entity without modifying its schema.
+`AnnotationType` implements `ThirdPartySettingsInterface`, which is the standard Drupal mechanism for contrib modules to attach their own properties to a config entity without modifying its schema.
 
 A module that wants to add a flag to annotation types (e.g. "expose this type in the front-end AI bot") does three things:
 
@@ -130,17 +130,17 @@ dot.annotation_type.*.third_party.mymodule:
 **2. Inject a form element via `hook_form_alter`:**
 
 ```php
-function mymodule_form_dot_annotation_type_edit_form_alter(array &$form, FormStateInterface $form_state): void {
+function mymodule_form_annotation_type_edit_form_alter(array &$form, FormStateInterface $form_state): void {
   $type = $form_state->getFormObject()->getEntity();
   $form['in_frontend_bot'] = [
     '#type' => 'checkbox',
     '#title' => t('Show in front-end bot'),
     '#default_value' => $type->getThirdPartySetting('mymodule', 'in_frontend_bot', FALSE),
   ];
-  $form['#entity_builders'][] = 'mymodule_form_dot_annotation_type_edit_form_builder';
+  $form['#entity_builders'][] = 'mymodule_form_annotation_type_edit_form_builder';
 }
 
-function mymodule_form_dot_annotation_type_edit_form_builder(string $entity_type, DotAnnotationType $type, array &$form, FormStateInterface $form_state): void {
+function mymodule_form_annotation_type_edit_form_builder(string $entity_type, AnnotationType $type, array &$form, FormStateInterface $form_state): void {
   $type->setThirdPartySetting('mymodule', 'in_frontend_bot', (bool) $form_state->getValue('in_frontend_bot'));
 }
 ```
@@ -161,8 +161,8 @@ If DOT core services needed to enumerate flags across all installed modules — 
 
 - DOT defines an `AnnotationTypeFlag` plugin type (annotated class, manager service)
 - Each plugin declares: ID, label, default value, and a form element definition
-- `DotAnnotationType` stores flag values in a `flags: {}` map in its schema
-- `dot_type_ui` iterates discovered plugins to render the type edit form automatically
+- `AnnotationType` stores flag values in a `flags: {}` map in its schema
+- `annotations_type_ui` iterates discovered plugins to render the type edit form automatically
 - DOT services call `$flagManager->getDefinitions()` to iterate all registered flags
 
 The values would still be stored on the config entity (in the flags map rather than third-party settings), and `drush cex` would capture them as normal. The cost is that DOT must build and maintain the plugin manager, and all flags — first-party and contrib — would be expressed as plugins.
@@ -183,11 +183,11 @@ services:
     arguments:
       - '@entity_type.manager'
     tags:
-      - { name: dot.target }
+      - { name: annotations.target }
 ```
 
 ```php
-use Drupal\dot\Plugin\Target\TargetBase;
+use Drupal\annotations\Plugin\Target\TargetBase;
 
 class CustomTarget extends TargetBase {
   public function getEntityTypeId(): string { return 'my_entity'; }
@@ -199,16 +199,16 @@ class CustomTarget extends TargetBase {
 }
 ```
 
-No changes to `dot` are needed. The plugin is picked up automatically.
+No changes to `annotations` module are needed. The plugin is picked up automatically.
 
 ---
 
 ## Shipping default annotations
 
-Use the `drupal` script to export `dot_annotation` entities as files in a recipe's `content/` directory. This is the mechanism for shipping a starter annotation set with a profile or recipe.
+Use the `drupal` script to export `annotation` entities as files in a recipe's `content/` directory. This is the mechanism for shipping a starter annotation set with a profile or recipe.
 
 ```bash
-ddev php web/core/scripts/drupal content:export dot_annotation --dir=recipes/myrecipe/content
+ddev php web/core/scripts/drupal content:export annotation --dir=recipes/myrecipe/content
 ```
 
 ---
@@ -217,11 +217,11 @@ ddev php web/core/scripts/drupal content:export dot_annotation --dir=recipes/myr
 
 | Permission | Defined in | Notes |
 | --- | --- | --- |
-| `administer dot` | `dot` | Full admin. `restrict access: true`. |
-| `edit {type} annotations` | `dot` | Per annotation type; generated dynamically. |
-| `consume {type} annotations` | `dot` | Per annotation type; controls context output visibility per role. |
-| `edit any annotation` | `dot_annotation` | Supersedes per-type edit. `restrict access: true`. |
-| `access dot annotation overview` | `dot_annotation` | Read-only access to annotation listing. |
+| `administer annotations` | `annotations` | Full admin. `restrict access: true`. |
+| `edit {type} annotations` | `annotations` | Per annotation type; generated dynamically. |
+| `consume {type} annotations` | `annotations` | Per annotation type; controls context output visibility per role. |
+| `edit any annotation` | `annotations_ui` | Supersedes per-type edit. `restrict access: true`. |
+| `access annotation overview` | `annotations_ui` | Read-only access to annotation listing. |
 | `view annotations overlay` | `annotations_overlay` | See annotation help overlays on entity edit forms and the toolbar trigger. Grant to all editor roles. |
 | `view annotations context` | `annotations_context` | Access context preview and export. |
 | `administer annotations scanner` | `annotations_scan` | Run scans, view scan results. `restrict access: true`. |
@@ -232,5 +232,13 @@ Dynamic permissions (`edit {type} annotations`, `consume {type} annotations`) re
 
 ## Config management
 
-Scope config (`dot_target`, `dot_annotation_type`) is managed via standard config sync.
+Scope config (`annotation_target`, `annotation_type`) is managed via standard config sync.
 Annotation text lives in the database and is never touched by config management tools.
+
+---
+
+## Notes
+
+Views listed use a `text` variable instead of `value` because that was a reserved name.
+admin/structure/views/view/annotations_target
+admin/structure/views/view/annotations

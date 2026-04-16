@@ -1,10 +1,10 @@
 # CLAUDE.md — annotations_scan
 
-Submodule of DOT. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
+Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
 
 ## What this module does
 
-Crawls opted-in `annotation_target` entities and produces a structured snapshot of the Drupal site's content architecture. This is the **execution layer** — plugin definitions, `DiscoveryService`, and the `annotation_target` entity all live in `dot`. `annotations_scan` is optional on sites where targets are pre-configured via recipe/profile and no on-demand scanning is needed.
+Crawls opted-in `annotation_target` entities and produces a structured snapshot of the Drupal site's content architecture. This is the **execution layer** — plugin definitions, `DiscoveryService`, and the `annotation_target` entity all live in `annotations`. `annotations_scan` is optional on sites where targets are pre-configured via recipe/profile and no on-demand scanning is needed.
 
 ## What it owns
 
@@ -16,13 +16,13 @@ Crawls opted-in `annotation_target` entities and produces a structured snapshot 
 
 ## Parked work
 
-These are deferred until `dot_delta` needs them:
+These are deferred until `annotations_delta` needs them:
 
 - **Snapshot storage** — `hook_schema` for a snapshot table; stores the last scan result per target
 - **Drush commands:**
-  - `dot:scan` — run a full scan per current scope
-  - `dot:scan --diff` — scan and output delta against the last stored snapshot
-  - `dot:scan --strict` — scan, diff, exit non-zero if annotation-relevant changes detected (pre-commit hook use)
+  - `annotations:scan` — run a full scan per current scope
+  - `annotations:scan --diff` — scan and output delta against the last stored snapshot
+  - `annotations:scan --strict` — scan, diff, exit non-zero if annotation-relevant changes detected (pre-commit hook use)
 
 ## Current status
 

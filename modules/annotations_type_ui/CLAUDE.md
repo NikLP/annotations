@@ -17,7 +17,7 @@ Browser CRUD UI for managing `AnnotationType` config entities. **Site-building t
 
 ## Important: permissions cache rebuild
 
-`AnnotationsPermissions::permissions()` generates `edit {type} annotations` and `view {type} annotations` dynamically via `permission_callbacks`. Drupal caches the permission list. When a new `AnnotationType` is created via this UI, its permissions **will not appear in People → Permissions until caches are rebuilt** (`ddev drush cr` or `/admin/config/development/performance`). The type itself is immediately usable in annotation forms — only permission assignment is blocked until the cache is cleared.
+`AnnotationsPermissions::permissions()` generates `consume {type} annotations` and `view {type} annotations` dynamically via `permission_callbacks`. Drupal caches the permission list. When a new `AnnotationType` is created via this UI, its permissions **will not appear in People → Permissions until caches are rebuilt** (`ddev drush cr` or `/admin/config/development/performance`). The type itself is immediately usable in annotation forms — only permission assignment is blocked until the cache is cleared.
 
 ## Important: config-as-code
 
@@ -25,7 +25,7 @@ Types and sections created via this UI exist only in the active config store (DB
 
 ## On deletion and annotation data
 
-The delete form calls `AnnotationStorageService::deleteForType($type_id)` before removing the config entity — removes all `annotation` rows with that `type_id` across all targets. This is permanent. There is no undo.
+The delete form calls `AnnotationStorageService::deleteForType($type_id)` before removing the config entity — removes all `annotation` rows with that `type_id` across all targets. This is permanent.
 
 ## Current status
 

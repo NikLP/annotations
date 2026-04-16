@@ -57,10 +57,10 @@ $results = $scanService->scan();
 
 ## Parked features
 
-These features are deferred until `dot_delta` (change detection) needs them:
+These features are deferred until `annotations_delta` (change detection) needs them:
 
 - **Snapshot storage** — a database table storing the last scan result per target, enabling diffing.
 - **Drush commands:**
-  - `drush dot:scan` — run a full scan per current scope.
-  - `drush dot:scan --diff` — scan and output delta against the last stored snapshot.
-  - `drush dot:scan --strict` — exit non-zero if annotation-relevant changes are detected (pre-commit hook use).
+  - `drush annotations:scan` — run a full scan per current scope.
+  - `drush annotations:scan --diff` — scan and output delta against the last stored snapshot.
+  - `drush annotations:scan --strict` — exit non-zero if annotation-relevant changes are detected (pre-commit hook use).

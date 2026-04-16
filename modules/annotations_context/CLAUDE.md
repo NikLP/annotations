@@ -4,7 +4,7 @@ Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project 
 
 ## What this module does
 
-Assembles annotation data into structured context payloads. Produces human-readable documentation (HTML preview + markdown download) and a PHP array payload that `dot_ai_context` can consume without depending on this module. No AI dependency — AI integration is handled by a separate consumer.
+Assembles annotation data into structured context payloads. Produces human-readable documentation (HTML preview + markdown download) and a PHP array payload that `annotations_ai_context` can consume without depending on this module. No AI dependency — AI integration is handled by a separate consumer.
 
 ## What it owns
 
@@ -40,7 +40,7 @@ $payload = $assembler->assemble([
 
 **`role`** — simulate context as a specific Drupal role. Takes precedence over `account`. Powers the "View as role" simulation on the preview page.
 
-**`account`** — filter to types the given `AccountInterface` can view, using its combined permissions across all roles. Accounts with `administer annotations` bypass filtering. Use this for real current-user context in `dot_ai_context`; use `role` for simulation previews.
+**`account`** — filter to types the given `AccountInterface` can view, using its combined permissions across all roles. Accounts with `administer annotations` bypass filtering. Use this for real current-user context in `annotations_ai_context`; use `role` for simulation previews.
 
 ## Payload structure
 
@@ -180,7 +180,7 @@ These extension points are about assembler *output*. The flags-on-annotation-typ
 
 Currently `ContextAssembler` assembles annotations for a `annotation_target` without any concept of which display mode or rendering context the entity will appear in. This is fine for documentation exports and AI context — you want the full picture regardless. But it becomes relevant in two future scenarios:
 
-**1. View-page overlay (dot_overlay):** The overlay hook fires in a specific display mode (e.g. `full`). A field may be in DOT scope but not rendered in that display mode. The overlay must check `EntityViewDisplay::getComponents()` for the active display mode before injecting a trigger — see `dot_overlay/CLAUDE.md` for implementation detail. This is an overlay concern, not an assembler concern.
+**1. View-page overlay (annotations_overlay):** The overlay hook fires in a specific display mode (e.g. `full`). A field may be in annotations scope but not rendered in that display mode. The overlay must check `EntityViewDisplay::getComponents()` for the active display mode before injecting a trigger — see `annotations_overlay/CLAUDE.md` for implementation detail. This is an overlay concern, not an assembler concern.
 
 **2. AI context scoped to a display mode:** When a user is editing a node that renders in `full` mode on the public site, the AI assistant's context is most useful if it reflects what fields the user actually sees published. The assembler currently includes all fields in the `annotation_target` fields map regardless of display mode. A future `display_mode` option on `ContextAssembler::assemble()` could filter fields to only those rendered in a given display mode. Not urgent — the current "all fields in scope" approach is a reasonable default — but worth noting as the system matures and per-context AI guidance becomes more precise.
 

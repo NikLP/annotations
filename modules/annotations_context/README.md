@@ -53,7 +53,7 @@ $payload = $assembler->assemble([
 ]);
 ```
 
-The `role` option filters annotation types to those the given Drupal role has `consume {type} annotations` permission for. Use this when assembling context for role-scoped delivery (e.g. in `dot_ai_context`).
+The `role` option filters annotation types to those the given Drupal role has `consume {type} annotations` permission for. Use this when assembling context for role-scoped delivery (e.g. in `annotations_ai_context`).
 
 ### Payload structure
 

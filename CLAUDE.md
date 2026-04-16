@@ -1,35 +1,35 @@
-# CLAUDE.md — Drupal Onboarding Tool (DOT)
+# CLAUDE.md — Annotations
 
 ## Project Overview
 
-DOT is an open-source Drupal module suite that reads a Drupal site's structure — content types, fields, user roles, workflows — and exposes that information via a structured annotation system. The annotations drive in-context help overlays, documentation exports, and a chat interface scoped to the specific site configuration.
+Annotations is a contributed Drupal module suite that reads a Drupal site's structure — content types, fields, user roles, workflows — and exposes that information via a structured annotation system. The annotations drive in-context help overlays, documentation exports, and a chat interface all scoped to the specific site configuration.
 
-**Primary audience:** Drupal agencies, using DOT to reduce post-launch client support overhead.
+**Primary audience:** Drupal agencies, using Annotations to reduce post-launch client support overhead.
 
 ---
 
 ## Repository Layout
 
 ```text
-dot/                        ← root module (always required)
-├── dot.info.yml
-├── dot.module
+annotations/                ← root module (always required)
+├── annotations.info.yml
+├── annotations.module
 ├── CLAUDE.md               ← this file
 ├── README.md
 └── modules/
     ├── annotations_scan/           ← CLAUDE.md, README.md
-    ├── dot_annotation/     ← CLAUDE.md, README.md
-    ├── dot_type_ui/        ← CLAUDE.md, README.md
+    ├── annotations_ui/             ← CLAUDE.md, README.md
+    ├── annotations_type_ui/        ← CLAUDE.md, README.md
     ├── annotations_coverage/       ← CLAUDE.md, README.md
     ├── annotations_context/        ← CLAUDE.md, README.md
     ├── annotations_ai_context/     ← CLAUDE.md
     ├── annotations_overlay/        ← CLAUDE.md
     ├── annotations_workflows/      ← CLAUDE.md, README.md
     ├── annotations_demo/           ← ships default types, form displays, starter content
-    └── dot_delta/          ← not started
+    └── annotations_delta/          ← not started
 ```
 
-Each built submodule has its own `CLAUDE.md`. This file covers the root `dot` module, cross-cutting conventions, the data model, and unbuilt modules.
+Each built submodule has its own `CLAUDE.md`. This file covers the root `annotations` module, cross-cutting conventions, the data model, and unbuilt modules.
 
 ---
 
@@ -48,7 +48,7 @@ See individual submodule `CLAUDE.md` files for feature-specific caching notes.
 
 ## Drupal.org Conventions
 
-- Namespace: `dot` (available on d.o)
+- Namespace: `annotations` (available on d.o)
 - All module machine names are lowercase, no caps, no plurals, no participles where avoidable
 - d.o standard tooling: DDEV, Composer, Drush
 - PHP 8.3+, Drupal 11
@@ -82,9 +82,9 @@ All UI output must target **WCAG 2.1 AA** as a minimum.
 
 ## Core Data Model
 
-The central concept is the **DOT target** — one `dot_target` config entity per annotatable unit.
+The central concept is the **annotation target** — one `annotation_target` config entity per annotatable unit.
 
-### `DotAnnotationType` config entity
+### `AnnotationType` config entity
 
 Config prefix: `annotations.annotation_type.*`
 
@@ -103,11 +103,11 @@ Key methods:
 - `getPermission()` — returns `edit {id} annotations` (e.g. `edit editorial annotations`)
 - `getConsumePermission()` — returns `consume {id} annotations` (e.g. `consume editorial annotations`)
 
-The three default types (editorial, technical, rules) ship via `dot_demo`. The `dot` module itself ships no annotation types — it is blank-slate by design. Sites add, rename, or remove types via config management. The `dot_type_ui` submodule provides browser CRUD.
+The three default types (editorial, technical, rules) ship via `annotations_demo`. The `annotations` module itself ships no annotation types — it is blank-slate by design. Sites add, rename, or remove types via config management. The `annotations_type_ui` submodule provides browser CRUD.
 
-### `dot_target` config entity
+### `annotation_target` config entity
 
-Config prefix: `dot.target.*` — files named e.g. `dot.target.node__article.yml`.
+Config prefix: `annotations.target.*` — files named e.g. `annotations.target.node__article.yml`.
 
 **Schema:**
 
@@ -117,11 +117,11 @@ Config prefix: `dot.target.*` — files named e.g. `dot.target.node__article.yml
 - `bundle` — bundle machine name (or entity ID for unbundled types like roles/views)
 - `fields` — map keyed by field machine name; presence = included in scope
 
-For non-fieldable targets (roles, views, workflows), there is no `fields` key. Annotation text is stored separately in `dot_annotation` content entities — never in this config entity.
+For non-fieldable targets (roles, views, workflows), there is no `fields` key. Annotation text is stored separately in `annotation` content entities — never in this config entity.
 
-### `DotAnnotation` content entity
+### `Annotation` content entity
 
-Entity type: `dot_annotation` (class `DotAnnotation`, tables `dot_annotation` / `dot_annotation_field_data` etc.)
+Entity type: `annotation` (class `Annotation`, tables `annotation` / `annotation_field_data` etc.)
 
 Stores all annotation text — target/field-level and site-wide. **Never touched by config sync; survives deploys; editable on production.**
 
@@ -129,9 +129,9 @@ Stores all annotation text — target/field-level and site-wide. **Never touched
 
 - `id` — serial integer PK
 - `uuid` — required for content export/import
-- `target_id` — string; `dot_target` machine name.
+- `target_id` — string; `annotation_target` machine name.
 - `field_name` — string; field machine name. Empty string `''` = bundle-level annotation.
-- `type_id` — string; `DotAnnotationType` machine name (also the bundle key).
+- `type_id` — string; `AnnotationType` machine name (also the bundle key).
 - `value` — `string_long` (plain text, no format). **Why not `body`/`text_long`:** switching to a formatted text field adds a `format` column per row, a text-format selector in every annotation form (requires per-bundle form display config to suppress), and a `check_markup()` call on render (cheap for `plain_text`, cached). More significantly, Drupal convention makes `body`-style fields deletable via the field UI — deletion would silently break `AnnotationStorageService` and every renderer; this is blockable via `hook_field_config_delete` but is extra work. The upside is real: WYSIWYG/markdown per annotation type, and renderers stop hand-rolling `Html::escape()`/`nl2br()`. Revisit if rich text becomes a genuine requirement.
 - `changed` — timestamp (auto-updated on save)
 - `uid` — entity reference to user (who last edited)
@@ -140,40 +140,40 @@ Stores all annotation text — target/field-level and site-wide. **Never touched
 
 - `field_name = ''` → bundle-level (the target's overview annotation). Drupal's field storage treats `''` as NULL (`StringItem::isEmpty()`), so queries for this sentinel must use `IS NULL`.
 
-**Shipping default annotations:** In Drupal 11.3+, export `dot_annotation` entities as YAML using the built-in command and place files in a module's `content/dot_annotation/` directory — no contrib module needed:
+**Shipping default annotations:** In Drupal 11.3+, export `annotation` entities as YAML using the built-in command and place files in a module's `content/annotation/` directory — no contrib module needed:
 
 ```bash
-php core/scripts/drupal content:export dot_annotation <id> --with-dependencies
+php core/scripts/drupal content:export annotation <id> --with-dependencies
 # or Drush 13+:
-drush content:export dot_annotation <id>
+drush content:export annotation <id>
 ```
 
-Drupal auto-imports `content/dot_annotation/*.yml` files when the module is enabled. See `dot_demo` for the reference implementation. The exported YAML format is core's own normalisation — not interchangeable with `default_content` 1.x HAL+JSON files.
+Drupal auto-imports `content/annotation/*.yml` files when the module is enabled. See `annotations_demo` for the reference implementation. The exported YAML format is core's own normalisation — not interchangeable with `default_content` 1.x HAL+JSON files.
 
 ---
 
 ## Module List
 
-### `dot` (always required)
+### `annotations` (always required)
 
-Core module. All other DOT modules depend on it.
+Core module. All other Annotations modules depend on it.
 
 **Owns:**
 
-- `dot_target` config entity (schema, storage, interface)
-- `DotAnnotation` content entity (schema, storage) — entity type ID `dot_annotation`
-- `DotAnnotationType` config entity (schema, storage, interface)
+- `annotation_target` config entity (schema, storage, interface)
+- `Annotation` content entity (schema, storage) — entity type ID `annotation`
+- `AnnotationType` config entity (schema, storage, interface)
 - `AnnotationStorageService` (`annotations.annotation_storage`) — central CRUD service for all annotation text
-- `DotHooks` — `hook_entity_type_alter` registers `TargetFieldsForm` as the `fields` form handler
-- `administer dot` permission; dynamic per-type `edit {type} annotations` + `consume {type} annotations` via `DotPermissions::permissions()`
-- Admin menu: "DOT" top-level entry under Admin → Config
+- `AnnotationsHooks` — `hook_entity_type_alter` registers `TargetFieldsForm` as the `fields` form handler
+- `administer annotations` permission; dynamic per-type `edit {type} annotations` + `consume {type} annotations` via `AnnotationsPermissions::permissions()`
+- Admin menu: "Annotations" top-level entry under Admin → Config
 - `Target` plugin framework: `TargetInterface`, `TargetBase`
 - Plugins: `NodeTarget`, `TaxonomyTarget`, `UserTarget`, `RoleTarget`, `MediaTarget`, `ParagraphTarget`, `WorkflowTarget`, `ViewTarget`, `MenuTarget`, `GenericTarget`
 - `DiscoveryService` — collects all tagged plugins + auto-instantiates `GenericTarget` for any fieldable entity type not claimed by a specific plugin
 - Scope management UI: `TargetOverviewForm`, `TargetFieldsForm`, `TargetDeleteConfirmForm`
 - Views field plugins: `AnnotationTargetLabelField`, `AnnotationFieldLabelField`, `AnnotationTypeLabelField`
 
-**Plugin system:** Tag a service `dot.target` to register a plugin. `GenericTarget` auto-fills for any **fieldable** entity type with no dedicated plugin — it does not cover non-fieldable config entities. No changes to `dot` or `annotations_scan` needed.
+**Plugin system:** Tag a service `annotations.target` to register a plugin. `GenericTarget` auto-fills for any **fieldable** entity type with no dedicated plugin — it does not cover non-fieldable config entities. No changes to `annotations` or `annotations_scan` needed.
 
 **What it discovers:**
 
@@ -197,9 +197,9 @@ Non-fieldable config entities — always need a dedicated plugin:
 | `MenuTarget` | `menu` |
 | `WorkflowTarget` | `workflow` |
 
-**Scope config UI:** Accordion page at `/admin/config/dot/targets`. Entity types as accordion sections. Each row is one bundle/target with a checkbox. On create, all available editorial fields are pre-populated. Selected rows with configurable fields show a "Configure" link + coverage summary. Non-fieldable rows show "N/A". Deselecting a target with annotation data routes through a confirmation form.
+**Scope config UI:** Accordion page at `/admin/config/annotations/targets`. Entity types as accordion sections. Each row is one bundle/target with a checkbox. On create, all available editorial fields are pre-populated. Selected rows with configurable fields show a "Configure" link + coverage summary. Non-fieldable rows show "N/A". Deselecting a target with annotation data routes through a confirmation form.
 
-**Planned setting — views admin-path filter:** Add a boolean setting (stored in `dot.settings`) — "Expose only views with admin paths as targets". When enabled, `ViewTarget` only surfaces views whose base path starts with `/admin` (or whose route has `_admin_route: true`) as annotatable targets on the scope page. Rationale: annotations on front-end views (news listings, search results) are rarely useful and clutter the target list. Admin views (content overviews, user lists, media library) are where editors need guidance. The setting defaults to `true`; sites with genuinely useful front-end view annotations can disable it. The filter applies at discovery time in `ViewTarget` — views that don't pass the filter simply don't appear as rows on the targets page and cannot have `dot_target` config entities created for them. Implement as: read the setting in `ViewTarget::getTargets()` (or equivalent discovery method), check `$view->get('base_path')` against the admin path condition.
+**Planned setting — views admin-path filter:** Add a boolean setting (stored in `annotations.settings`) — "Expose only views with admin paths as targets". When enabled, `ViewTarget` only surfaces views whose base path starts with `/admin` (or whose route has `_admin_route: true`) as annotatable targets on the scope page. Rationale: annotations on front-end views (news listings, search results) are rarely useful and clutter the target list. Admin views (content overviews, user lists, media library) are where editors need guidance. The setting defaults to `true`; sites with genuinely useful front-end view annotations can disable it. The filter applies at discovery time in `ViewTarget` — views that don't pass the filter simply don't appear as rows on the targets page and cannot have `annotation_target` config entities created for them. Implement as: read the setting in `ViewTarget::getTargets()` (or equivalent discovery method), check `$view->get('base_path')` against the admin path condition.
 
 ---
 
@@ -210,8 +210,8 @@ Each has its own `CLAUDE.md` with full detail.
 | Module | Purpose | CLAUDE.md |
 | --- | --- | --- |
 | `annotations_scan` | Crawls opted-in targets; provides manual trigger and cron integration | [modules/annotations_scan/CLAUDE.md](modules/annotations_scan/CLAUDE.md) |
-| `dot_annotation` | Annotation editing UI; per-target and site-wide forms; individual entity edit with revisions; permission model | [modules/dot_annotation/CLAUDE.md](modules/dot_annotation/CLAUDE.md) |
-| `dot_type_ui` | Browser CRUD for annotation types and site sections; site-building only | [modules/dot_type_ui/CLAUDE.md](modules/dot_type_ui/CLAUDE.md) |
+| `annotations_ui` | Annotation editing UI; per-target and site-wide forms; individual entity edit with revisions; permission model | [modules/annotations_ui/CLAUDE.md](modules/annotations_ui/CLAUDE.md) |
+| `annotations_type_ui` | Browser CRUD for annotation types and site sections; site-building only | [modules/annotations_type_ui/CLAUDE.md](modules/annotations_type_ui/CLAUDE.md) |
 | `annotations_coverage` | Coverage tracking; `CoverageService` public API; status rollup (complete/partial/empty); report UI | [modules/annotations_coverage/CLAUDE.md](modules/annotations_coverage/CLAUDE.md) |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI | [modules/annotations_context/CLAUDE.md](modules/annotations_context/CLAUDE.md) |
 | `annotations_ai_context` | AI chat integration via `ai` module suite; `GetSiteContext` function call plugin; `AnnotationsChatBlock` | [modules/annotations_ai_context/CLAUDE.md](modules/annotations_ai_context/CLAUDE.md) |
@@ -223,18 +223,18 @@ Each has its own `CLAUDE.md` with full detail.
 
 ### Unbuilt modules
 
-#### `dot_delta` — not started
+#### `annotations_delta` — not started
 
-Change detection for developers. Drush command comparing current scanner output against the last stored snapshot. Outputs a structured diff (new/removed fields, changed types, new bundles). Designed to run as a pre-commit hook with an optional `--strict` flag. Depends on `annotations_scan` snapshot storage being built first (currently parked).
+Change detection for developers. Drush command comparing current scanner output against the last stored snapshot. Outputs a structured diff (new/removed fields, changed types, new bundles). Designed to run as a pre-commit hook with an optional `--strict` flag. Depends on `annotations_scan` snapshot storage being built first (currently parked). Will use `annotations:scan` Drush commands.
 
 ---
 
 ## Key Design Decisions
 
-- **Single config entity for scope:** `dot_target` unifies what-to-scan and what-to-annotate. No separate scan scope entity.
+- **Single config entity for scope:** `annotation_target` unifies what-to-scan and what-to-annotate. No separate scan scope entity.
 - **Fields map = inclusion list:** Presence in the `fields` map = included. No separate `excluded_fields` list.
-- **Split storage model:** Scope config in Drupal config (deployed via `drush cex`/`drush cim`). Annotation text in `dot_annotation` content entity (never touched by config sync). Different lifecycles, different owners (developer vs editor), must not share storage.
-- **Plugin system in `dot`:** `Target` plugins live in `dot`, not `annotations_scan`. `GenericTarget` auto-fills for unclaimed **fieldable** types only — non-fieldable config entities always need a dedicated plugin.
+- **Split storage model:** Scope config in Drupal config (deployed via `drush cex`/`drush cim`). Annotation text in `annotation` content entity (never touched by config sync). Different lifecycles, different owners (developer vs editor), must not share storage.
+- **Plugin system in `annotations`:** `Target` plugins live in `annotations`, not `annotations_scan`. `GenericTarget` auto-fills for unclaimed **fieldable** types only — non-fieldable config entities always need a dedicated plugin.
 - **Annotation types as config entities:** Sites rename, remove, or add types via config management. The type definition is the identity contract; behavioural flags (`affects_coverage`, `in_ai_context`) are owned by the submodules that use them as third-party settings.
 - **`annotations_context` is the non-AI output path:** AI integration (`annotations_ai_context`) is a second consumer of the same assembler payload. Sites that never use AI get full value via `annotations_context` export.
 - **Permission model:** `edit {type} annotations` gates write access per type (generated dynamically). `consume {type} annotations` gates per-role context output visibility. Static: `administer annotations` (restrict access), `edit any annotation` (restrict access), `access annotation overview`, `view annotations context`, `view annotation revisions` (view revision history; revert/delete still require `edit any annotation`), `administer annotation types` (`annotations_type_ui` CRUD routes).
@@ -244,25 +244,25 @@ Change detection for developers. Drush command comparing current scanner output 
 
 ## Current Status
 
-### `dot` — complete
+### `annotations` — complete
 
 - [x] All config/content entities, storage service, permissions, plugin framework
 - [x] Plugins: `NodeTarget`, `TaxonomyTarget`, `UserTarget`, `RoleTarget`, `MediaTarget`, `ParagraphTarget`, `WorkflowTarget`, `ViewTarget`, `MenuTarget`, `GenericTarget`
 - [x] `DiscoveryService`
 - [x] `TargetOverviewForm`, `TargetFieldsForm`, `TargetDeleteConfirmForm`
 - [x] Views field plugins: `AnnotationTargetLabelField`, `AnnotationFieldLabelField`, `AnnotationTypeLabelField`
-- [x] `DotHooks`, `DotPermissions`
+- [x] `AnnotationsHooks`, `AnnotationsPermissions`
 
 ### Built submodules — see individual CLAUDE.md files
 
 - [`annotations_scan`](modules/annotations_scan/CLAUDE.md) — complete (snapshot storage + Drush commands parked)
-- [`dot_annotation`](modules/dot_annotation/CLAUDE.md) — complete
-- [`dot_type_ui`](modules/dot_type_ui/CLAUDE.md) — complete
-- [`dot_coverage`](modules/dot_coverage/CLAUDE.md) — complete; replaces dot_report (cron caching deferred)
-- [`annotations_context`](modules/annotations_context/CLAUDE.md) — largely complete (`drush dot:export` parked)
-- [`dot_ai_context`](modules/dot_ai_context/CLAUDE.md) — largely complete
+- [`annotations_ui`](modules/annotations_ui/CLAUDE.md) — complete
+- [`annotations_type_ui`](modules/annotations_type_ui/CLAUDE.md) — complete
+- [`annotations_coverage`](modules/annotations_coverage/CLAUDE.md) — complete (cron caching deferred)
+- [`annotations_context`](modules/annotations_context/CLAUDE.md) — largely complete (`drush annotations:export` parked)
+- [`annotations_ai_context`](modules/annotations_ai_context/CLAUDE.md) — largely complete
 - [`annotations_overlay`](modules/annotations_overlay/CLAUDE.md) — largely complete (view-page display and per-field display mode override deferred)
-- [`dot_workflow`](modules/dot_workflow/CLAUDE.md) — complete; ships default workflow config; no custom form altering
-- `dot_demo` — complete; annotation types + form displays + demo hook_install content; YAML content export migration deferred (see install file)
+- [`annotations_workflows`](modules/annotations_workflows/CLAUDE.md) — complete; ships default workflow config; no custom form altering
+- `annotations_demo` — complete; annotation types + form displays + demo hook_install content; YAML content export migration deferred (see install file)
 
-### `dot_delta`
+### `annotations_delta`
