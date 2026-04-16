@@ -38,7 +38,7 @@ If none of those conditions are met the form is unchanged.
 
 | Permission | What it gates |
 | --- | --- |
-| `view annotations overlay` | Seeing the "?" triggers and overlay panels. Grant to editor roles. The per-type `consume {type} annotations` permissions still filter which annotation types appear inside the panels. |
+| `view annotations overlay` | Seeing the "?" triggers and overlay panels. Grant to editor roles. The per-type `consume {type} annotations` permissions  filter which annotation types appear inside the panels. |
 
 ## Paragraph support
 
