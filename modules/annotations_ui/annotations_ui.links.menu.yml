@@ -1,0 +1,6 @@
+annotations_ui.admin.annotate:
+  title: 'Annotations'
+  parent: system.admin_content
+  description: 'Manage annotations.'
+  route_name: annotations_ui.annotate.collection
+  weight: 0

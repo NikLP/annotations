@@ -1,0 +1,9 @@
+name: 'Annotations Demo'
+type: module
+description: 'Ships three default annotation types (editorial, technical, rules), their form display config, a sample node target, and a handful of starter annotation values. Install for development and evaluation; omit for blank-slate production deployments.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations
+  - annotations:annotations_ui
+  - annotations:annotations_type_ui

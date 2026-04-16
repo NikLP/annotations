@@ -1,0 +1,6 @@
+annotations_scan.admin:
+  title: 'Scanner'
+  parent: annotations.admin
+  description: 'Run site scans and view scan status.'
+  route_name: annotations_scan.admin
+  weight: 10

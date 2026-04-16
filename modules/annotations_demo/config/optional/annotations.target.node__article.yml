@@ -1,0 +1,12 @@
+langcode: en
+status: true
+dependencies: {}
+id: node__article
+label: 'Article'
+entity_type: node
+bundle: article
+fields:
+  body: {}
+  field_image: {}
+  field_tags: {}
+  title: {}

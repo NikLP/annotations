@@ -1,0 +1,11 @@
+services:
+  Drupal\annotations\AnnotationStorageService:
+    alias: annotations.annotation_storage
+
+  annotations_overlay.hooks:
+    class: Drupal\annotations_overlay\Hook\AnnotationsOverlayHooks
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations.annotation_storage'
+      - '@current_user'
+      - '@current_route_match'

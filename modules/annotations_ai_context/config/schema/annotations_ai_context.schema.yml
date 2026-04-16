@@ -1,0 +1,7 @@
+annotations.annotation_type.*.third_party.annotations_ai_context:
+  type: mapping
+  label: 'Annotations AI Context annotation type settings'
+  mapping:
+    in_ai_context:
+      type: boolean
+      label: 'Include in AI context'

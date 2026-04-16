@@ -1,0 +1,4 @@
+view annotations overlay:
+  title: 'View annotations overlay'
+  description: 'Show annotations-driven help panels on entity forms (and elsewhere, tbd).'
+  restrict access: false

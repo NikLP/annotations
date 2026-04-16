@@ -1,0 +1,59 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - content_moderation
+  enforced:
+    module:
+      - annotations_workflows
+id: annotations
+label: 'Annotations'
+type: content_moderation
+type_settings:
+  states:
+    draft:
+      label: Draft
+      published: false
+      default_revision: false
+      weight: 0
+    needs_review:
+      label: 'Needs Review'
+      published: false
+      default_revision: false
+      weight: 1
+    published:
+      label: Published
+      published: true
+      default_revision: true
+      weight: 2
+  transitions:
+    create_new_draft:
+      label: 'Save as Draft'
+      from:
+        - draft
+        - needs_review
+        - published
+      to: draft
+      weight: 0
+    submit_for_review:
+      label: 'Submit for Review'
+      from:
+        - draft
+      to: needs_review
+      weight: 1
+    publish:
+      label: Publish
+      from:
+        - draft
+        - needs_review
+        - published
+      to: published
+      weight: 2
+    reject:
+      label: 'Reject to Draft'
+      from:
+        - needs_review
+      to: draft
+      weight: 4
+  entity_types: {}
+  default_moderation_state: published

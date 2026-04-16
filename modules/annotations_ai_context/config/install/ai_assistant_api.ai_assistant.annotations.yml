@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_agents
+    - annotations_ai_context
+id: annotations
+label: 'Annotations Site Assistant'
+description: 'Answers questions about this site using annotations context.'
+allow_history: session
+history_context_length: '4'
+instructions: null
+pre_action_prompt: null
+system_prompt: null
+actions_enabled: {  }
+error_message: 'Sorry, something went wrong. Please try again.'
+specific_error_messages: {  }
+llm_provider: __default__
+llm_model: __default__
+llm_configuration: {  }
+roles: {  }
+use_function_calling: false
+ai_agent: annotations

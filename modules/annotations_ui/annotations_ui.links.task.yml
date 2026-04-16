@@ -1,0 +1,15 @@
+# View / Edit / Revisions tabs on the annotation entity.
+# Revisions is provided by the core VersionHistoryLocalTasks deriver — do NOT
+# declare it here. Both View and Edit use canonical as base_route so all three
+# appear as siblings.
+entity.annotation.canonical:
+  route_name: entity.annotation.canonical
+  title: 'View'
+  base_route: entity.annotation.canonical
+  weight: 0
+
+entity.annotation.edit_form:
+  route_name: entity.annotation.edit_form
+  title: 'Edit'
+  base_route: entity.annotation.canonical
+  weight: 10

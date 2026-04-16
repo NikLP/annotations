@@ -1,0 +1,5 @@
+annotations_ui.target.add:
+  route_name: annotations_ui.target.add
+  title: 'Add annotations'
+  appears_on:
+    - annotations_ui.target.collection

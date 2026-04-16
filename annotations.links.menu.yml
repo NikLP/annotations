@@ -1,0 +1,27 @@
+annotations.admin:
+  title: 'Annotations'
+  parent: system.admin_config
+  description: 'Manage targets, types and settings.'
+  route_name: annotations.admin
+  weight: -100
+
+annotations.admin.targets:
+  title: 'Manage targets'
+  parent: annotations.admin
+  description: 'Manage annotation targets and field scope.'
+  route_name: entity.annotation_target.collection
+  weight: 0
+
+annotations.admin.target_types:
+  title: 'Manage target types'
+  parent: annotations.admin
+  description: 'Manage target entity types for annotation.'
+  route_name: annotations.configure
+  weight: 10
+
+annotations.admin.settings:
+  title: 'Settings'
+  parent: annotations.admin
+  description: 'Configure settings for annotations.'
+  route_name: annotations.settings
+  weight: 20

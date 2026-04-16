@@ -1,0 +1,130 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install hooks for Annotations Demo.
+ *
+ * Demo annotation values are created programmatically here rather than shipped
+ * as YAML content files, since the core content export format (available via
+ * `php core/scripts/drupal content:export annotation <id>` in Drupal 11.3+)
+ * is tied to the installed site's UUIDs and cannot be safely generated offline.
+ *
+ * To replace these with proper YAML files:
+ * 1. Enable annotations_demo on a fresh site so hook_install runs.
+ * 2. Export all annotation entities to the module's content directory:
+ *      php core/scripts/drupal content:export annotation --file=web/modules/custom/annotations/modules/annotations_demo/content/annotation
+ *    (Drupal 11.3+ exports all entities of a type when no ID is given)
+ * 3. The YAML files will appear in annotations_demo/content/annotation/.
+ * 4. Remove hook_install once the YAML files are in place.
+ *
+ * Drupal 11.3+ auto-imports content/annotation/*.yml files when the module
+ * is enabled — no default_content contrib module needed.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function annotations_demo_requirements(string $phase): array {
+  if ($phase !== 'uninstall') {
+    return [];
+  }
+
+  $ids = \Drupal::entityTypeManager()
+    ->getStorage('annotation')
+    ->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('target_id', 'node__article')
+    ->execute();
+
+  if (empty($ids)) {
+    return [];
+  }
+
+  return [
+    'annotations_demo_content' => [
+      'title' => t('Annotations Demo annotation content'),
+      'value' => t('@count annotation record(s) will be permanently deleted.', ['@count' => count($ids)]),
+      'description' => t('Uninstalling annotations_demo deletes all annotation content entities for the demo node__article target. This cannot be undone.'),
+      'severity' => REQUIREMENT_WARNING,
+    ],
+  ];
+}
+
+/**
+ * Implements hook_install().
+ */
+function annotations_demo_install(): void {
+  // Enable the node entity type so it appears on the Manage targets page.
+  $config = \Drupal::configFactory()->getEditable('annotations.target_types');
+  $enabled = $config->get('enabled_target_types') ?? [];
+  if (!in_array('node', $enabled, TRUE)) {
+    $enabled[] = 'node';
+    $config->set('enabled_target_types', $enabled)->save();
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('annotation');
+
+  $demo_values = [
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__article',
+      'field_name' => '',
+      'value' => "Use Article for news posts, blog entries, and longer-form editorial content.\n\nFill in the Summary field so teasers display correctly on listing pages. The Image field is optional but improves engagement on promoted content.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__article',
+      'field_name' => '',
+      'value' => "Standard Drupal node type with revision support. Ships with `body` (text_with_summary), `field_image` (image, media reference), and `field_tags` (taxonomy reference to Tags vocabulary) in the standard profile.\n\nDisplay modes: full, teaser, search_index, rss.",
+    ],
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__article',
+      'field_name' => '',
+      'value' => "All articles require a filled Summary before publication. Image captions are required when an image is attached.\n\nArticles representing press releases must include the 'Press Release' tag.",
+    ],
+  ];
+
+  foreach ($demo_values as $values) {
+    $storage->create($values + ['status' => 1, 'uid' => 1])->save();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function annotations_demo_uninstall(): void {
+  // Remove node from enabled entity types if it was added by this module.
+  $config = \Drupal::configFactory()->getEditable('annotations.target_types');
+  $enabled = $config->get('enabled_target_types') ?? [];
+  $enabled = array_values(array_filter($enabled, fn($t) => $t !== 'node'));
+  $config->set('enabled_target_types', $enabled)->save();
+
+  // Delete demo annotation content entities for the node__article target so
+  // that a reinstall starts clean. Config deletion below removes the target
+  // config, but annotation rows are content entities and are not cleaned up
+  // by config sync — they must be deleted explicitly.
+  $storage = \Drupal::entityTypeManager()->getStorage('annotation');
+  $ids = $storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('target_id', 'node__article')
+    ->execute();
+  if (!empty($ids)) {
+    $storage->delete($storage->loadMultiple($ids));
+  }
+
+  $config_factory = \Drupal::configFactory();
+  foreach ([
+    'core.entity_form_display.annotation.editorial.default',
+    'core.entity_form_display.annotation.rules.default',
+    'core.entity_form_display.annotation.technical.default',
+    'annotations.annotation_type.editorial',
+    'annotations.annotation_type.rules',
+    'annotations.annotation_type.technical',
+    'annotations.target.node__article',
+  ] as $config_name) {
+    $config_factory->getEditable($config_name)->delete();
+  }
+}

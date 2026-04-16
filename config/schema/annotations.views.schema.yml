@@ -1,0 +1,7 @@
+views.filter.annotation_type_filter:
+  type: views.filter.in_operator
+  label: 'Annotation type (label)'
+
+views.filter.annotation_target_filter:
+  type: views.filter.in_operator
+  label: 'Target (label)'

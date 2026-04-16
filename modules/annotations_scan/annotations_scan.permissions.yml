@@ -1,0 +1,4 @@
+administer annotations scanner:
+  title: 'Administer Annotations Scanner'
+  description: 'Configure scan scope, run manual scans, and view scan results.'
+  restrict access: true

@@ -1,0 +1,7 @@
+annotations.annotation_type.*.third_party.annotations_coverage:
+  type: mapping
+  label: 'Annotations Coverage annotation type settings'
+  mapping:
+    affects_coverage:
+      type: boolean
+      label: 'Include in coverage status'

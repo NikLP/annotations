@@ -1,0 +1,20 @@
+services:
+  annotations_context.assembler:
+    class: Drupal\annotations_context\ContextAssembler
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations.annotation_storage'
+      - '@entity_field.manager'
+      - '@annotations.discovery'
+
+  annotations_context.renderer:
+    class: Drupal\annotations_context\ContextRenderer
+
+  annotations_context.html_renderer:
+    class: Drupal\annotations_context\ContextHtmlRenderer
+    arguments:
+      - '@string_translation'
+      - '@config.factory'
+
+  annotations_context.hooks:
+    class: Drupal\annotations_context\Hook\AnnotationsContextHooks

@@ -1,0 +1,3 @@
+# annotations_scan has no config entities of its own.
+# The annotation_target config entity (owned by the dot module) carries all scope and
+# annotation data. Its schema lives in annotations/config/schema/annotations.schema.yml.

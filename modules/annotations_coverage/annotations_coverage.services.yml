@@ -1,0 +1,11 @@
+services:
+  annotations_coverage.coverage_service:
+    class: Drupal\annotations_coverage\CoverageService
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations.annotation_storage'
+
+  annotations_coverage.hooks:
+    class: Drupal\annotations_coverage\Hook\AnnotationsCoverageHooks
+    arguments:
+      - '@entity_type.manager'

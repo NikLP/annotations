@@ -1,0 +1,7 @@
+entity.annotation_type.collection:
+  title: 'Annotation types'
+  parent: system.admin_structure
+  menu_name: admin
+  description: 'Manage annotation types'
+  route_name: entity.annotation_type.collection
+  weight: 0

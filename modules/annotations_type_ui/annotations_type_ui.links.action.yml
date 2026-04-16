@@ -1,0 +1,5 @@
+entity.annotation_type.add_form:
+  route_name: entity.annotation_type.add_form
+  title: 'Add annotation type'
+  appears_on:
+    - entity.annotation_type.collection

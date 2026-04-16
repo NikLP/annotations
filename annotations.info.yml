@@ -1,0 +1,8 @@
+name: Annotations
+type: module
+description: 'Provides shared functionality for the Annotations suite.'
+package: Annotations
+core_version_requirement: ^11
+
+config_devel:
+  - views.view.annotations

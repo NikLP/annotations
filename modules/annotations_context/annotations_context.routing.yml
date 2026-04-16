@@ -1,0 +1,16 @@
+annotations_context.preview:
+  path: '/admin/config/annotations/context'
+  defaults:
+    _controller: '\Drupal\annotations_context\Controller\ContextPreviewController::page'
+    _title: 'Context preview'
+  requirements:
+    _permission: 'view annotations context+administer annotations'
+
+# Raw markdown download. Accepts the same query params as the preview page.
+annotations_context.export:
+  path: '/admin/config/annotations/context/export'
+  defaults:
+    _controller: '\Drupal\annotations_context\Controller\ContextPreviewController::export'
+    _title: 'Export context'
+  requirements:
+    _permission: 'view annotations context+administer annotations'

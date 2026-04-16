@@ -1,0 +1,472 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\annotations_context;
+
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\annotations\AnnotationStorageService;
+use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\Entity\AnnotationTargetInterface;
+
+/**
+ * Assembles annotation_target annotation data into a structured context payload.
+ *
+ * The payload is format-agnostic. Pass it to ContextRenderer for markdown,
+ * or use it directly in AI consumers for prompt construction.
+ *
+ * Usage:
+ * @code
+ * $payload = $assembler->assemble();                         // all targets
+ * $payload = $assembler->assemble(['entity_type' => 'node']); // one type
+ * $payload = $assembler->assemble(['target_id' => 'node__article']); // one target
+ * $payload = $assembler->assemble(['types' => ['editorial']]); // one type only
+ * $payload = $assembler->assemble(['ref_depth' => 1]);        // follow ER links one hop
+ * @endcode
+ *
+ * Payload structure:
+ * @code
+ * [
+ *   'groups' => [
+ *     'node' => [
+ *       'entity_type' => 'node',
+ *       'label'       => 'Content',
+ *       'targets'     => [
+ *         'node__article' => [
+ *           'id'          => 'node__article',
+ *           'label'       => 'Article',
+ *           'entity_type' => 'node',
+ *           'bundle'      => 'article',
+ *           'annotations' => [ 'rules' => ['label' => ..., 'value' => ...], ... ],
+ *           'fields'      => [
+ *             'title' => [
+ *               'label'       => 'Title',
+ *               'annotations' => [ 'editorial' => ['label' => ..., 'value' => ...] ],
+ *             ],
+ *           ],
+ *           'references'  => [...],  // present only when ref_depth > 0
+ *         ],
+ *       ],
+ *     ],
+ *   ],
+ *   'meta' => [ 'generated_at' => ..., 'ref_depth' => ..., 'target_count' => ... ],
+ * ]
+ * @endcode
+ */
+class ContextAssembler {
+
+  /**
+   * Default entity-reference traversal depth (0 = no traversal).
+   *
+   * Override per-call via the 'ref_depth' option. Depth 1 follows entity
+   * reference fields one hop; depth 2 follows references of references.
+   * Values above 2 are rarely useful and can produce very large payloads.
+   */
+  const DEFAULT_REF_DEPTH = 0;
+
+  /**
+   * Per-request cache of field definitions keyed by "entity_type__bundle".
+   *
+   * @var array<string, array<string, \Drupal\Core\Field\FieldDefinitionInterface>>
+   */
+  private array $fieldDefinitionCache = [];
+
+  /**
+   * Whether to include field type, cardinality, and help text in the payload.
+   *
+   * Set by assemble() from the 'include_field_meta' option.
+   */
+  private bool $includeFieldMeta = FALSE;
+
+  public function __construct(
+    private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly AnnotationStorageService $annotationStorage,
+    private readonly EntityFieldManagerInterface $fieldManager,
+    private readonly DiscoveryService $discoveryService,
+  ) {}
+
+  /**
+   * Assembles the context payload.
+   *
+   * @param array $options
+   *   Supported keys:
+   *   - 'entity_type' (string|null): Limit to targets of this entity type.
+   *   - 'target_id' (string|null): Limit to a single target by ID.
+   *   - 'types' (string[]|null): Explicit list of annotation type IDs to include.
+   *   - 'ref_depth' (int): Entity-reference traversal depth.
+   *     Default: self::DEFAULT_REF_DEPTH.
+   *   - 'role' (string|null): Simulate context as this user role ID. When
+   *     set, only annotation types that role can consume are included.
+   *     for are included. Combine freely with 'types', 'account', etc.
+   *   - 'account' (\Drupal\Core\Session\AccountInterface|null): Filter to
+   *     types the given account can view, using its actual combined permissions
+   *     (i.e. the union of all its roles). Ignored if 'role' is also set.
+   *     Accounts with 'administer annotations' bypass filtering. Use this for real
+   *     current-user context; use 'role' for role-simulation previews.
+   *   - 'include_field_meta' (bool): If TRUE, each field entry in the payload
+   *     gains a 'meta' key containing 'type', 'cardinality', and optionally
+   *     'description' (the field's configured help text). Default FALSE.
+   *
+   * @return array
+   *   The assembled payload. See class docblock for structure.
+   */
+  public function assemble(array $options = []): array {
+    $this->fieldDefinitionCache = [];
+    $this->includeFieldMeta     = (bool) ($options['include_field_meta'] ?? FALSE);
+
+    $entity_type_filter = $options['entity_type'] ?? NULL;
+    $target_id_filter   = $options['target_id'] ?? NULL;
+    $explicit_types     = $options['types'] ?? NULL;
+    $ref_depth          = (int) ($options['ref_depth'] ?? self::DEFAULT_REF_DEPTH);
+    $role               = isset($options['role']) && $options['role'] !== '' ? (string) $options['role'] : NULL;
+    $account            = ($options['account'] ?? NULL) instanceof AccountInterface ? $options['account'] : NULL;
+
+    $types   = $this->loadAnnotationTypes($explicit_types, $role, $account);
+    $targets = $this->loadTargets($entity_type_filter, $target_id_filter);
+    $groups  = $this->assembleGroups($targets, $types, $ref_depth, $explicit_types !== NULL);
+
+    return [
+      'groups' => $groups,
+      'meta'   => [
+        'generated_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+        'ref_depth'    => $ref_depth,
+        'target_count' => array_sum(array_map(
+          fn($g) => count($g['targets']),
+          $groups,
+        )),
+      ],
+    ];
+  }
+
+  /**
+   * Loads annotation types, optionally filtered, sorted by weight.
+   *
+   * @param string[]|null $explicit_types
+   *   If provided, restrict to these type IDs.
+   * @param string|null $role
+   *   If provided, restrict to types the given role can view (enforces the
+   *   consume permission for that role. Takes precedence over
+   *   $account when both are provided.
+   * @param \Drupal\Core\Session\AccountInterface|null $account
+   *   If provided (and $role is not), restrict to types the account can view
+   *   using its combined permissions. Accounts with 'administer annotations' bypass.
+   *
+   * @return array<string, \Drupal\annotations\Entity\AnnotationTypeInterface>
+   */
+  private function loadAnnotationTypes(?array $explicit_types, ?string $role, ?AccountInterface $account = NULL): array {
+    /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all */
+    $all = $this->entityTypeManager
+      ->getStorage('annotation_type')
+      ->loadMultiple();
+
+    if ($explicit_types !== NULL) {
+      $all = array_intersect_key($all, array_flip($explicit_types));
+    }
+
+    if ($role !== NULL) {
+      /** @var \Drupal\user\RoleInterface|null $role_entity */
+      $role_entity = $this->entityTypeManager->getStorage('user_role')->load($role);
+      // Admin roles bypass all permission checks — filtering is meaningless.
+      if ($role_entity !== NULL && !$role_entity->isAdmin()) {
+        $all = array_filter($all, fn($t) => $role_entity->hasPermission($t->getConsumePermission()));
+      }
+    }
+    elseif ($account !== NULL && !$account->hasPermission('administer annotations')) {
+      $all = array_filter($all, fn($t) => $account->hasPermission($t->getConsumePermission()));
+    }
+
+    uasort($all, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
+    return $all;
+  }
+
+  /**
+   * Loads annotation_target entities, applying entity type and/or target ID filters.
+   *
+   * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   */
+  private function loadTargets(?string $entity_type_filter, ?string $target_id_filter): array {
+    $storage = $this->entityTypeManager->getStorage('annotation_target');
+
+    if ($target_id_filter !== NULL) {
+      $result = $storage->loadMultiple([$target_id_filter]);
+    }
+    elseif ($entity_type_filter !== NULL) {
+      $ids = $storage->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('entity_type', $entity_type_filter)
+        ->execute();
+      $result = $storage->loadMultiple($ids);
+    }
+    else {
+      $result = $storage->loadMultiple();
+    }
+
+    // Sort by entity type then label for consistent output.
+    uasort($result, fn($a, $b) =>
+      $a->getTargetEntityTypeId() <=> $b->getTargetEntityTypeId()
+      ?: strcmp((string) $a->label(), (string) $b->label())
+    );
+
+    return $result;
+  }
+
+  /**
+   * Groups assembled targets by entity type.
+   *
+   * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   * @param bool $skip_empty
+   *   When TRUE, targets with no matching annotations are omitted. Use when
+   *   the caller has filtered to specific types — showing empty targets in a
+   *   type-filtered view is noise.
+   *
+   * @return array<string, array{entity_type: string, label: string, targets: array}>
+   */
+  private function assembleGroups(array $targets, array $types, int $ref_depth, bool $skip_empty = FALSE): array {
+    $plugins = $this->discoveryService->getPlugins();
+    $groups  = [];
+    $visited = [];
+
+    foreach ($targets as $target) {
+      $et_id    = $target->getTargetEntityTypeId();
+      $assembled = $this->assembleTarget($target, $types, $ref_depth, 0, $visited);
+
+      if ($skip_empty && empty($assembled['annotations']) && empty($assembled['fields'])) {
+        continue;
+      }
+
+      if (!isset($groups[$et_id])) {
+        $plugin = $plugins[$et_id] ?? NULL;
+        $groups[$et_id] = [
+          'entity_type' => $et_id,
+          'label'       => $plugin ? (string) $plugin->getLabel() : $this->entityTypeLabel($et_id),
+          'targets'     => [],
+        ];
+      }
+
+      $groups[$et_id]['targets'][$target->id()] = $assembled;
+    }
+
+    return $groups;
+  }
+
+  /**
+   * Assembles a single target into the payload structure.
+   *
+   * @param \Drupal\annotations\Entity\AnnotationTargetInterface $target
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   * @param int $max_depth
+   * @param int $current_depth
+   * @param string[] $visited
+   *   Target IDs already assembled in this branch — prevents cycles.
+   *
+   * @return array
+   */
+  private function assembleTarget(
+    AnnotationTargetInterface $target,
+    array $types,
+    int $max_depth,
+    int $current_depth,
+    array &$visited,
+  ): array {
+    $visited[] = $target->id();
+
+    $all_annotations = $this->annotationStorage->getForTarget($target->id(), TRUE);
+    $annotations = $this->extractAnnotations($all_annotations[''] ?? [], $types);
+
+    $field_defs = $this->getFieldDefinitions(
+      $target->getTargetEntityTypeId(),
+      $target->getBundle(),
+    );
+
+    $fields = [];
+    foreach (array_keys($target->getFields()) as $field_name) {
+      $field_annotations = $this->extractAnnotations(
+        $all_annotations[$field_name] ?? [],
+        $types,
+      );
+      if (!empty($field_annotations)) {
+        $def   = $field_defs[$field_name] ?? NULL;
+        $entry = [
+          'label'       => $def ? (string) $def->getLabel() : $field_name,
+          'annotations' => $field_annotations,
+        ];
+        if ($this->includeFieldMeta && $def !== NULL) {
+          $entry['meta'] = $this->buildFieldMeta($def);
+        }
+        $fields[$field_name] = $entry;
+      }
+    }
+
+    $result = [
+      'id'          => $target->id(),
+      'label'       => (string) $target->label(),
+      'entity_type' => $target->getTargetEntityTypeId(),
+      'bundle'      => $target->getBundle(),
+      'annotations' => $annotations,
+      'fields'      => $fields,
+    ];
+
+    if ($max_depth > $current_depth) {
+      $refs = $this->resolveReferences($target, $types, $max_depth, $current_depth, $visited);
+      if (!empty($refs)) {
+        $result['references'] = $refs;
+      }
+    }
+
+    return $result;
+  }
+
+  /**
+   * Follows entity-reference fields on a target and assembles referenced targets.
+   *
+   * Only follows fields that are in scope (listed in getFields()). Only
+   * assembles referenced targets that have a annotation_target entry. Skips targets
+   * already visited in this branch to prevent cycles.
+   *
+   * @return array<string, array>
+   *   Keyed by field_name → target_id → assembled target.
+   */
+  private function resolveReferences(
+    AnnotationTargetInterface $target,
+    array $types,
+    int $max_depth,
+    int $current_depth,
+    array &$visited,
+  ): array {
+    $et_id  = $target->getTargetEntityTypeId();
+    $bundle = $target->getBundle();
+    $defs   = $this->getFieldDefinitions($et_id, $bundle);
+    $storage = $this->entityTypeManager->getStorage('annotation_target');
+    $refs   = [];
+
+    foreach (array_keys($target->getFields()) as $field_name) {
+      $def = $defs[$field_name] ?? NULL;
+      if ($def === NULL) {
+        continue;
+      }
+
+      $type = $def->getType();
+      if (!in_array($type, ['entity_reference', 'entity_reference_revisions'], TRUE)) {
+        continue;
+      }
+
+      $target_type = $def->getFieldStorageDefinition()->getSetting('target_type');
+      $bundles     = $def->getSetting('handler_settings')['target_bundles'] ?? [];
+
+      foreach ((array) $bundles as $ref_bundle) {
+        $ref_id = $target_type . '__' . $ref_bundle;
+
+        // Skip self-references and already-visited targets.
+        if ($ref_id === $target->id() || in_array($ref_id, $visited, TRUE)) {
+          continue;
+        }
+
+        /** @var \Drupal\annotations\Entity\AnnotationTargetInterface|null $ref_target */
+        $ref_target = $storage->load($ref_id);
+        if ($ref_target === NULL) {
+          continue;
+        }
+
+        $refs[$field_name][$ref_id] = $this->assembleTarget(
+          $ref_target,
+          $types,
+          $max_depth,
+          $current_depth + 1,
+          $visited,
+        );
+      }
+    }
+
+    return $refs;
+  }
+
+  /**
+   * Builds the field metadata block for a single field definition.
+   *
+   * @return array{type: string, cardinality: string, description?: string}
+   */
+  private function buildFieldMeta(FieldDefinitionInterface $def): array {
+    $cardinality = $def->getFieldStorageDefinition()->getCardinality();
+    $cardinality_label = match (TRUE) {
+      $cardinality === FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED => 'unlimited',
+      $cardinality === 1 => 'single value',
+      default => 'max ' . $cardinality . ' values',
+    };
+
+    $meta = [
+      'type'        => $def->getType(),
+      'cardinality' => $cardinality_label,
+    ];
+
+    $description = trim((string) ($def->getDescription() ?? ''));
+    if ($description !== '') {
+      $meta['description'] = $description;
+    }
+
+    return $meta;
+  }
+
+  /**
+   * Extracts non-empty annotation values from a raw annotations array.
+   *
+   * @param array<string, string> $raw
+   *   Annotation values keyed by type ID.
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   The types to include, already filtered and sorted.
+   *
+   * @return array<string, array{label: string, value: string}>
+   *   Non-empty annotations keyed by type ID, in weight order.
+   */
+  private function extractAnnotations(array $raw, array $types): array {
+    $result = [];
+    foreach ($types as $type_id => $type) {
+      $value = trim((string) ($raw[$type_id] ?? ''));
+      if ($value !== '') {
+        $result[$type_id] = [
+          'label' => (string) $type->label(),
+          'value' => $value,
+        ];
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Returns the human-readable label for a Drupal entity type.
+   */
+  private function entityTypeLabel(string $entity_type_id): string {
+    $def = $this->entityTypeManager->getDefinition($entity_type_id, FALSE);
+    return $def ? (string) $def->getLabel() : $entity_type_id;
+  }
+
+  /**
+   * Returns field definitions for an entity type + bundle, with per-request caching.
+   *
+   * @return array<string, \Drupal\Core\Field\FieldDefinitionInterface>
+   */
+  private function getFieldDefinitions(string $entity_type_id, string $bundle): array {
+    $cache_key = $entity_type_id . '__' . $bundle;
+    if (!isset($this->fieldDefinitionCache[$cache_key])) {
+      if (!$this->entityTypeManager->getDefinition($entity_type_id, FALSE)?->entityClassImplements(FieldableEntityInterface::class)) {
+        $this->fieldDefinitionCache[$cache_key] = [];
+      }
+      else {
+        try {
+          $this->fieldDefinitionCache[$cache_key] = $this->fieldManager
+            ->getFieldDefinitions($entity_type_id, $bundle);
+        }
+        catch (\Throwable) {
+          $this->fieldDefinitionCache[$cache_key] = [];
+        }
+      }
+    }
+    return $this->fieldDefinitionCache[$cache_key];
+  }
+
+}

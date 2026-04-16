@@ -1,0 +1,5 @@
+services:
+  annotations_type_ui.hooks:
+    class: Drupal\annotations_type_ui\Hook\AnnotationsTypeUiHooks
+    arguments:
+      - '@entity_type.manager'

@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Template for an annotations_coverage annotation gap section.
+ *
+ * Variables:
+ * - heading: Section heading text.
+ * - visually_hidden_prefix: Optional screen-reader-only prefix shown before
+ *   the heading (e.g. 'Urgent: '). Wrapped in a visually-hidden span.
+ * - items: Render array of missing annotation items (typically an item_list).
+ * - modifier: BEM modifier appended to the wrapper class
+ *   (e.g. 'urgent', 'high', 'low').
+ */
+#}
+<div class="annotations-report__gap-section{{ modifier ? ' annotations-report__gap-section--' ~ modifier : '' }}">
+  <h3>
+    {%- if visually_hidden_prefix %}<span class="visually-hidden">{{ visually_hidden_prefix }}</span>{% endif -%}
+    {{- heading -}}
+  </h3>
+  {{ items }}
+</div>

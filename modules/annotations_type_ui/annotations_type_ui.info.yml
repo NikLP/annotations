@@ -1,0 +1,7 @@
+name: Annotations Type UI
+type: module
+description: 'Provides an interface for managing annotation types. Required for site building purposes.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations

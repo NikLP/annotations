@@ -1,0 +1,55 @@
+annotations.settings:
+  type: config_object
+  label: 'General settings'
+  mapping:
+    use_accordion_single:
+      type: boolean
+      label: 'Use single-open accordions'
+
+annotations.target_types:
+  type: config_object
+  label: 'Target types'
+  mapping:
+    enabled_target_types:
+      type: sequence
+      label: 'Target entity type IDs enabled for annotation'
+      sequence:
+        type: string
+        label: 'Entity type ID'
+
+annotations.annotation_type.*:
+  type: config_entity
+  label: 'Annotation type'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'
+    description:
+      type: text
+      label: 'Description'
+    weight:
+      type: integer
+      label: 'Ordering weight (lower = shown first in UI and output)'
+
+annotations.target.*:
+  type: config_entity
+  label: 'Target'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'
+    entity_type:
+      type: string
+      label: 'Entity type ID'
+    bundle:
+      type: string
+      label: 'Bundle (or, entity ID for unbundled types such as views, roles etc)'
+    fields:
+      type: ignore
+      label: 'Fields included in scope; keyed by field machine name, values are empty arrays'

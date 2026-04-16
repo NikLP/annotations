@@ -1,0 +1,4 @@
+view annotations context:
+  title: 'Access context preview'
+  description: 'Access the context preview page and download markdown exports.'
+  restrict access: false

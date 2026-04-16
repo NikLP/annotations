@@ -1,0 +1,40 @@
+{#
+/**
+ * @file
+ * Template for a single annotation item inside an overlay wrapper.
+ *
+ * Available variables:
+ * - type_id: Annotation type machine name (e.g. 'editorial'). Used for the
+ *   BEM modifier class so individual types can be styled distinctly.
+ * - type_label: Human-readable annotation type label (e.g. 'Editorial').
+ * - content: Pre-rendered annotation entity content (render array).
+ * - edit_url: Link render array to the annotation edit form, or NULL if the
+ *   current user does not have permission to edit this annotation.
+ * - single_type: When TRUE (only one annotation type expressed across all
+ *   annotations the current user can see on the page), the type heading is
+ *   suppressed — there is nothing to disambiguate.
+ */
+#}
+{% set container_classes = [
+  'annotations-overlay-item',
+  'annotations-overlay-item--' ~ type_id|clean_class ]
+%}
+{% set classes = ['annotations-overlay-item__type'] %}
+<div{{ attributes.addClass(container_classes) }}>
+  {% if not single_type %}
+    <h3{{ attributes.addClass(classes) }}>
+      {{ type_label }}
+      {% if edit_url %}
+        {{ edit_url }}
+      {% endif %}
+    </h3>
+  {% endif %}
+  <div class="annotations-overlay-item__content">
+    {{ content }}
+    {% if single_type %}
+      {% if edit_url %}
+        {{ edit_url }}
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

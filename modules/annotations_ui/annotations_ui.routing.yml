@@ -1,0 +1,74 @@
+# Annotate section — lists all opted-in targets with Annotate links.
+# Accessible as a local task on the all-annotations view page.
+annotations_ui.annotate.collection:
+  path: '/admin/content/annotations'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::page'
+    _title: 'Annotations'
+  requirements:
+    _permission: 'access annotation overview'
+
+annotations_ui.target.delete_all:
+  path: '/admin/content/annotations/{annotation_target}/delete-all'
+  defaults:
+    _form: '\Drupal\annotations_ui\Form\TargetAnnotationsDeleteForm'
+    _title: 'Delete annotations'
+  requirements:
+    _permission: 'edit any annotation'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+
+entity.annotation.delete_multiple_form:
+  path: '/admin/content/annotations/delete'
+  defaults:
+    _form: 'Drupal\Core\Entity\Form\DeleteMultipleForm'
+    _title: 'Delete annotations'
+    entity_type_id: annotation
+  requirements:
+    _permission: 'edit any annotation'
+  options:
+    _admin_route: TRUE
+
+annotations_ui.target.collection:
+  path: '/admin/content/annotations/{annotation_target}'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::collectionPage'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::collectionTitle'
+  requirements:
+    _permission: 'access annotation overview'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+
+annotations_ui.target.add:
+  path: '/admin/content/annotations/{annotation_target}/add'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::addPage'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::addTitle'
+  requirements:
+    _permission: 'edit any annotation'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+
+annotations_ui.target.create:
+  path: '/admin/content/annotations/{annotation_target}/add/{field_name}/{type_id}'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::createAnnotationForm'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::createAnnotationTitle'
+    field_name: '_overview'
+  requirements:
+    _permission: 'edit any annotation'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+    no_cache: TRUE

@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Template for an inline GET-form checkbox used in context filter forms.
+ *
+ * Variables:
+ * - id: HTML id attribute for the input and the label's for attribute.
+ * - name: Input name attribute.
+ * - value: Input value attribute (default '1').
+ * - checked: Boolean; whether the checkbox is checked.
+ * - label: Translated label string.
+ */
+#}
+<div class="js-form-item form-item js-form-type-checkbox form-type--checkbox">
+  <input type="checkbox"
+    name="{{ name }}"
+    value="{{ value }}"
+    id="{{ id }}"
+    class="form-checkbox"
+    {{ checked ? 'checked' : '' }}
+  />
+  <label for="{{ id }}" class="form-item__label option">{{ label }}</label>
+</div>

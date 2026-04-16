@@ -1,0 +1,10 @@
+administer annotations:
+  title: 'Administer Annotations'
+  restrict access: true
+
+access annotation overview:
+  title: 'Access annotation overview'
+  restrict access: true
+
+permission_callbacks:
+  - \Drupal\annotations\AnnotationsPermissions::permissions

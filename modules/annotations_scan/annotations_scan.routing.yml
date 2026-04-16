@@ -1,0 +1,7 @@
+annotations_scan.admin:
+  path: '/admin/config/annotations/scanner'
+  defaults:
+    _controller: '\Drupal\annotations_scan\Controller\ScanController::overview'
+    _title: 'Scanner'
+  requirements:
+    _permission: 'administer annotations scanner'

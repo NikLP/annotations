@@ -1,0 +1,33 @@
+{#
+/**
+ * @file
+ * Default wrapper template for an annotations overlay.
+ *
+ * Renders a native <dialog> element. The dialog is natively hidden until
+ * JS calls showModal() on it — no CSS or hidden attribute needed.
+ *
+ * Other modules may provide an alternative wrapper by registering a theme
+ * suggestion (e.g. annotations_overlay_wrapper__details) with
+ * 'base hook' => 'annotations_overlay_wrapper' and supplying a template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the <dialog> element. Always includes
+ *   data-annotations-field (used by JS to match triggers to dialogs),
+ *   aria-modal, and aria-label.
+ * - close_attributes: HTML attributes for the close button.
+ * - close_label: Accessible text label for the close button.
+ * - heading: Human-readable field or bundle label shown as the dialog title.
+ * - items: Rendered annotation items (annotations_overlay_item elements).
+ */
+#}
+<dialog{{ attributes }}>
+  <div class="visually-hidden annotations-overlay-announcer" aria-live="polite" aria-atomic="true"></div>
+  <button{{ close_attributes }}>
+    <span aria-hidden="true">&#x2715;</span>
+    <span class="visually-hidden">{{ close_label }}</span>
+  </button>
+  <div class="annotations-overlay-body">
+    <h2 class="annotations-overlay-heading">{{ heading }}</h2>
+    {{ items }}
+  </div>
+</dialog>

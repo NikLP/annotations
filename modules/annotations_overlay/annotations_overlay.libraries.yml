@@ -1,0 +1,6 @@
+overlay:
+  css:
+    theme:
+      css/annotations-overlay.css: {}
+  js:
+    js/annotations-overlay.js: {}

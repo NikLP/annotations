@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - annotations_ui
+  enforced:
+    module:
+      - annotations_ui
+id: annotation_delete_action
+label: 'Delete annotation'
+type: annotation
+plugin: 'entity:delete_action:annotation'
+configuration: {  }

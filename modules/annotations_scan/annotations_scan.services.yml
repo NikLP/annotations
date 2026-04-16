@@ -1,0 +1,19 @@
+services:
+  annotations_scan.hooks:
+    class: Drupal\annotations_scan\Hook\AnnotationsScanHooks
+    arguments:
+      - '@annotations_scan.scanner'
+
+  annotations_scan.scanner:
+    class: Drupal\annotations_scan\ScanService
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.channel.annotations_scan'
+      - '@annotations.discovery'
+
+  Drupal\annotations_scan\ScanService:
+    alias: annotations_scan.scanner
+
+  logger.channel.annotations_scan:
+    parent: logger.channel_base
+    arguments: ['annotations_scan']

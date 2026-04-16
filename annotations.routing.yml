@@ -1,0 +1,53 @@
+# Annotations general settings page.
+annotations.settings:
+  path: '/admin/config/annotations/settings'
+  defaults:
+    _form: '\Drupal\annotations\Form\SettingsForm'
+    _title: 'Annotations settings'
+  requirements:
+    _permission: 'administer annotations'
+
+# Annotations Configure section — entity type enablement and target management.
+annotations.configure:
+  path: '/admin/config/annotations/types'
+  defaults:
+    _form: '\Drupal\annotations\Form\TargetTypesForm'
+    _title: 'Manage target types for annotation'
+  requirements:
+    _permission: 'administer annotations'
+
+# Annotations admin overview — lists child menu items (Configure, Scanner, etc.).
+annotations.admin:
+  path: '/admin/config/annotations'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Annotations'
+  requirements:
+    _permission: 'administer annotations'
+
+# Annotation targets page — scope management accordion.
+entity.annotation_target.collection:
+  path: '/admin/config/annotations/targets'
+  defaults:
+    _form: '\Drupal\annotations\Form\TargetOverviewForm'
+    _title: 'Manage targets for annotation'
+  requirements:
+    _permission: 'administer annotations'
+
+# Field inclusion sub-page for a single opted-in target.
+annotations.target.fields:
+  path: '/admin/config/annotations/targets/{annotation_target}/fields'
+  defaults:
+    _entity_form: 'annotation_target.fields'
+    _title: 'Configure target fields'
+  requirements:
+    _permission: 'administer annotations'
+
+# Confirmation form when deleting a target that has annotation data.
+annotations.target.delete_confirm:
+  path: '/admin/config/annotations/targets/delete-confirm'
+  defaults:
+    _form: '\Drupal\annotations\Form\TargetDeleteConfirmForm'
+    _title: 'Confirm target deletion'
+  requirements:
+    _permission: 'administer annotations'

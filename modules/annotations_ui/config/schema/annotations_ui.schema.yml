@@ -1,0 +1,10 @@
+annotations_ui.settings:
+  type: config_object
+  label: 'Annotations UI settings'
+  mapping:
+    show_target_details:
+      type: boolean
+      label: 'Show target details accordion on annotation pages'
+    show_field_metadata:
+      type: boolean
+      label: 'Display metadata on annotation form pages'

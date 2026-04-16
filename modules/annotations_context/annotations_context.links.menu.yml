@@ -1,0 +1,6 @@
+annotations_context.preview:
+  title: 'Context preview'
+  parent: annotations.admin
+  description: 'Preview and export assembled context documentation.'
+  route_name: annotations_context.preview
+  weight: 15

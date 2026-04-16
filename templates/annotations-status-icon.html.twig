@@ -1,0 +1,15 @@
+{#
+/**
+ * @file
+ * Template for an accessible status icon glyph.
+ *
+ * Variables:
+ * - glyph: HTML entity string (developer-controlled, safe to output raw).
+ * - label: Translated text label for screen readers.
+ * - modifier: Optional BEM modifier class string (e.g. 'complete', 'empty').
+ */
+#}
+<span class="annotations-status-icon{{ modifier ? ' annotations-status-icon--' ~ modifier : '' }}">
+  <span aria-hidden="true">{{ glyph|raw }}</span>
+  <span class="visually-hidden">{{ label }}</span>
+</span>

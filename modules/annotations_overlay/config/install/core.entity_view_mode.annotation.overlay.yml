@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - annotations
+id: annotation.overlay
+label: Overlay
+targetEntityType: annotation
+cache: true

@@ -1,0 +1,6 @@
+services:
+  annotations_workflows.hooks:
+    class: Drupal\annotations_workflows\Hook\AnnotationsWorkflowHooks
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: hooks }

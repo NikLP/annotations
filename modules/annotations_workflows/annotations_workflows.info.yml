@@ -1,0 +1,10 @@
+name: 'Annotations Workflows'
+type: module
+description: 'Attach workflows to the annotations UI.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations
+  - annotations:annotations_ui
+  - drupal:content_moderation
+  - drupal:workflows

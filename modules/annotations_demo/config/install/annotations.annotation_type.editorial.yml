@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {}
+id: editorial
+label: 'Editorial'
+description: 'What this target is and how editors use it. Written for non-technical users.'
+weight: 0

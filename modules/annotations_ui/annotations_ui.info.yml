@@ -1,0 +1,14 @@
+name: Annotations UI
+type: module
+description: 'User interface for annotations.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations
+  - drupal:views
+
+suggests:
+  - diff:diff
+
+config_devel:
+  - views.view.annotations_target

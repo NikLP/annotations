@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install and uninstall hooks for the Annotations module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Drops annotation entity tables explicitly. In a healthy install Drupal's
+ * entity storage handler handles this automatically, but an explicit drop here
+ * guards against the case where the entity class is unloadable at uninstall
+ * time (e.g. mid-development with a broken class definition), which would
+ * otherwise leave orphaned tables behind.
+ *
+ * Note: ContentUninstallValidator runs before this hook and will block
+ * uninstall if annotation entities exist. Delete annotation content first:
+ *
+ * @code
+ *   $storage = \Drupal::entityTypeManager()->getStorage('annotation');
+ *   $storage->delete($storage->loadMultiple());
+ * @endcode
+ */
+function annotations_uninstall(): void {
+  $schema = \Drupal::database()->schema();
+
+  foreach ([
+    'annotation_field_revision',
+    'annotation_revision',
+    'annotation_field_data',
+    'annotation',
+  ] as $table) {
+    if ($schema->tableExists($table)) {
+      $schema->dropTable($table);
+    }
+  }
+}

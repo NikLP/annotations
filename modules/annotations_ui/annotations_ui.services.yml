@@ -1,0 +1,9 @@
+services:
+  annotations_ui.hooks:
+    class: Drupal\annotations_ui\Hook\AnnotationsUiHooks
+    arguments: ['@config.factory']
+
+  annotations_ui.route_subscriber:
+    class: Drupal\annotations_ui\Routing\AnnotationsUiRouteSubscriber
+    tags:
+      - { name: event_subscriber }

@@ -1,0 +1,11 @@
+name: 'Annotations Coverage'
+type: module
+description: 'Annotation coverage tracking and reporting. Provides CoverageService as a public API for other modules to build on.'
+package: Annotations
+core_version_requirement: ^11
+
+dependencies:
+  - annotations:annotations
+
+suggests:
+  - annotations:annotations_ui

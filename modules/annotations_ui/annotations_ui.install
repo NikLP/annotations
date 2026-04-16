@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install hooks for the annotations_ui module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Cleans up annotation data and content_moderation_state orphans before
+ * the schema is dropped.
+ *
+ * We cannot use the entity API to load and delete annotation entities here:
+ * annotations_demo (which ships the editorial/technical/rules bundle config
+ * entities) is uninstalled before annotations_ui, so the annotation_type
+ * bundle entities are already gone by the time this hook runs. Loading
+ * annotation entities with missing bundles throws "Missing bundle entity".
+ * Instead, we delete the content_moderation_state orphans via the entity API
+ * (safe — the content_moderation module is still installed), then purge the
+ * annotation tables directly via the database layer.
+ */
+function annotations_ui_uninstall(bool $is_syncing): void {
+  // Clean up content_moderation_state records that reference annotation
+  // entities. These become orphans because content_moderation's own
+  // entityDelete hook only finds the current-revision record; we must remove
+  // the rest.
+  $etm = \Drupal::entityTypeManager();
+  if ($etm->hasDefinition('content_moderation_state')) {
+    $cms_storage = $etm->getStorage('content_moderation_state');
+    $ids = $cms_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('content_entity_type_id', 'annotation')
+      ->execute();
+    if ($ids) {
+      $cms_storage->delete($cms_storage->loadMultiple($ids));
+    }
+  }
+
+  // Delete all annotation rows directly — the entity API cannot be used
+  // because the bundle config entities are already gone at this point.
+  $database = \Drupal::database();
+  $tables[] = ['annotation', 'annotation_field_data', 'annotation_field_revision', 'annotation_revision'];
+  
+  foreach ($tables as $table) {
+    if ($database->schema()->tableExists($table)) {
+      $database->delete($table)->execute();
+    }
+  }
+}

@@ -1,0 +1,10 @@
+edit any annotation:
+  title: 'Edit any annotation'
+  restrict access: true
+
+view annotation revisions:
+  title: 'View annotation revision history'
+  description: 'View the revision history and individual revisions for annotation values.'
+
+permission_callbacks:
+  - \Drupal\annotations_ui\AnnotationsUiPermissions::permissions

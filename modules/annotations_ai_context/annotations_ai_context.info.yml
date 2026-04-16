@@ -1,0 +1,12 @@
+name: 'Annotations AI Context'
+type: module
+description: 'Injects annotations context into an AI assistant system prompt for site-specific chat.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations
+  - annotations:annotations_context
+  - ai:ai
+  - ai:ai_assistant_api
+  - ai:ai_chatbot
+  - ai_agents:ai_agents

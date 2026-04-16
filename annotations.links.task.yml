@@ -1,0 +1,17 @@
+annotations.configure.targets:
+  route_name: entity.annotation_target.collection
+  title: 'Manage targets'
+  base_route: entity.annotation_target.collection
+  weight: 0
+
+annotations.configure.target_types:
+  route_name: annotations.configure
+  title: 'Manage target types'
+  base_route: entity.annotation_target.collection
+  weight: 1
+
+annotations.configure.settings:
+  route_name: annotations.settings
+  title: 'Settings'
+  base_route: entity.annotation_target.collection
+  weight: 2

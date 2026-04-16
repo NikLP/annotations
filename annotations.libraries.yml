@@ -1,0 +1,4 @@
+annotations.admin:
+  css:
+    theme:
+      css/annotations.css: {}

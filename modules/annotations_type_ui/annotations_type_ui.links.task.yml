@@ -1,0 +1,4 @@
+entity.annotation_type.edit_form:
+  title: 'Edit'
+  route_name: entity.annotation_type.edit_form
+  base_route: entity.annotation_type.edit_form

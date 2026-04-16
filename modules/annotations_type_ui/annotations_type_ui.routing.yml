@@ -1,0 +1,31 @@
+entity.annotation_type.collection:
+  path: '/admin/structure/annotation-types'
+  defaults:
+    _entity_list: 'annotation_type'
+    _title: 'Annotation types'
+  requirements:
+    _permission: 'administer annotation types'
+
+entity.annotation_type.add_form:
+  path: '/admin/structure/annotation-types/add'
+  defaults:
+    _entity_form: 'annotation_type.default'
+    _title: 'Add annotation type'
+  requirements:
+    _permission: 'administer annotation types'
+
+entity.annotation_type.edit_form:
+  path: '/admin/structure/annotation-types/{annotation_type}'
+  defaults:
+    _entity_form: 'annotation_type.default'
+    _title_callback: '\Drupal\annotations_type_ui\Form\AnnotationTypeForm::editTitle'
+  requirements:
+    _permission: 'administer annotation types'
+
+entity.annotation_type.delete_form:
+  path: '/admin/structure/annotation-types/{annotation_type}/delete'
+  defaults:
+    _entity_form: 'annotation_type.delete'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+  requirements:
+    _permission: 'administer annotation types'

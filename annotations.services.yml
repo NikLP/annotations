@@ -1,0 +1,104 @@
+services:
+  annotations.annotation_storage:
+    class: Drupal\annotations\AnnotationStorageService
+    arguments:
+      - '@entity_type.manager'
+      - '@current_user'
+      - '@language_manager'
+
+  annotations.hooks:
+    class: Drupal\annotations\Hook\AnnotationsHooks
+    arguments:
+      - '@entity_type.manager'
+
+  annotations.discovery:
+    class: Drupal\annotations\DiscoveryService
+    arguments:
+      - '@entity_type.manager'
+      - !tagged_iterator annotations.target
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+
+  # Target plugins — tagged annotations.target so DiscoveryService
+  # receives them all. Any module can contribute a plugin by tagging a
+  # service the same way.
+  annotations.target.node:
+    class: Drupal\annotations\Plugin\Target\NodeTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.taxonomy:
+    class: Drupal\annotations\Plugin\Target\TaxonomyTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.user:
+    class: Drupal\annotations\Plugin\Target\UserTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.role:
+    class: Drupal\annotations\Plugin\Target\RoleTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.media:
+    class: Drupal\annotations\Plugin\Target\MediaTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.paragraph:
+    class: Drupal\annotations\Plugin\Target\ParagraphTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.workflow:
+    class: Drupal\annotations\Plugin\Target\WorkflowTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.view:
+    class: Drupal\annotations\Plugin\Target\ViewTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations.target.menu:
+    class: Drupal\annotations\Plugin\Target\MenuTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
