@@ -13,7 +13,9 @@ Annotations reads a Drupal site's structure — content types, fields, taxonomie
 - Drupal 11
 - PHP 8.3+
 
-No contributed module dependencies for the core `annotations` module.
+No contributed module dependencies for any of the `annotations` modules.
+Annotations_workflows requires core content_moderation module, which optionally
+requires the contributed `diff` module.
 
 ---
 
