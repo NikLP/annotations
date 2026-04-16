@@ -1,10 +1,17 @@
 # Annotations
 
-Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and exposes that information as/to a structured annotation system. The annotations can be consumed in several ways:
+Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and exposes that information as a structured annotation system. The annotations can be consumed in several ways:
 
-- in-context help overlays while editing
+- in-context help overlays while editing forms
 - human- or machine-readable documentation export
 - input for an AI chat scoped to a specific site's configuration
+
+Annotations supports:
+
+- multiple, fieldable annotation types
+- revisions
+- content moderation (optionally, with `diff`)
+- translation
 
 ---
 
@@ -29,14 +36,18 @@ Install annotations base module; enable submodules as needed.
 
 ## The module suite
 
+*All* modules should be considered a work in progress at this time!
+
+The following modules are currently not well developed: annotations_scan, annotations_ai_context, annotations_context
+
 | Module | Who it is for | Purpose |
 | --- | --- | --- |
 | `annotations` | All | Core - entities, plugin system, scope UI. Always required. |
 | `annotations_type_ui` | Agency / dev only | UI for creating and managing annotation types. Site-building only — never touched by editors. |
 | `annotations_ui` | Agency + editors | Annotation editing UI. Used pre-launch to populate context and post-launch by editors maintaining it. |
 | `annotations_coverage` | Agency / dev | Annotation coverage tracking and report. Owns the `affects_coverage` behaviour and exposes `CoverageService` as a public API for enforcement or CI use. |
-| `annotations_context` | Agency / dev | Assembles annotations into a renderable documentation payload. Preview and export tool; the same payload assembly is consumed by `annotations_overlay` and `annotations_ai_context`. |
-| `annotations_overlay` | Editors / end users | In-context help overlays on entity edit forms. Shows field-level and bundle-level annotations as triggered panels. |
+| `annotations_context` | Agency / dev | Assembles annotations into a renderable documentation payload. Preview and export tool; the same payload assembly is consumed by `annotations_ai_context`. |
+| `annotations_overlay` | Editors / end users | In-context help overlays on entity edit forms. Shows field-level and bundle-level annotations as triggered modals. |
 | `annotations_ai_context` | Editors / end users | AI chat widget scoped to the current page's annotation context. Optional — sites can get full value from Annotations without it. |
 | `annotations_scan` | (Incomplete) Agency / dev | Crawls site structure on demand. Mostly a setup and CI tool. |
 
