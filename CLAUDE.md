@@ -215,7 +215,7 @@ Each has its own `CLAUDE.md` with full detail.
 | `annotations_coverage` | Coverage tracking; `CoverageService` public API; status rollup (complete/partial/empty); report UI | [modules/annotations_coverage/CLAUDE.md](modules/annotations_coverage/CLAUDE.md) |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI | [modules/annotations_context/CLAUDE.md](modules/annotations_context/CLAUDE.md) |
 | `annotations_ai_context` | AI chat integration via `ai` module suite; `GetSiteContext` function call plugin; `AnnotationsChatBlock` | [modules/annotations_ai_context/CLAUDE.md](modules/annotations_ai_context/CLAUDE.md) |
-| `annotations_overlay` | In-context annotation overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar site-wide docs button | [modules/annotations_overlay/CLAUDE.md](modules/annotations_overlay/CLAUDE.md) |
+| `annotations_overlay` | In-context annotation overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar site-wide docs button | [modules/annotations_overlay/CLAUDE.md](modules/annotations_overlay/CLAUDE.md) / [README](modules/annotations_overlay/README.md) |
 | `annotations_workflows` | Ships the default annotations content moderation workflow | [modules/annotations_workflows/CLAUDE.md](modules/annotations_workflows/CLAUDE.md) |
 | `annotations_demo` | Editorial/technical/rules annotation types, form displays, a sample node target, and starter annotation values. Install for dev/eval; omit for blank-slate production. | — |
 

@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_overlay\Hook;
 
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityFormInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Template\Attribute;
 use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\AnnotationsGlyph;
@@ -29,7 +39,39 @@ class AnnotationsOverlayHooks {
     private readonly AnnotationStorageService $annotationStorage,
     private readonly AccountProxyInterface $currentUser,
     private readonly RouteMatchInterface $routeMatch,
+    private readonly LanguageManagerInterface $languageManager,
+    private readonly RendererInterface $renderer,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {}
+
+  /**
+   * Implements hook_entity_base_field_info().
+   *
+   * Registers the annotations_overlay computed base field on all fieldable
+   * content entity types (except annotation itself). Site builders opt in per
+   * view mode by dragging the field into a visible region on Manage Display;
+   * the formatter settings expose the annotation view mode to use.
+   */
+  #[Hook('entity_base_field_info')]
+  public function entityBaseFieldInfo(EntityTypeInterface $entity_type): array {
+    if (!$entity_type->entityClassImplements(FieldableEntityInterface::class)
+      || $entity_type->id() === 'annotation') {
+      return [];
+    }
+    return [
+      'annotations_overlay' => BaseFieldDefinition::create('annotations_overlay')
+        ->setLabel(new TranslatableMarkup('Annotations overlay'))
+        ->setDescription(new TranslatableMarkup('Displays annotation overlays on entity views. Enable per view mode via Manage Display.'))
+        ->setComputed(TRUE)
+        ->setDisplayOptions('view', [
+          'label' => 'hidden',
+          'type' => 'annotations_overlay',
+          'region' => 'hidden',
+          'weight' => 100,
+        ])
+        ->setDisplayConfigurable('view', TRUE),
+    ];
+  }
 
   /**
    * Implements hook_theme().
@@ -59,6 +101,21 @@ class AnnotationsOverlayHooks {
           // Set TRUE when only one annotation type is expressed across all
           // annotations the current user can see on the page.
           'single_type' => FALSE,
+        ],
+      ],
+      // Chooser description wrapper — original description + annotation items.
+      'annotations_overlay_chooser' => [
+        'variables' => [
+          'description' => NULL,
+          'items' => [],
+        ],
+      ],
+      // Single annotation item on a chooser page — no dialog chrome, no edit link.
+      'annotations_overlay_chooser_item' => [
+        'variables' => [
+          'type_id' => NULL,
+          'type_label' => NULL,
+          'content' => NULL,
         ],
       ],
     ];
@@ -196,13 +253,179 @@ class AnnotationsOverlayHooks {
   }
 
   /**
+   * Implements hook_entity_view_alter().
+   *
+   * Injects field-level "?" triggers and annotation dialogs into entity view
+   * pages. Only fires when the annotations_overlay field is placed in an active
+   * display region — site builders opt in per view mode via Manage Display.
+   * The formatter's annotation_view_mode setting controls which view mode is
+   * used to render annotation entities inside dialogs.
+   *
+   * Triggers are added as top-level build siblings (not nested inside field
+   * render elements) because field.html.twig does not render arbitrary children.
+   * CSS positions them relative to the entity view output.
+   */
+  #[Hook('entity_view_alter')]
+  public function entityViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display): void {
+    // Paragraphs have no standalone view page; skip to avoid decorating every
+    // paragraph rendered inside a node view.
+    if ($entity->getEntityTypeId() === 'paragraph') {
+      return;
+    }
+
+    $components = $display->getComponents();
+
+    // Only fire when the annotations_overlay field is enabled in this display.
+    if (!isset($components['annotations_overlay'])) {
+      return;
+    }
+
+    $annotation_view_mode = $components['annotations_overlay']['settings']['annotation_view_mode'] ?? 'overlay';
+
+    // Merge cache metadata so permission/annotation changes correctly invalidate
+    // cached view pages.
+    $this->mergeCacheMetadata($build);
+
+    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+      return;
+    }
+
+    $entity_type_id = $entity->getEntityTypeId();
+    $bundle = $entity->bundle();
+    $target_id = $entity_type_id . '__' . $bundle;
+
+    /** @var \Drupal\annotations\Entity\AnnotationTargetInterface|null $target */
+    $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
+    if ($target === NULL) {
+      return;
+    }
+
+    $visible_types = $this->loadVisibleAnnotationTypes();
+    if (empty($visible_types)) {
+      return;
+    }
+
+    $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
+    $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
+
+    // Only inject triggers for fields that are both in annotation scope and
+    // rendered in this display mode.
+    $rendered_fields = array_keys($components);
+    $fields_with_annotations = [];
+    foreach (array_keys($target->getFields()) as $field_name) {
+      if (!in_array($field_name, $rendered_fields, TRUE)) {
+        continue;
+      }
+      $field_annotations = $this->filterAnnotationEntities($entity_map[$field_name] ?? [], $visible_types);
+      if (!empty($field_annotations)) {
+        $fields_with_annotations[$field_name] = $field_annotations;
+      }
+    }
+
+    if (empty($bundle_annotations) && empty($fields_with_annotations)) {
+      return;
+    }
+
+    // Bundle trigger at top of entity view.
+    if (!empty($bundle_annotations)) {
+      $build['annotations_bundle_trigger'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#attributes' => [
+          'type' => 'button',
+          'class' => ['annotations-overlay-trigger', 'annotations-overlay-trigger--bundle', 'js-annotations-overlay-trigger'],
+          'data-annotations-field' => '_bundle',
+          'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),
+        ],
+        '#value' => Markup::create('<span aria-hidden="true">?</span>'),
+        '#weight' => -1000,
+      ];
+    }
+
+    // Field triggers — added as top-level build siblings because field.html.twig
+    // does not render arbitrary children. data-annotations-field on the field
+    // element itself allows CSS to associate the trigger with its field.
+    foreach (array_keys($fields_with_annotations) as $field_name) {
+      $field_label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
+      if (isset($build[$field_name])) {
+        $build[$field_name]['#attributes']['data-annotations-field'] = $field_name;
+      }
+      $build['annotations_trigger__' . $field_name] = [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#attributes' => [
+          'type' => 'button',
+          'class' => ['annotations-overlay-trigger', 'js-annotations-overlay-trigger'],
+          'data-annotations-field' => $field_name,
+          'aria-label' => (string) $this->t('Documentation for @field', ['@field' => $field_label]),
+        ],
+        '#value' => Markup::create('<span aria-hidden="true">?</span>'),
+        '#weight' => -100,
+      ];
+    }
+
+    $single_type = $this->isSingleType($bundle_annotations, ...$fields_with_annotations);
+    $dialogs = [];
+
+    if (!empty($bundle_annotations)) {
+      $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $target->label(), $bundle_annotations, $single_type, $annotation_view_mode);
+    }
+    foreach ($fields_with_annotations as $field_name => $annotations) {
+      $label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
+      $dialogs[$field_name] = $this->buildDialog($field_name, $label, $annotations, $single_type, $annotation_view_mode);
+    }
+
+    $build['annotations_overlay_dialogs'] = [
+      '#type' => 'container',
+      '#weight' => 998,
+      'dialogs' => $dialogs,
+    ];
+
+    $build['#attached']['library'][] = 'annotations_overlay/overlay';
+    $build['#attributes']['class'][] = 'annotations-has-overlay';
+  }
+
+  /**
+   * Implements hook_form_FORM_ID_alter() for annotations_settings.
+   *
+   * Adds the bundle chooser overview setting to the general Annotations
+   * settings form. The setting lives in annotations_overlay.settings and is
+   * saved via a submit closure so the root annotations module stays unaware
+   * of overlay-specific config.
+   */
+  #[Hook('form_annotations_settings_alter')]
+  public function formAnnotationsSettingsAlter(array &$form, FormStateInterface $form_state): void {
+    $form['overlay'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Overlay'),
+    ];
+    $form['overlay']['show_bundle_chooser_overview'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show overviews on entity select screens'),
+      '#description' => $this->t('Appends bundle-level annotation overviews as supplementary description text on entity type chooser pages (e.g. <em>/node/add</em>, <em>/media/add</em>).'),
+      '#default_value' => $this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview'),
+    ];
+
+    $config_factory = $this->configFactory;
+    $form['#submit'][] = static function (array &$form, FormStateInterface $form_state) use ($config_factory): void {
+      $config_factory->getEditable('annotations_overlay.settings')
+        ->set('show_bundle_chooser_overview', (bool) $form_state->getValue('show_bundle_chooser_overview'))
+        ->save();
+    };
+  }
+
+  /**
    * Implements hook_preprocess_HOOK() for node_add_list.
    *
-   * Appends bundle-level annotation text to each content type's description on
-   * the /node/add chooser page.
+   * Appends bundle-level annotation content to each content type's description
+   * on the /node/add chooser page. Annotation entities are rendered via the
+   * 'overlay' view mode, so Manage Display controls what appears.
    */
   #[Hook('preprocess_node_add_list')]
   public function preprocessNodeAddList(array &$variables): void {
+    if (!$this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview')) {
+      return;
+    }
     if (!$this->currentUser->hasPermission('view annotations overlay')) {
       return;
     }
@@ -213,30 +436,60 @@ class AnnotationsOverlayHooks {
     }
 
     $modified = FALSE;
-    foreach (array_keys($variables['types']) as $type_id) {
-      $element = $this->buildBundleAnnotationElement('node__' . $type_id, $visible_types);
-      if ($element !== NULL) {
-        $variables['types'][$type_id]['description'] = [
-          'original' => $variables['types'][$type_id]['description'],
-          'annotation_overlay' => $element,
-        ];
-        $modified = TRUE;
+
+    // Claro/Gin theme preprocess (claro_preprocess_node_add_list) runs after all
+    // module preprocesses and rebuilds $variables['bundles'] directly from
+    // $variables['content'] entity objects using $type->getDescription(). It
+    // ignores $variables['types'] entirely. Modifying the entity description in
+    // memory here ensures Claro/Gin reads our annotation text. No save is triggered.
+    foreach ($variables['content'] ?? [] as $type) {
+      $chooser = $this->buildBundleAnnotationRenderItems('node__' . $type->id(), $visible_types);
+      if ($chooser === NULL) {
+        continue;
       }
+      $chooser['#description'] = $type->getDescription() ?? '';
+      $type->set('description', Markup::create(
+        (string) $this->renderer->renderInIsolation($chooser)
+      ));
+      $modified = TRUE;
+    }
+
+    // Also update $variables['types'] for themes (non-Claro/Gin) that read the
+    // 'types' key directly from the core node_add_list preprocess output.
+    foreach (array_keys($variables['types'] ?? []) as $type_id) {
+      $chooser = $this->buildBundleAnnotationRenderItems('node__' . $type_id, $visible_types);
+      if ($chooser === NULL) {
+        continue;
+      }
+      $chooser['#description'] = $variables['types'][$type_id]['description'] ?? [];
+      $variables['types'][$type_id]['description'] = $chooser;
+      $modified = TRUE;
     }
 
     if ($modified) {
       $variables['#attached']['library'][] = 'annotations_overlay/overlay';
+      $variables['#cache']['tags'] = array_unique(array_merge(
+        $variables['#cache']['tags'] ?? [],
+        ['annotation_list', 'annotation_target_list', 'annotation_type_list'],
+      ));
+      $variables['#cache']['contexts'] = array_unique(array_merge(
+        $variables['#cache']['contexts'] ?? [],
+        ['user.permissions', 'languages:language_interface'],
+      ));
     }
   }
 
   /**
    * Implements hook_preprocess_HOOK() for entity_add_list.
    *
-   * Appends bundle-level annotation text on generic entity bundle chooser
+   * Appends bundle-level annotation content on generic entity bundle chooser
    * pages (any entity type using EntityController::addPage()).
    */
   #[Hook('preprocess_entity_add_list')]
   public function preprocessEntityAddList(array &$variables): void {
+    if (!$this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview')) {
+      return;
+    }
     if (!$this->currentUser->hasPermission('view annotations overlay')) {
       return;
     }
@@ -252,20 +505,45 @@ class AnnotationsOverlayHooks {
     }
 
     $modified = FALSE;
-    foreach (array_keys($variables['bundles']) as $bundle_id) {
-      $element = $this->buildBundleAnnotationElement($entity_type_id . '__' . $bundle_id, $visible_types);
-      if ($element !== NULL) {
-        $variables['bundles'][$bundle_id]['description'] = [
-          'original' => $variables['bundles'][$bundle_id]['description'],
-          'annotation_overlay' => $element,
-        ];
-        $modified = TRUE;
+    foreach (array_keys($variables['bundles'] ?? []) as $bundle_id) {
+      $chooser = $this->buildBundleAnnotationRenderItems($entity_type_id . '__' . $bundle_id, $visible_types);
+      if ($chooser === NULL) {
+        continue;
       }
+      $chooser['#description'] = $variables['bundles'][$bundle_id]['description'] ?? [];
+      $variables['bundles'][$bundle_id]['description'] = $chooser;
+      $modified = TRUE;
     }
 
     if ($modified) {
       $variables['#attached']['library'][] = 'annotations_overlay/overlay';
+      $variables['#cache']['tags'] = array_unique(array_merge(
+        $variables['#cache']['tags'] ?? [],
+        ['annotation_list', 'annotation_target_list', 'annotation_type_list'],
+      ));
+      $variables['#cache']['contexts'] = array_unique(array_merge(
+        $variables['#cache']['contexts'] ?? [],
+        ['user.permissions', 'languages:language_interface'],
+      ));
     }
+  }
+
+  /**
+   * Merges annotation cache metadata into a render array.
+   *
+   * Must be called in hook_entity_view_alter for all paths past the structural
+   * guards (admin route, display mode, entity type) so that permission changes
+   * and annotation saves correctly invalidate cached admin view pages.
+   */
+  private function mergeCacheMetadata(array &$build): void {
+    $cache = CacheableMetadata::createFromRenderArray($build);
+    $cache->addCacheTags(['annotation_list', 'annotation_target_list', 'annotation_type_list']);
+    $contexts = ['user.permissions', 'languages:language_interface'];
+    if ($this->languageManager->isMultilingual()) {
+      $contexts[] = 'languages:content';
+    }
+    $cache->addCacheContexts($contexts);
+    $cache->applyTo($build);
   }
 
   /**
@@ -281,17 +559,21 @@ class AnnotationsOverlayHooks {
   }
 
   /**
-   * Builds a render element containing bundle-level annotation text.
+   * Builds a render array of bundle-level annotation entities for chooser pages.
    *
-   * Returns NULL if no annotation_target exists for $target_id, or if no
-   * visible, non-empty bundle annotations exist.
+   * Annotation entities are rendered via the 'overlay' view mode so that
+   * Manage Display controls which fields appear. Returns NULL when no target
+   * exists or no visible, published bundle annotations are found.
    *
    * @param string $target_id
    *   e.g. 'node__article' or 'media__image'.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $visible_types
    *   Pre-loaded visible annotation types.
+   *
+   * @return array|null
+   *   Render array wrapping one rendered entity per visible type, or NULL.
    */
-  private function buildBundleAnnotationElement(string $target_id, array $visible_types): ?array {
+  private function buildBundleAnnotationRenderItems(string $target_id, array $visible_types): ?array {
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
     if ($target === NULL) {
       return NULL;
@@ -299,30 +581,26 @@ class AnnotationsOverlayHooks {
 
     $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
     $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
-
     if (empty($bundle_annotations)) {
       return NULL;
     }
 
     $view_builder = $this->entityTypeManager->getViewBuilder('annotation');
-    $single_type = $this->isSingleType($bundle_annotations);
     $items = [];
     foreach ($bundle_annotations as $type_id => $entity) {
       $type = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);
       $items[$type_id] = [
-        '#theme' => 'annotations_overlay_item',
+        '#theme' => 'annotations_overlay_chooser_item',
         '#type_id' => $type_id,
         '#type_label' => $type ? (string) $type->label() : $type_id,
         '#content' => $view_builder->view($entity, 'overlay'),
-        '#edit_url' => $this->buildEditUrl($entity, $type_id),
-        '#single_type' => $single_type,
       ];
     }
 
     return [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['annotations-bundle-annotation']],
-      'items' => $items,
+      '#theme' => 'annotations_overlay_chooser',
+      '#description' => NULL,
+      '#items' => $items,
     ];
   }
 
@@ -378,7 +656,7 @@ class AnnotationsOverlayHooks {
    *   TRUE when only one annotation type is expressed across all dialogs on the
    *   page for the current user. When TRUE the type heading is suppressed.
    */
-  private function buildDialog(string $field_key, string $label, array $annotation_entities, bool $single_type): array {
+  private function buildDialog(string $field_key, string $label, array $annotation_entities, bool $single_type, string $view_mode = 'overlay'): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('annotation');
     $items = [];
     foreach ($annotation_entities as $type_id => $entity) {
@@ -387,7 +665,7 @@ class AnnotationsOverlayHooks {
         '#theme' => 'annotations_overlay_item',
         '#type_id' => $type_id,
         '#type_label' => $type ? (string) $type->label() : $type_id,
-        '#content' => $view_builder->view($entity, 'overlay'),
+        '#content' => $view_builder->view($entity, $view_mode),
         '#edit_url' => $this->buildEditUrl($entity, $type_id),
         '#single_type' => $single_type,
       ];

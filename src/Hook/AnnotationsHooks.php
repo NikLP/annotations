@@ -77,6 +77,7 @@ class AnnotationsHooks {
       'help'       => t('Human-readable label of the annotated field.'),
       'real field' => 'field_name',
       'field'      => ['id' => 'annotation_field_label'],
+      'filter'     => ['id' => 'annotation_field_filter'],
     ];
 
     $data['annotation_field_data']['type_label'] = [

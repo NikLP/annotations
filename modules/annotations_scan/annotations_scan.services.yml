@@ -17,3 +17,4 @@ services:
   logger.channel.annotations_scan:
     parent: logger.channel_base
     arguments: ['annotations_scan']
+

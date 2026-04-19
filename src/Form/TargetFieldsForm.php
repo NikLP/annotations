@@ -132,7 +132,6 @@ class TargetFieldsForm extends EntityForm {
     foreach ($checked_fields as $field_name) {
       $new_fields[$field_name] = $existing_fields[$field_name] ?? [];
     }
-
     $entity->setFields($new_fields);
   }
 

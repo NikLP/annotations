@@ -7,7 +7,6 @@ namespace Drupal\annotations_type_ui\ListBuilder;
 use Drupal\Core\Config\Entity\DraggableListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\annotations\AnnotationsGlyph;
 
 /**
  * List builder for AnnotationType config entities.
@@ -39,12 +38,6 @@ class AnnotationTypeListBuilder extends DraggableListBuilder {
    */
   public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface $entity */
-    $center = ['#type' => 'html_tag', '#tag' => 'div', '#attributes' => ['class' => ['annotations-center']]];
-    // @todo $yes/$no are unused — kept from annotations_type_ui; remove or wire up
-    //   when behavior columns are added to the list builder.
-    $yes = $center + ['icon' => ['#theme' => 'annotations_status_icon', '#glyph' => AnnotationsGlyph::CHECK, '#label' => $this->t('Yes'), '#modifier' => 'yes']];
-    $no  = $center + ['icon' => ['#theme' => 'annotations_status_icon', '#glyph' => AnnotationsGlyph::CROSS, '#label' => $this->t('No'), '#modifier' => 'no']];
-
     return [
       // Plain string — DraggableListBuilder::buildForm() wraps label in #markup.
       'label' => $entity->label(),

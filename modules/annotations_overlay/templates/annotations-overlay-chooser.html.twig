@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Wrapper template for annotation content on entity type chooser pages.
+ *
+ * Renders the original bundle description alongside annotation items.
+ * Used on /node/add, /media/add, and any entity chooser page using
+ * EntityController::addPage().
+ *
+ * Available variables:
+ * - description: Original bundle description (render array or string). May be
+ *   empty when no description has been configured for the bundle.
+ * - items: Rendered annotation items (annotations_overlay_chooser_item
+ *   elements), one per visible annotation type.
+ */
+#}
+<div{{ attributes.addClass('annotations-chooser') }}>
+  {% if description %}
+    <div class="annotations-chooser__description">{{ description }}</div>
+  {% endif %}
+  {% if items %}
+    <div class="annotations-chooser__annotations">{{ items }}</div>
+  {% endif %}
+</div>

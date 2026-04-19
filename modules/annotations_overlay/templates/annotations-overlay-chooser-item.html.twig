@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Template for a single annotation item on an entity type chooser page.
+ *
+ * Simpler than annotations-overlay-item.html.twig — no dialog chrome,
+ * no close button, no edit link. Type heading is always shown since
+ * multiple types may appear for the same bundle.
+ *
+ * Available variables:
+ * - type_id: Annotation type machine name (e.g. 'editorial'). Used for the
+ *   BEM modifier class so individual types can be styled distinctly.
+ * - type_label: Human-readable annotation type label (e.g. 'Editorial').
+ * - content: Pre-rendered annotation entity content (render array).
+ */
+#}
+{% set container_classes = [
+  'annotations-chooser-item',
+  'annotations-chooser-item--' ~ type_id|clean_class ]
+%}
+<div{{ attributes.addClass(container_classes) }}>
+  <div class="annotations-chooser-item__type">{{ type_label }}</div>
+  <div class="annotations-chooser-item__content">{{ content }}</div>
+</div>

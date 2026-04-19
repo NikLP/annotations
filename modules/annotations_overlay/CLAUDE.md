@@ -11,8 +11,12 @@ This module has no dependency on `annotations_ui` or `annotations_context`. It r
 ## What it owns
 
 - `AnnotationsOverlayHooks` (`src/Hook/`) — all hook implementations:
+  - `hook_entity_base_field_info` — registers the `annotations_overlay` computed field on all fieldable entity types
   - `hook_theme` — registers `annotations_overlay_wrapper` and `annotations_overlay_item` theme hooks
   - `hook_form_alter` — injects field triggers, bundle trigger, and `<dialog>` elements into entity edit/add forms for opted-in targets, including inline paragraph subforms (see Paragraph support below)
+  - `hook_entity_view_alter` — injects overlay when the `annotations_overlay` field is active in the current display
+- `AnnotationsOverlayItem` (`src/Plugin/Field/FieldType/`) — computed field type (`no_ui: TRUE`)
+- `AnnotationsOverlayFormatter` (`src/Plugin/Field/FieldFormatter/`) — formatter; surfaces `annotation_view_mode` setting in Manage Display UI; `viewElements()` returns empty (rendering is done in `entityViewAlter`)
 - Templates: `annotations-overlay-wrapper.html.twig`, `annotations-overlay-item.html.twig`
 - Library: `annotations_overlay/overlay` — `js/annotations-overlay.js` and `css/annotations-overlay.css`
 - Permission: `view annotations overlay`
@@ -76,126 +80,49 @@ The component edit dialog is treated as a standalone entity form. Triggers and p
 
 **Key difference from inline paragraphs:** In the layout_paragraphs case the AJAX concern does not apply — the dialog form is its own complete Drupal form and is fully rebuilt each time it opens. Panels do not need to live inside any wrapper.
 
-## View page overlay — implementation plan
+## View page overlay
 
-View-page overlays fire on entity view pages (e.g. `/node/1`, `/taxonomy/term/4`). Editors land here after saving, or browse to review content. The goal is the same `?` trigger UX as forms — no separate UI to learn.
+View-page overlays fire on entity view pages (e.g. `/node/1`, `/taxonomy/term/4`). The same `?` trigger UX as forms — no separate UI to learn.
 
-### Prerequisites before writing any code
+### Opt-in mechanism
 
-**1. `in_view_context` flag on `AnnotationType`**
+Site builders opt in per view mode via **Manage Display**: drag the `Annotations overlay` field into a visible region on the entity's display. The field is registered on all fieldable entity types (except `annotation` itself) via `hook_entity_base_field_info`. `hook_entity_view_alter` fires when the field is present in the active display's components, so per-display-mode control falls out naturally from Drupal's standard display machinery.
 
-Add boolean `in_view_context` to the config entity. Allows `editorial` to show on view pages while `technical` and `rules` stay admin-only. Steps:
+The formatter's `annotation_view_mode` setting (exposed in the Manage Display UI) controls which annotation entity view mode is used to render content inside dialogs. Default: `overlay`.
 
-- `config/schema/annotations.schema.yml` — add `in_view_context: boolean` to the `annotations.annotation_type.*` mapping
-- `AnnotationTypeInterface` — add `includeInViewContext(): bool`
-- `AnnotationType` — implement, read from `$this->in_view_context ?? FALSE`
-- `AnnotationTypeForm` (in `annotations_type_ui`) — add checkbox to the behavior fieldset via `hook_form_annotation_type_form_alter`, same pattern as `annotations_coverage` uses for `affects_status` and `annotations_ai_context` uses for `in_ai_context`
-- Default config YML files — set `in_view_context: true` for `editorial`, `false` for `technical` and `rules`
-- No update hooks — reinstall after schema changes
+### Design note
 
-### 2. Display mode awareness
+We considered storing `view_page_annotation_view_mode` and `view_page_display_mode` on the `AnnotationTarget` config entity and driving opt-in from there (no Manage Display setup needed). The problem: it replicated the same conceptual shape as the field approach — "pick a display mode, pick an annotation view mode" — just in a different UI. The field approach has Drupal's display machinery doing the heavy lifting and gives per-display-mode granularity for free. We kept the field.
 
-`hook_entity_view_alter` receives `$context['display_mode']` (e.g. `full`, `teaser`, `search_index`). Only fire on `full` by default. More importantly: a field in the `annotation_target` fields map may not be rendered in the current display mode. Before injecting a trigger for a field, check whether it actually appears in the active `EntityViewDisplay`:
+### Display mode filtering for fields
 
-```php
-$display = $this->entityTypeManager
-  ->getStorage('entity_view_display')
-  ->load($entity_type_id . '.' . $bundle . '.' . $display_mode);
-$rendered_fields = array_keys($display->getComponents());
-// Only inject triggers for fields in both annotation_target->getFields() AND $rendered_fields.
-```
+Before injecting a trigger for a field, `entityViewAlter` checks whether the field appears in the active display's components. Fields in annotation scope but hidden in the current display mode are silently skipped — no orphaned `?` buttons.
 
-If the field is in DOT scope but hidden in this display mode, skip its trigger. This prevents orphaned `?` buttons with no corresponding field visible on the page.
+### Paragraph guard
 
-### Admin route guard
+`entityViewAlter` skips `paragraph` entities unconditionally. Paragraphs have no standalone view page, but `hook_entity_view_alter` fires for every paragraph rendered inside a node view. Injecting triggers there would produce spurious overlays on every paragraph component within a node.
 
-Only fire on admin routes. Check via `RouteMatchInterface`:
+### Caching
 
-```php
-$is_admin = (bool) $this->routeMatch->getRouteObject()?->getOption('_admin_route');
-if (!$is_admin) {
-  return;
-}
-```
-
-View-page overlays must never appear on public-facing pages. This is the primary guard — `in_view_context` is secondary (controls which types show, not whether the overlay fires at all).
-
-### `hook_entity_view_alter` implementation sketch
-
-```php
-#[Hook('entity_view_alter')]
-public function entityViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display): void {
-  // 1. Admin route guard.
-  // 2. Permission check: view annotations overlay.
-  // 3. Load annotation_target for entity_type + bundle.
-  // 4. Load visible types filtered by in_view_context AND consume {type} annotations permission.
-  // 5. Load annotations via AnnotationStorageService::getForTarget().
-  // 6. Filter to fields that are both in annotation_target->getFields() and in $display->getComponents().
-  // 7. Inject data-annotations-field attribute and annotations_overlay_trigger into $build[$field_name].
-  // 8. Inject annotations_overlay_panels container into $build at weight 998.
-  // 9. Attach library + drupalSettings.
-}
-```
-
-The bundle trigger (`_bundle` / "About X") applies here too — inject it at weight -1000 in the build array, same as the form.
-
-### What carries over from formAlter without changes
-
-- `buildDialog()` private method — call with `in_view_context` filter on types; dialog renders the same way
-- `filterAnnotationEntities()` private method — identical
-- `loadVisibleAnnotationTypes()` — reuse, but add `in_view_context` filter
-- `annotations_overlay/overlay` library — JS and CSS already work off `data-annotations-field` attributes; no JS changes needed
-
-### Caching requirements for hook_entity_view_alter
-
-`hook_entity_view_alter` receives a `$build` that already carries the entity's own cache tags (e.g. `node:1`, `taxonomy_term:4`). These must not be lost. Use `CacheableMetadata` to merge DOT's metadata in:
-
-```php
-use Drupal\Core\Cache\CacheableMetadata;
-
-$cache = CacheableMetadata::createFromRenderArray($build);
-$cache->addCacheTags(['annotation_list', 'annotation_target_list', 'annotation_type_list']);
-$contexts = ['user.permissions', 'languages:language_interface'];
-if (\Drupal::languageManager()->isMultilingual()) {
-  $contexts[] = 'languages:content';
-}
-$cache->addCacheContexts($contexts);
-$cache->applyTo($build);
-```
-
-Do not assign `$build['#cache']` directly — that would replace the entity's existing tags.
-
-**Per-entity-type caching exposure (all currently guarded by the admin route check):**
-
-- **NodeTarget** (`node`) — nodes have public canonical URLs (`/node/{nid}`); if the admin guard is ever relaxed, anonymous users could receive stale overlay content. Keep the guard unconditional.
-- **TaxonomyTarget** (`taxonomy_term`) — term pages (`/taxonomy/term/{tid}`) are routinely public; same concern as node.
-- **UserTarget** (`user`) — user profiles can be semi-public; same guard requirement.
-- **MediaTarget** (`media`) — canonical media pages are site-dependent but can be public; same guard requirement.
-- **ParagraphTarget** (`paragraph`) — no standalone view page, but `hook_entity_view_alter` fires for every paragraph rendered inside a parent entity's view. Add an explicit guard to skip paragraph entities in this hook, or the overlay will inject into every paragraph component within a node view.
-- **GenericTarget** — catches any fieldable entity not claimed by a specific plugin; public view pages are possible for unknown entity types. Admin guard must apply unconditionally regardless of entity type.
-- **RoleTarget, WorkflowTarget, MenuTarget, ViewTarget** — config entities with no canonical rendered view page; `hook_entity_view_alter` will not fire for these in practice.
-
-### What is different from formAlter
-
-- Field containers on view pages are rendered by field formatters and may have different wrapping structure. The `[data-annotations-field]` CSS rule positions triggers absolutely within the container — this will likely need CSS tweaks once tested against real output. Check with the admin theme (Gin) specifically.
-- No `#weight` key in view build arrays — use `array_unshift` or `#weight` directly on `$build[$field_name]['annotations_overlay_trigger']` (render arrays support `#weight` anywhere).
-- `EntityViewDisplayInterface` is already passed to `hook_entity_view_alter` — no extra load needed for the display mode components check.
-
-### New services argument needed
-
-`AnnotationsOverlayHooks` already has `RouteMatchInterface` injected. No new constructor args required for the hook itself. The `entity_view_display` storage load uses the already-injected `EntityTypeManagerInterface`.
-
-### Display mode note
-
-Only fire on `full` display mode initially. Do not fire on `teaser`, `search_index`, `rss`, `card`, or any other non-full mode. These are listing/aggregation contexts where the overlay would be intrusive and the full field set is not visible anyway. If per-display-mode configuration is ever needed, add it as a setting rather than hardcoding, but `full`-only is the right default.
-
-### Layout Paragraphs / Mercury Editor testing note
-
-When this is built, test that the view-page overlay does not fire on rendered paragraph entities embedded inside a node view. `ParagraphTarget` entities are fieldable and may have `annotation_target` entries — but a paragraph rendered inside a node view is not the primary editorial surface. Consider guarding against embedded/referenced entity contexts, or accepting that paragraph triggers appearing inside a node view is acceptable. Test first before deciding.
+Cache metadata is merged after the target and display-mode checks pass, before the permission check. Tags: `annotation_list`, `annotation_target_list`, `annotation_type_list`. Contexts: `user.permissions`, `languages:language_interface`, `languages:content` (conditional on multilingual). The entity's existing cache tags (e.g. `node:1`) are preserved via `CacheableMetadata::createFromRenderArray()` — `$build['#cache']` is never replaced directly.
 
 ## Bundle chooser pages
 
 `hook_preprocess_node_add_list` and `hook_preprocess_entity_add_list` inject bundle-level annotation text as supplementary description text on entity type chooser pages (e.g. `/node/add`, `/block/add`, `/media/add`). Visibility is gated by `view annotations overlay` + per-type `consume {type} annotations` permissions. The `entity_add_list` hook derives the entity type from the `entity_type_id` route parameter, covering all entities using `EntityController::addPage()`.
+
+**Architectural note:** The chooser feature is a different concern from the dialog/trigger overlay — no JS, no `<dialog>` chrome, just inline content injection. It lives here because the permission model is shared and the two features are almost always wanted together. If a use case emerges for chooser annotations without the dialog overlay (e.g. a site using Gin's description toggle for field help), this feature is self-contained enough to extract into its own submodule.
+
+Output is themed via two hooks: `annotations_overlay_chooser` (wraps the original description + annotation items) and `annotations_overlay_chooser_item` (type label + rendered annotation entity). Both have dedicated templates. `buildBundleAnnotationRenderItems()` returns an `annotations_overlay_chooser` render array with `#description => NULL`; callers set `#description` to the original entity description before placing it.
+
+Annotation entities are rendered via the `overlay` view mode. A dedicated `chooser` view mode would allow site builders to control what content appears on chooser pages independently of the dialog overlay — parked as complementary work.
+
+**Claro/Gin compatibility note — `node_add_list`:** Claro's `claro_preprocess_node_add_list` is a theme-level preprocess that runs *after* all module preprocesses. It rebuilds `$variables['bundles']` from scratch by reading `$type->getDescription()` on each entity object directly — it does not read `$variables['types']`. Module-level `hook_preprocess_node_add_list` implementations cannot modify `bundles` because Claro overwrites it afterward. The fix is to modify the entity description property in memory (`$type->set('description', ...)`) before Claro runs; Claro then reads the modified description when building `bundles`. The Claro path renders the full `annotations_overlay_chooser` render array to string via `renderInIsolation()`. The in-memory change is request-scoped only — no entity save is triggered.
+
+## Gin description toggle — parked
+
+The Gin admin theme has a "form description toggle" feature (`show_description_toggle` setting, or `#description_toggle: TRUE` per element). When enabled, Gin hides form field descriptions behind a `?` reveal icon, which could be used as an alternative/complement to our custom dialog approach: inject annotation text into `$form[$field_name]['#description']` and set `#description_toggle: TRUE`, letting Gin handle the show/hide UI.
+
+Parked because: our dialog approach is already built and works independently of Gin. The toggle would tie this module to Gin as a dependency and would only work on Gin-themed sites. Worth revisiting if we want tighter Gin integration or want to retire the custom dialog JS in Gin contexts.
 
 ## Workflow integration (annotations_workflows)
 
@@ -203,12 +130,13 @@ All `getForTarget()` calls in `AnnotationsOverlayHooks` pass `TRUE` as `$publish
 
 ## Current status
 
-- [x] `AnnotationsOverlayHooks` — `hook_form_alter`, `hook_theme`
-- [x] Field-level and bundle-level triggers
+- [x] `AnnotationsOverlayItem` + `AnnotationsOverlayFormatter` + `hook_entity_base_field_info`
+- [x] `hook_form_alter`, `hook_theme`, `hook_entity_view_alter`
+- [x] Field-level and bundle-level triggers (forms and view pages)
 - [x] Modal display — `annotations_overlay_wrapper` renders `<dialog>` with content server-side; JS calls `showModal()` only
 - [x] Per-type visibility filtering (`consume {type} annotations`)
 - [x] Per-item edit link (pencil icon, opens annotation edit form in new tab; shown only when user has `edit {type} annotations` or `edit any annotation`)
 - [x] Bundle annotation text on node/entity add chooser pages (`hook_preprocess_node_add_list`, `hook_preprocess_entity_add_list`)
 - [x] Inline paragraph subform overlays (`injectParagraphSubformOverlays()`) — dialogs placed inside the Paragraphs field wrapper to survive AJAX replacement
 - [x] Layout Paragraphs component dialog overlays — handled by the existing `getParagraph()` branch in `formAlter()`
-- [ ] Display on entity view pages
+- [x] View page overlay — `hook_entity_view_alter`; opt-in via Manage Display per content type per view mode
