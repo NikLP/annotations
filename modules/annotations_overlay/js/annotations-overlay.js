@@ -23,7 +23,13 @@
     if (!dialog) return;
 
     lastTrigger = trigger;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
     dialog.showModal();
+    // showModal() can scroll the page to the dialog's natural DOM position before
+    // top-layer promotion. rAF runs after the promotion so the dialog is already
+    // position:fixed and the scroll restoration does not affect its visual position.
+    requestAnimationFrame(function () { window.scrollTo(scrollX, scrollY); });
 
     // Belt-and-braces live region announcement for AT that does not pick up
     // focus movement into the dialog. aria-label is already set server-side.
@@ -61,11 +67,31 @@
 
   // Return focus to the trigger that opened the dialog.
   // The 'close' event does not bubble, so use a capturing listener.
+  // setTimeout(0) defers until after the browser moves focus to <body> on Escape
+  // (which would otherwise scroll the page to the top). preventScroll stops the
+  // browser scrolling to bring the trigger into view — it was already visible.
   document.addEventListener('close', function (e) {
     if (e.target.classList?.contains('annotations-overlay-dialog')) {
-      lastTrigger?.focus();
+      const trigger = lastTrigger;
       lastTrigger = null;
+      if (trigger) {
+        setTimeout(function () { trigger.focus({ preventScroll: true }); }, 0);
+      }
     }
   }, true);
+
+  // On view pages, entityViewAlter injects triggers as build-array siblings of
+  // their fields because field.html.twig discards arbitrary children. Move each
+  // trigger into its field wrapper so the CSS child-combinator rule
+  // [data-annotations-field]>.annotations-overlay-trigger takes effect.
+  // On form pages the trigger is already a child, so the guard is a no-op.
+  document.querySelectorAll('.js-annotations-overlay-trigger[data-annotations-field]').forEach(function (trigger) {
+    const fieldKey = trigger.dataset.annotationsField;
+    if (fieldKey === '_bundle') return;
+    const wrapper = document.querySelector('[data-annotations-field="' + CSS.escape(fieldKey) + '"]:not(button)');
+    if (wrapper && !wrapper.contains(trigger)) {
+      wrapper.appendChild(trigger);
+    }
+  });
 
 }());

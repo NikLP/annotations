@@ -21,6 +21,68 @@ This module has no dependency on `annotations_ui` or `annotations_context`. It r
 - Library: `annotations_overlay/overlay` — `js/annotations-overlay.js` and `css/annotations-overlay.css`
 - Permission: `view annotations overlay`
 
+## Data contract
+
+All attachment points in this module load annotation data via a single call:
+
+```php
+$entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
+```
+
+The return type is always:
+
+```php
+array<string, array<string, Annotation>> = [
+  'field_name' => [
+    'type_id' => Annotation,
+  ],
+  '' => [           // empty string = bundle-level annotation (field_name IS NULL in DB)
+    'type_id' => Annotation,
+  ],
+]
+```
+
+Both `hook_form_alter` and `hook_entity_view_alter` receive this same shape. Third-party modules can call `getEntityMapForTarget()` directly and work with the result without any changes to this module. The structure is a stable, version-controlled contract — absent keys mean no annotation for that field/type combination; null values never appear.
+
+The second argument (`TRUE`) filters to published revisions only. When `annotations_workflows` is not installed this is a no-op.
+
+After loading, each attachment point runs `filterAnnotationEntities()` to remove types the current user cannot `consume`, then calls `buildDialog()` per field. These two steps (load → filter → build) are duplicated across `formAlter()` and `entityViewAlter()`. If a third attachment context is ever added, extracting them into a shared service method (`buildDialogsForTarget(string $target_id, array $visible_types): array`) would be the right refactor — see **Architecture notes** below.
+
+## Architecture notes
+
+### Service/trait extraction
+
+The pattern:
+
+```php
+$entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
+$filtered   = $this->filterAnnotationEntities($entity_map[$field_name] ?? [], $visible_types);
+$dialog     = $this->buildDialog($field_name, $label, $filtered, $single_type);
+```
+
+...is repeated in `formAlter()` and `entityViewAlter()`. A `buildDialogsForTarget(string $target_id, array $visible_types): array` method on a service (or trait) would give external modules a single entry point — call it, get back a `dialogs` render array, attach it. No knowledge of internal filter logic or data shape required.
+
+This is parked; the duplication is currently small enough to live inline.
+
+### Possible module split
+
+`annotations_overlay` currently owns two distinct attachment concerns that happen to share the same data structure and dialog-building code:
+
+| Layer | Hook | Context |
+| --- | --- | --- |
+| Edit context | `hook_form_alter` | Entity edit/add forms (admin) |
+| View context | `hook_entity_view_alter` | Rendered entity view pages |
+
+A clean split would be:
+
+- **`annotations_overlay`** (base) — JS/CSS library, `buildDialog()` logic, the `buildDialogsForTarget()` service method, computed field registration, templates.
+- **`annotations_overlay_edit`** (or absorbed into `annotations_ui`) — the `hook_form_alter` attachment, paragraph support.
+- **`annotations_overlay_view`** — the `hook_entity_view_alter` attachment, Manage Display opt-in, view-page caching.
+
+The base module's service becomes the stable API for attachment handlers. The split is natural because the two attachment contexts have opposite caching concerns (form: no persistent cache; view: full page cache with entity tags) and independent opt-in mechanisms (forms: automatic; views: Manage Display).
+
+This is parked. The current single-module structure is adequate for the current scope.
+
 ## JS architecture
 
 `annotations-overlay.js` runs as a plain IIFE (no jQuery, no Drupal.behaviors). All annotation content is server-rendered inside `<dialog>` elements in the DOM at page load — no AJAX round-trips, no client-side content manipulation. Clicking a trigger calls `showModal()` on the matching `<dialog data-annotations-field="...">`. All event handling is delegated to `document` so dynamically injected dialogs (e.g. paragraph AJAX) work without re-initialisation.

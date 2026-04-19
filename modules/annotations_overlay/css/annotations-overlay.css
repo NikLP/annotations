@@ -48,6 +48,10 @@
 /* Dialog wrapper. */
 
 .annotations-overlay-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
   max-width: min(90vw, 40rem);
   width: 100%;
   padding: 1.5rem;
