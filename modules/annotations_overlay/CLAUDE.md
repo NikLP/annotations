@@ -11,7 +11,7 @@ This module has no dependency on `annotations_ui` or `annotations_context`. It r
 ## What it owns
 
 - `AnnotationsOverlayHooks` (`src/Hook/`) — all hook implementations:
-  - `hook_entity_base_field_info` — registers the `annotations_overlay` computed field on all fieldable entity types
+  - `hook_entity_base_field_info` — registers the `annotations_overlay` computed field on fieldable entity types that have at least one `annotation_target` configured
   - `hook_theme` — registers `annotations_overlay_wrapper` and `annotations_overlay_item` theme hooks
   - `hook_form_alter` — injects field triggers, bundle trigger, and `<dialog>` elements into entity edit/add forms for opted-in targets, including inline paragraph subforms (see Paragraph support below)
   - `hook_entity_view_alter` — injects overlay when the `annotations_overlay` field is active in the current display
@@ -148,13 +148,17 @@ View-page overlays fire on entity view pages (e.g. `/node/1`, `/taxonomy/term/4`
 
 ### Opt-in mechanism
 
-Site builders opt in per view mode via **Manage Display**: drag the `Annotations overlay` field into a visible region on the entity's display. The field is registered on all fieldable entity types (except `annotation` itself) via `hook_entity_base_field_info`. `hook_entity_view_alter` fires when the field is present in the active display's components, so per-display-mode control falls out naturally from Drupal's standard display machinery.
+Site builders opt in per view mode via **Manage Display**: drag the `Annotations overlay` field into a visible region on the entity's display. The field is registered via `hook_entity_base_field_info` only on entity types that have at least one `annotation_target` config entity — not on all fieldable types. `hook_entity_view_alter` fires when the field is present in the active display's components, so per-display-mode control falls out naturally from Drupal's standard display machinery.
 
 The formatter's `annotation_view_mode` setting (exposed in the Manage Display UI) controls which annotation entity view mode is used to render content inside dialogs. Default: `overlay`.
 
 ### Design note
 
 We considered storing `view_page_annotation_view_mode` and `view_page_display_mode` on the `AnnotationTarget` config entity and driving opt-in from there (no Manage Display setup needed). The problem: it replicated the same conceptual shape as the field approach — "pick a display mode, pick an annotation view mode" — just in a different UI. The field approach has Drupal's display machinery doing the heavy lifting and gives per-display-mode granularity for free. We kept the field.
+
+**Runtime cost:** `AnnotationsOverlayItem` and `AnnotationsOverlayFormatter` are lazy-loaded by Drupal's plugin system. On a view page, the runtime cost is the `getEntityMapForTarget()` storage query inside `entityViewAlter` — the plugin machinery itself adds negligible overhead. The Manage Display setup friction is an admin UX cost, not a page-load cost.
+
+**Validated use case — entity-level LMS annotation:** View-page overlays are the right surface for annotating entities used as course content (e.g. a course node with custom video/quiz fields where the annotation adds instructional context — "this is a video quiz, watch first then answer below"). The learner never visits an edit form; the view page is the only surface. This is squarely within the "annotate Drupal-y things" model and is a stronger justification for the view-page overlay than the original editor/reviewer framing. Note: this is entity-level annotation (bundle and field annotations on the rendered entity), not text-span annotation (Hypothesis-style inline highlighting), which is a different product entirely.
 
 ### Display mode filtering for fields
 

@@ -43,6 +43,8 @@ Per-type `consume {type} annotations` permissions (defined by `annotations`) fil
 
 View page overlays require explicit opt-in per view mode. Go to **Manage Display** for the content type and drag the **Annotations overlay** field into a visible region. The formatter's **Annotation view mode** setting controls which annotation entity view mode is used to render content inside dialogs (default: `overlay`).
 
+The **Annotations overlay** field only appears in Manage Display for entity types that have at least one `annotation_target` configured. If you create a new target and the field is not yet visible in Manage Display, run `drush cr` to rebuild the field definition cache.
+
 Form overlays are automatic — no Manage Display setup required.
 
 ---

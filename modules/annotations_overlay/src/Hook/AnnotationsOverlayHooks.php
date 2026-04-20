@@ -58,6 +58,12 @@ class AnnotationsOverlayHooks {
       || $entity_type->id() === 'annotation') {
       return [];
     }
+    $has_target = (bool) $this->entityTypeManager
+      ->getStorage('annotation_target')
+      ->loadByProperties(['entity_type' => $entity_type->id()]);
+    if (!$has_target) {
+      return [];
+    }
     return [
       'annotations_overlay' => BaseFieldDefinition::create('annotations_overlay')
         ->setLabel(new TranslatableMarkup('Annotations overlay'))
