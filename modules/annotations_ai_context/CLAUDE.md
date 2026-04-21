@@ -79,7 +79,7 @@ The `AiAgent` entity's `system_prompt` (editable at `/admin/config/ai/agents/ann
 - Prevents answering from general Drupal knowledge
 - Falls back to "I don't have specific information about that yet" rather than guessing
 
-## Setup after `drush en annotations_ai_context`
+## Setup
 
 1. Configure a default Chat provider at `/admin/config/ai/providers`
 2. Place the **Annotations Site Assistant** block (Annotations category) in any region
