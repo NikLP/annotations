@@ -129,6 +129,7 @@ class ContextHtmlRenderer {
         $card['overview'][$type_id] = $this->annotationBlock(
           $annotation['label'],
           $annotation['value'],
+          $annotation['extra_fields'] ?? [],
         );
       }
     }
@@ -196,6 +197,7 @@ class ContextHtmlRenderer {
         $field['annotation_' . $type_id] = $this->annotationBlock(
           $annotation['label'],
           $annotation['value'],
+          $annotation['extra_fields'] ?? [],
         );
       }
 
@@ -235,7 +237,7 @@ class ContextHtmlRenderer {
         if (!empty($ref_data['annotations'])) {
           $ref_card['overview'] = ['#type' => 'container', '#attributes' => ['class' => ['annotations-context__overview']]];
           foreach ($ref_data['annotations'] as $type_id => $annotation) {
-            $ref_card['overview'][$type_id] = $this->annotationBlock($annotation['label'], $annotation['value']);
+            $ref_card['overview'][$type_id] = $this->annotationBlock($annotation['label'], $annotation['value'], $annotation['extra_fields'] ?? []);
           }
         }
         if (!empty($ref_data['fields'])) {
@@ -250,7 +252,7 @@ class ContextHtmlRenderer {
   }
 
   /**
-   * Builds a single annotation block: type label + text.
+   * Builds a single annotation block: type label + text + extra fields.
    *
    * The type label is suppressed when the payload contains only one distinct
    * annotation type — in that case every block would say the same thing.
@@ -258,9 +260,13 @@ class ContextHtmlRenderer {
    * @param string $type_label
    *   The human-readable annotation type label (e.g. "Editorial").
    * @param string $value
-   *   The annotation text (stored raw — must be escaped here).
+   *   The annotation text (stored raw — must be escaped here). May be empty
+   *   when the annotation entity has configurable extra fields but no value.
+   * @param array $extra_fields
+   *   Configurable field values keyed by field name:
+   *   ['field_foo' => ['label' => 'Foo', 'values' => ['bar', 'baz']], ...]
    */
-  private function annotationBlock(string $type_label, string $value): array {
+  private function annotationBlock(string $type_label, string $value, array $extra_fields = []): array {
     $block = [
       '#type'       => 'container',
       '#attributes' => ['class' => ['annotations-context__annotation']],
@@ -275,12 +281,26 @@ class ContextHtmlRenderer {
       ];
     }
 
-    $block['text'] = [
-      '#type'       => 'html_tag',
-      '#tag'        => 'p',
-      '#value'      => Markup::create(e($value)),
-      '#attributes' => ['class' => ['annotations-context__annotation-text']],
-    ];
+    if ($value !== '') {
+      $block['text'] = [
+        '#type'       => 'html_tag',
+        '#tag'        => 'p',
+        '#value'      => Markup::create(e($value)),
+        '#attributes' => ['class' => ['annotations-context__annotation-text']],
+      ];
+    }
+
+    foreach ($extra_fields as $field_name => $extra) {
+      $block['extra_' . $field_name] = [
+        '#type'       => 'html_tag',
+        '#tag'        => 'p',
+        '#value'      => Markup::create(
+          '<strong>' . e($extra['label']) . ':</strong> '
+          . implode(', ', array_map('Drupal\annotations_context\e', $extra['values']))
+        ),
+        '#attributes' => ['class' => ['annotations-context__annotation-extra']],
+      ];
+    }
 
     return $block;
   }

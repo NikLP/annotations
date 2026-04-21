@@ -77,7 +77,7 @@ class ContextRenderer {
 
     // Bundle-level annotations, one paragraph per type (in weight order).
     foreach ($target_data['annotations'] as $annotation) {
-      $parts[] = $annotation['value'];
+      array_push($parts, ...$this->annotationLines($annotation));
     }
 
     // Field annotations.
@@ -124,9 +124,30 @@ class ContextRenderer {
     }
 
     foreach ($field_data['annotations'] as $annotation) {
-      $lines[] = $annotation['value'];
+      array_push($lines, ...$this->annotationLines($annotation));
     }
     return implode("\n\n", $lines);
+  }
+
+  /**
+   * Returns markdown lines for one annotation entry (value + extra fields).
+   *
+   * Extra configurable fields are rendered as "**Label:** val1, val2" lines.
+   * An empty value is omitted so that extra-field-only annotations don't leave
+   * a blank paragraph.
+   *
+   * @param array{label: string, value: string, extra_fields?: array} $annotation
+   * @return string[]
+   */
+  private function annotationLines(array $annotation): array {
+    $lines = [];
+    if ($annotation['value'] !== '') {
+      $lines[] = $annotation['value'];
+    }
+    foreach ($annotation['extra_fields'] ?? [] as $extra) {
+      $lines[] = '**' . $extra['label'] . ':** ' . implode(', ', $extra['values']);
+    }
+    return $lines;
   }
 
   /**

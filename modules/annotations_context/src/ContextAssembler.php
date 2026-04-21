@@ -10,11 +10,14 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\Entity\Annotation;
 use Drupal\annotations\Entity\AnnotationTargetInterface;
+use Drupal\field\FieldConfigInterface;
 
 /**
  * Assembles annotation_target annotation data into a structured context payload.
@@ -44,11 +47,11 @@ use Drupal\annotations\Entity\AnnotationTargetInterface;
  *           'label'       => 'Article',
  *           'entity_type' => 'node',
  *           'bundle'      => 'article',
- *           'annotations' => [ 'rules' => ['label' => ..., 'value' => ...], ... ],
+ *           'annotations' => [ 'rules' => ['label' => ..., 'value' => ..., 'extra_fields' => [...]], ... ],
  *           'fields'      => [
  *             'title' => [
  *               'label'       => 'Title',
- *               'annotations' => [ 'editorial' => ['label' => ..., 'value' => ...] ],
+ *               'annotations' => [ 'editorial' => ['label' => ..., 'value' => ..., 'extra_fields' => [...]] ],
  *             ],
  *           ],
  *           'references'  => [...],  // present only when ref_depth > 0
@@ -320,7 +323,7 @@ class ContextAssembler {
   ): array {
     $visited[] = $target->id();
 
-    $all_annotations = $this->annotationStorage->getForTarget($target->id(), TRUE);
+    $all_annotations = $this->annotationStorage->getEntityMapForTarget($target->id(), TRUE);
     $annotations = $this->extractAnnotations($all_annotations[''] ?? [], $types);
 
     $field_defs = $this->getFieldDefinitions(
@@ -457,28 +460,103 @@ class ContextAssembler {
   }
 
   /**
-   * Extracts non-empty annotation values from a raw annotations array.
+   * Extracts non-empty annotation values from an entity map.
    *
-   * @param array<string, string> $raw
-   *   Annotation values keyed by type ID.
+   * @param array<string, \Drupal\annotations\Entity\Annotation> $raw
+   *   Annotation entities keyed by type ID.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
    *   The types to include, already filtered and sorted.
    *
-   * @return array<string, array{label: string, value: string}>
+   * @return array<string, array{label: string, value: string, extra_fields?: array}>
    *   Non-empty annotations keyed by type ID, in weight order.
    */
   private function extractAnnotations(array $raw, array $types): array {
     $result = [];
     foreach ($types as $type_id => $type) {
-      $value = trim((string) ($raw[$type_id] ?? ''));
-      if ($value !== '') {
-        $result[$type_id] = [
-          'label' => (string) $type->label(),
-          'value' => $value,
+      /** @var \Drupal\annotations\Entity\Annotation|null $entity */
+      $entity = $raw[$type_id] ?? NULL;
+      $value  = $entity !== NULL ? trim((string) $entity->get('value')->value) : '';
+      $extra  = $entity !== NULL ? $this->extractExtraFields($entity, $type_id) : [];
+
+      if ($value === '' && empty($extra)) {
+        continue;
+      }
+
+      $entry = [
+        'label' => (string) $type->label(),
+        'value' => $value,
+      ];
+      if (!empty($extra)) {
+        $entry['extra_fields'] = $extra;
+      }
+      $result[$type_id] = $entry;
+    }
+    return $result;
+  }
+
+  /**
+   * Extracts configurable field values from an Annotation entity.
+   *
+   * Base fields (value, target_id, status, uid, etc.) are intentionally
+   * excluded — only fields added via the Field UI are relevant here.
+   *
+   * @return array<string, array{label: string, values: string[]}>
+   *   Non-empty configurable fields keyed by field name.
+   */
+  private function extractExtraFields(Annotation $entity, string $type_id): array {
+    $defs = array_filter(
+      $this->getFieldDefinitions('annotation', $type_id),
+      fn($def) => $def instanceof FieldConfigInterface,
+    );
+
+    $result = [];
+    foreach ($defs as $field_name => $def) {
+      $item_list = $entity->get($field_name);
+      if ($item_list->isEmpty()) {
+        continue;
+      }
+      $values = [];
+      foreach ($item_list as $item) {
+        $str = $this->fieldItemToString($item, $def);
+        if ($str !== '') {
+          $values[] = $str;
+        }
+      }
+      if (!empty($values)) {
+        $result[$field_name] = [
+          'label'  => (string) $def->getLabel(),
+          'values' => $values,
         ];
       }
     }
     return $result;
+  }
+
+  /**
+   * Converts a single field item to a plain string for context output.
+   *
+   * Handles the most common field types with human-readable output.
+   * Falls back to ->value cast for unknown types.
+   */
+  private function fieldItemToString(FieldItemInterface $item, FieldDefinitionInterface $def): string {
+    $type = $def->getType();
+
+    if (in_array($type, ['entity_reference', 'entity_reference_revisions'], TRUE)) {
+      $entity = $item->entity;
+      return $entity !== NULL ? (string) $entity->label() : (string) ($item->target_id ?? '');
+    }
+
+    if ($type === 'boolean') {
+      return $item->value ? 'Yes' : 'No';
+    }
+
+    if (in_array($type, ['list_string', 'list_integer', 'list_float'], TRUE)) {
+      $raw     = (string) ($item->value ?? '');
+      $allowed = $def->getFieldStorageDefinition()->getSetting('allowed_values') ?? [];
+      return $allowed[$raw] ?? $raw;
+    }
+
+    return trim((string) ($item->value ?? ''));
   }
 
   /**
