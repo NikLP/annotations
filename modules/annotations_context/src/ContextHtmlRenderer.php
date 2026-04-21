@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Drupal\annotations_context;
 
 use Drupal\Component\Utility\Html;
-use Drupal\annotations\AnnotationsGlyph;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\Core\Url;
 
 /**
  * Renders a ContextAssembler payload as Drupal render arrays.
@@ -84,6 +82,9 @@ class ContextHtmlRenderer {
     ];
 
     foreach ($group['targets'] as $target_data) {
+      if (empty($target_data['annotations']) && empty($target_data['fields']) && empty($target_data['references'])) {
+        continue;
+      }
       $section['target_' . $target_data['id']] = $this->buildTarget($target_data);
     }
 
@@ -97,16 +98,6 @@ class ContextHtmlRenderer {
     $has_overview = !empty($target_data['annotations']);
     $has_fields   = !empty($target_data['fields']);
     $has_refs     = !empty($target_data['references']);
-    $is_empty     = !$has_overview && !$has_fields && !$has_refs;
-
-    $label_escaped = e($target_data['label']);
-    $title = $is_empty
-      ? Markup::create(
-          $label_escaped
-          . ' <span aria-hidden="true" class="annotations-status-icon annotations-status-icon--empty">' . AnnotationsGlyph::CROSS . '</span>'
-          . '<span class="visually-hidden">' . e((string) $this->t('No annotations')) . '</span>'
-        )
-      : $label_escaped;
 
     $attrs = ['class' => ['annotations-context__target']];
     if ($this->exclusiveAccordions) {
@@ -115,30 +106,9 @@ class ContextHtmlRenderer {
     $card = [
       '#type'       => 'details',
       '#open'       => FALSE,
-      '#title'      => $title,
+      '#title'      => e($target_data['label']),
       '#attributes' => $attrs,
     ];
-
-    if ($is_empty) {
-      $card['empty'] = [
-        '#type'       => 'html_tag',
-        '#tag'        => 'p',
-        '#value'      => (string) $this->t('No annotations yet.'),
-        '#attributes' => ['class' => ['annotations-context__empty']],
-      ];
-
-      if (\Drupal::moduleHandler()->moduleExists('annotations_ui')) {
-        $card['annotate_link'] = [
-          '#type'  => 'link',
-          '#title' => $this->t('Add annotations'),
-          '#url'   => Url::fromRoute('annotations_ui.target.collection', [
-            'annotation_target' => $target_data['id'],
-          ]),
-        ];
-      }
-
-      return $card;
-    }
 
     // Bundle-level overview — only add the "Overview" heading when other
     // sections follow; alone it adds no navigational value.

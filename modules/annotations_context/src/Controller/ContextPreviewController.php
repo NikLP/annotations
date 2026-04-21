@@ -81,7 +81,10 @@ class ContextPreviewController extends ControllerBase {
 
     // Build export URL preserving current filters.
     $export_query = [];
-    if (!empty($options['target_id'])) {
+    if (!empty($options['entity_type'])) {
+      $export_query['target_id'] = 'et:' . $options['entity_type'];
+    }
+    elseif (!empty($options['target_id'])) {
       $export_query['target_id'] = $options['target_id'];
     }
     if (isset($options['ref_depth']) && $options['ref_depth'] !== ContextAssembler::DEFAULT_REF_DEPTH) {
@@ -132,6 +135,29 @@ class ContextPreviewController extends ControllerBase {
           '#attributes' => ['class' => ['description']],
         ];
       }
+      elseif (!empty($options['role'])) {
+        $options_without_role = $options;
+        unset($options_without_role['role']);
+        $unfiltered = $this->assembler->assemble($options_without_role);
+        if ($unfiltered['meta']['target_count'] > 0) {
+          $role_entity = $this->entityTypeManager()->getStorage('user_role')->load($options['role']);
+          $role_label  = $role_entity ? $role_entity->label() : $options['role'];
+          $build['empty'] = [
+            '#type'       => 'html_tag',
+            '#tag'        => 'p',
+            '#value'      => $this->t('Annotations exist but none are visible to the @role role.', ['@role' => $role_label]),
+            '#attributes' => ['class' => ['description']],
+          ];
+        }
+        else {
+          $build['empty'] = [
+            '#type'       => 'html_tag',
+            '#tag'        => 'p',
+            '#value'      => $this->t('No annotations match the current filters.'),
+            '#attributes' => ['class' => ['description']],
+          ];
+        }
+      }
       else {
         $build['empty'] = [
           '#type'       => 'html_tag',
@@ -150,17 +176,19 @@ class ContextPreviewController extends ControllerBase {
     // Raw markdown — collapsed, plain output for copy/export reference.
     $exclusive = (bool) $this->config('annotations.settings')->get('use_accordion_single');
     $markdown = $this->markdownRenderer->render($payload);
-    $build['raw'] = [
-      '#type'       => 'details',
-      '#title'      => $this->t('Raw markdown'),
-      '#open'       => FALSE,
-      '#attributes' => $exclusive ? ['name' => 'annotations-context-preview'] : [],
-      'pre'         => [
-        '#type'  => 'html_tag',
-        '#tag'   => 'pre',
-        '#value' => Html::escape($markdown),
-      ],
-    ];
+    if ($markdown !== '') {
+      $build['raw'] = [
+        '#type'       => 'details',
+        '#title'      => $this->t('Raw markdown'),
+        '#open'       => FALSE,
+        '#attributes' => $exclusive ? ['name' => 'annotations-context-preview'] : [],
+        'pre'         => [
+          '#type'  => 'html_tag',
+          '#tag'   => 'pre',
+          '#value' => Html::escape($markdown),
+        ],
+      ];
+    }
 
     return $build;
   }
@@ -195,9 +223,12 @@ class ContextPreviewController extends ControllerBase {
   private function optionsFromRequest(Request $request): array {
     $options = [];
 
-    // Specific target filter.
+    // Specific target or entity-type filter (encoded as "et:{entity_type}").
     $target_id = (string) $request->query->get('target_id', '');
-    if ($target_id !== '') {
+    if (str_starts_with($target_id, 'et:')) {
+      $options['entity_type'] = substr($target_id, 3);
+    }
+    elseif ($target_id !== '') {
       $options['target_id'] = $target_id;
     }
 
@@ -253,6 +284,8 @@ class ContextPreviewController extends ControllerBase {
     foreach ($grouped as $et_id => $targets) {
       $plugin      = $plugins[$et_id] ?? NULL;
       $group_label = $plugin ? (string) $plugin->getLabel() : ucfirst(str_replace('_', ' ', $et_id));
+      // Selectable entity-type-level option for "all bundles of this type".
+      $target_options['et:' . $et_id] = $this->t('All @label', ['@label' => $group_label]);
       $target_options[$group_label] = [];
       foreach ($targets as $target) {
         $target_options[$group_label][$target->id()] = (string) $target->label();
@@ -282,7 +315,9 @@ class ContextPreviewController extends ControllerBase {
       '#type'       => 'select',
       '#title'      => $this->t('Target'),
       '#options'    => $target_options,
-      '#value'      => $current_options['target_id'] ?? '',
+      '#value'      => isset($current_options['entity_type'])
+        ? 'et:' . $current_options['entity_type']
+        : ($current_options['target_id'] ?? ''),
       '#name'       => 'target_id',
       '#attributes' => ['id' => 'annotations-context-target-id'],
     ];

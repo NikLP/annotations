@@ -69,6 +69,12 @@ final class AnnotationsContextCommands extends DrushCommands {
       return;
     }
 
+    $this->io()->definitionList(
+      ['Targets' => $payload['meta']['target_count']],
+      ['Reference depth' => $payload['meta']['ref_depth']],
+      ['Generated' => $payload['meta']['generated_at']],
+    );
+
     $output = $this->renderer->render($payload);
 
     if ($options['strip-headings']) {
@@ -76,6 +82,7 @@ final class AnnotationsContextCommands extends DrushCommands {
     }
 
     $this->io()->writeln($output);
+    $this->io()->success(sprintf('Exported %d annotation target(s).', $payload['meta']['target_count']));
   }
 
 }
