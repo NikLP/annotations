@@ -12,7 +12,6 @@ namespace Drupal\annotations_context;
  * ContextAssembler::assemble() and it returns a markdown string.
  *
  * Output structure:
- * - Site context section (if site annotations are present)
  * - One section per entity type group
  *   - One subsection per target
  *     - Bundle-level annotation text (paragraphs, in weight order)
@@ -33,10 +32,6 @@ class ContextRenderer {
   public function render(array $payload): string {
     $sections = [];
 
-    if (!empty($payload['site'])) {
-      $sections[] = $this->renderSite($payload['site']);
-    }
-
     foreach ($payload['groups'] as $group) {
       if (!empty($group['targets'])) {
         $rendered = $this->renderGroup($group);
@@ -47,19 +42,6 @@ class ContextRenderer {
     }
 
     return implode("\n\n---\n\n", $sections);
-  }
-
-  /**
-   * Renders the site-wide annotations section.
-   *
-   * @param array<string, array{label: string, value: string}> $site
-   */
-  private function renderSite(array $site): string {
-    $parts = ['# Site context'];
-    foreach ($site as $item) {
-      $parts[] = '## ' . $item['label'] . "\n\n" . $item['value'];
-    }
-    return implode("\n\n", $parts);
   }
 
   /**

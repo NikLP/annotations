@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_context;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -83,12 +85,37 @@ class ContextAssembler {
    */
   private bool $includeFieldMeta = FALSE;
 
+  /**
+   * Cache metadata contributed by hook_annotations_context_alter() implementations.
+   *
+   * Populated on each assemble() call. Callers that produce cacheable output
+   * (e.g. ContextPreviewController) must merge this into their build cache so
+   * that pages invalidate when alter-contributed data changes.
+   */
+  private CacheableMetadata $lastCacheableMetadata;
+
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly AnnotationStorageService $annotationStorage,
     private readonly EntityFieldManagerInterface $fieldManager,
     private readonly DiscoveryService $discoveryService,
-  ) {}
+    private readonly ModuleHandlerInterface $moduleHandler,
+  ) {
+    $this->lastCacheableMetadata = new CacheableMetadata();
+  }
+
+  /**
+   * Returns cache metadata contributed by the last assemble() call's alter implementations.
+   *
+   * Merge this into any cacheable output produced from the payload:
+   * @code
+   * $payload = $assembler->assemble($options);
+   * $assembler->getLastCacheableMetadata()->applyTo($build);
+   * @endcode
+   */
+  public function getLastCacheableMetadata(): CacheableMetadata {
+    return $this->lastCacheableMetadata;
+  }
 
   /**
    * Assembles the context payload.
@@ -130,7 +157,7 @@ class ContextAssembler {
     $targets = $this->loadTargets($entity_type_filter, $target_id_filter);
     $groups  = $this->assembleGroups($targets, $types, $ref_depth, $explicit_types !== NULL);
 
-    return [
+    $payload = [
       'groups' => $groups,
       'meta'   => [
         'generated_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
@@ -141,6 +168,23 @@ class ContextAssembler {
         )),
       ],
     ];
+
+    // Allow other modules to append, remove, or reshape payload sections.
+    // Implementations receive $payload by reference; $options for context; and
+    // $cacheableMetadata by reference to contribute cache tags/contexts so that
+    // pages derived from this payload invalidate correctly.
+    //
+    // Example implementation:
+    // @code
+    // function mymodule_annotations_context_alter(array &$payload, array $options, CacheableMetadata &$cacheableMetadata): void {
+    //   $payload['my_section'] = ['key' => 'value'];
+    //   $cacheableMetadata->addCacheTags(['mymodule_data_list']);
+    // }
+    // @endcode
+    $this->lastCacheableMetadata = new CacheableMetadata();
+    $this->moduleHandler->alter('annotations_context', $payload, $options, $this->lastCacheableMetadata);
+
+    return $payload;
   }
 
   /**

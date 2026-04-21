@@ -1,6 +1,6 @@
 name: Annotations UI
 type: module
-description: 'User interface for annotations.'
+description: 'User interface for annotation management.'
 package: Annotations
 core_version_requirement: ^11
 dependencies:

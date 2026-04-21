@@ -4,7 +4,7 @@ Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project 
 
 ## What this module does
 
-Assembles annotation data into structured context payloads. Produces human-readable documentation (HTML preview + markdown download) and a PHP array payload that `annotations_ai_context` can consume without depending on this module. No AI dependency — AI integration is handled by a separate consumer.
+Assembles annotation data into structured context payloads. Produces human-readable documentation (HTML preview + markdown download), a JSON API endpoint for headless consumers, and a PHP array payload that `annotations_ai_context` can consume without depending on this module. No AI dependency — AI integration is handled by a separate consumer.
 
 ## What it owns
 
@@ -20,7 +20,8 @@ Assembles annotation data into structured context payloads. Produces human-reada
 
 | Route | Path | Permission |
 | --- | --- | --- |
-| `annotations_context.preview` | `/admin/config/annotations/context` | `view annotations context` OR `administer annotations` |
+| `annotations_context.api` | `/api/annotations/{target_id}` | `view annotations context` OR `administer annotations` |
+| `annotations_context.preview` | `/admin/config/annotations/context` | same |
 | `annotations_context.export` | `/admin/config/annotations/context/export` | same |
 
 `view annotations context` is not `restrict access: true` — it can be granted to non-admin roles (e.g. project managers reviewing documentation).
@@ -108,71 +109,55 @@ class MyRenderer {
 
 **Security:** Always escape annotation values when producing HTML. They are stored raw (admin-input context is safe; end-user-facing output is not).
 
-## Extending the assembler output (contrib extension points)
+## Extending the assembler output
 
-`ContextAssembler` currently has no external extension points — it assembles exactly what DOT knows about. Three patterns are available when a contrib module needs to inject additional content into the payload, in order of complexity:
+### Alter hook (built)
 
-### Alter hook (simplest)
-
-DOT adds one `\Drupal::moduleHandler()->alter('annotations_context', $payload, $options)` call at the end of `ContextAssembler::assemble()`. Contrib modules implement `hook_annotations_context_alter()` to append, remove, or reshape sections. No infrastructure beyond that single call.
-
-Appropriate when: a contrib module needs to add a flat section to the payload (e.g. a bot module appending a `bot_config` key) and ordering between contributors does not matter.
-
-### Tagged services (preferred for structured contribution)
-
-The same pattern used by `dot.target` plugins. DOT defines a `annotations.context_provider` service tag. `ContextAssembler` collects all tagged services at construction and calls a defined method on each (e.g. `provideContext(array $options): array`) when building the payload, merging the results in.
-
-```yaml
-# mymodule.services.yml
-services:
-  mymodule.annotations_context_provider:
-    class: Drupal\mymodule\BotContextProvider
-    tags:
-      - { name: annotations.context_provider, priority: 10 }
-```
+`ContextAssembler::assemble()` invokes `hook_annotations_context_alter()` at the end of every assembly. Implementations receive `$payload` by reference, `$options` as read-only context, and `$cacheableMetadata` by reference for contributing cache requirements.
 
 ```php
-class BotContextProvider implements DotContextProviderInterface {
-  public function provideContext(array $options): array {
-    return ['bot' => ['frontend_enabled' => TRUE, ...]];
-  }
+function mymodule_annotations_context_alter(array &$payload, array $options, CacheableMetadata &$cacheableMetadata): void {
+  $payload['my_section'] = ['key' => 'value'];
+  $cacheableMetadata->addCacheTags(['mymodule_data_list']);
 }
 ```
 
-Priority controls merge order. DOT iterates providers in priority order and merges each result into the payload before returning it. Providers declare an interface; DOT defines that interface.
+`ContextPreviewController` automatically merges the assembled `CacheableMetadata` into its page build via `$assembler->getLastCacheableMetadata()->applyTo($build)`. Any caller producing cacheable output from the payload must do the same.
 
-This is the preferred approach for contrib modules that add structured payload sections, since it is discoverable (DOT can list registered providers), ordered, and consistent with the existing `dot.target` tagged service pattern.
+Appropriate when: a submodule or contrib module needs to add a flat section (e.g. `annotations_ai_context` appending model routing hints) and ordering between contributors does not matter.
 
-### Event/subscriber
+### Tagged services (deferred)
 
-DOT dispatches a `DotContextBuildEvent` carrying the payload and options. Modules subscribe and mutate the event object. Functionally equivalent to the alter hook but typed. Worth considering if the codebase moves toward event-driven patterns more broadly; no advantage over tagged services for this specific use case.
+The same pattern used by `annotations.target` plugins. Define an `annotations.context_provider` service tag; `ContextAssembler` collects tagged services at construction and calls `provideContext(array $options): array` on each, merging results in priority order. Providers also declare `getCacheableMetadata(array $options): CacheableMetadata` so the assembler can fold their cache requirements in automatically.
 
-### Caching contract for extension point providers
-
-`ContextPreviewController` declares `#cache` tags and contexts covering DOT's own entities. If a contrib module contributes data to the payload via an alter hook or tagged provider, the controller's cache will not know to invalidate when that module's data changes.
-
-**Required contract:** any provider contributing to the assembled payload must also contribute `CacheableMetadata`. For tagged providers, the interface should define a method alongside `provideContext()`:
-
-```php
-public function getCacheableMetadata(array $options): CacheableMetadata;
-```
-
-The assembler merges each provider's metadata before returning the payload. The controller then only needs to declare its own entity tags — provider tags are folded in automatically.
-
-For the alter hook pattern, `hook_annotations_context_alter()` implementations should attach their cache requirements to a `CacheableMetadata` object passed by reference alongside `$payload`.
-
-This contract does not exist yet (neither extension point is built). Document it here so it is designed in from the start rather than retrofitted.
+Preferred over the alter hook for contrib modules adding structured payload sections — discoverable, ordered, and consistent with the plugin pattern. Deferred until there is a concrete use case requiring ordering guarantees.
 
 ### Neither pattern requires the `AnnotationTypeFlag` plugin system
 
-These extension points are about assembler *output*. The flags-on-annotation-types plugin discussion in the root README is about assembler *input* (which types to include). They are independent concerns and can be built at different times.
+These extension points are about assembler *output*. Flags-on-annotation-types discussion in the root README is about assembler *input* (which types to include). Independent concerns, can be built at different times.
 
 ---
+
+## JSON API endpoint
+
+`GET /api/annotations/{target_id}` — returns the assembled payload for a single target as `CacheableJsonResponse`. Intended for headless consumers (Canvas, React, Mercury) that need annotation data without an AI dependency.
+
+**Query parameters** (all optional, same semantics as preview page):
+- `ref_depth=0|1|2` — entity reference traversal depth (default 0)
+- `include_field_meta=1` — include field type/cardinality/description
+
+**Responses:**
+- 200: full assembler payload `{"groups": {...}, "meta": {...}}`
+- 404: `{"error": "Annotation target not found."}` — cached against `annotation_target_list`
+
+**Access:** filters types by the caller's actual permissions via `account => $this->currentUser()`. Does not support `role` simulation — that is a preview-page concern. The `administer annotations` bypass applies as usual.
+
+**Caching:** `CacheableJsonResponse` with tags `annotation_list`, `annotation_target_list`, `annotation_type_list` and contexts `user.permissions`, `url.query_args`, `languages:language_interface` (+ `languages:content` on multilingual sites). Alter hook metadata is merged in. Does not ship a `?format=flat` option — raw assembler structure is the contract; consumers flatten if needed.
 
 ## Preview page
 
 - Toolbar: filter form (left) + Download .md button (right)
-- Filters: role simulation, specific target, ref depth, include site-wide, include field metadata
+- Filters: role simulation, specific target, ref depth, include field metadata
 - Collapsed "Raw markdown" `details` drawer at bottom
 - Export: `text/markdown` response, `Content-Disposition: attachment`, filename derived from active filters (e.g. `annotations-context-node-article.md`)
 
@@ -192,8 +177,11 @@ Currently `ContextAssembler` assembles annotations for a `annotation_target` wit
 ## Current status
 
 - [x] `ContextAssembler` — all options, entity reference traversal, cycle detection, skip_empty
+- [x] `hook_annotations_context_alter()` — invoked at end of assemble(); `CacheableMetadata` contract enforced
 - [x] `ContextRenderer` — markdown output
 - [x] `ContextHtmlRenderer` — render array output with XSS-safe value escaping
-- [x] `ContextPreviewController` — preview page, export download
+- [x] `ContextPreviewController` — preview page, export download; merges alter hook cache metadata
+- [x] `ContextApiController` — JSON endpoint at `/api/annotations/{target_id}`; `CacheableJsonResponse` with full cache tag/context set
 - [x] Routing, permissions, menu link
-- [ ] `drush dot:export` (parked)
+- [ ] Tagged service provider pattern (`annotations.context_provider`) — deferred; alter hook covers current needs
+

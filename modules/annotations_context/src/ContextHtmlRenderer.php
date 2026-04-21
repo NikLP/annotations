@@ -58,11 +58,6 @@ class ContextHtmlRenderer {
     $this->showTypeLabel = $this->countDistinctTypeIds($payload) > 1;
     $build = [];
 
-    // Site-wide annotations — closed by default; can be large.
-    if (!empty($payload['site'])) {
-      $build['site'] = $this->buildSiteCard($payload['site']);
-    }
-
     // One section per entity type group.
     foreach ($payload['groups'] as $et_id => $group) {
       if (!empty($group['targets'])) {
@@ -71,28 +66,6 @@ class ContextHtmlRenderer {
     }
 
     return $build;
-  }
-
-  /**
-   * Builds the collapsible site-wide annotation card.
-   */
-  private function buildSiteCard(array $site): array {
-    $attrs = ['class' => ['annotations-context__site']];
-    if ($this->exclusiveAccordions) {
-      $attrs['name'] = 'annotations-context';
-    }
-    $card = [
-      '#type'       => 'details',
-      '#title'      => $this->t('Site-wide'),
-      '#open'       => FALSE,
-      '#attributes' => $attrs,
-    ];
-
-    foreach ($site as $item) {
-      $card[] = $this->annotationBlock($item['label'], $item['value']);
-    }
-
-    return $card;
   }
 
   /**
@@ -344,8 +317,6 @@ class ContextHtmlRenderer {
 
   /**
    * Counts the number of distinct annotation type IDs across all targets.
-   *
-   * Site annotations are excluded — their keys are section IDs, not type IDs.
    */
   private function countDistinctTypeIds(array $payload): int {
     $ids = [];

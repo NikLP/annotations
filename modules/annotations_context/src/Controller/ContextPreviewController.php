@@ -75,6 +75,8 @@ class ContextPreviewController extends ControllerBase {
         $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
       ),
     ];
+    // Merge cache metadata contributed by hook_annotations_context_alter() implementations.
+    $this->assembler->getLastCacheableMetadata()->applyTo($build);
     $build['#attached']['library'][] = 'annotations/annotations.admin';
 
     // Build export URL preserving current filters.

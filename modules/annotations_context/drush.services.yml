@@ -1,0 +1,8 @@
+services:
+  annotations_context.drush_commands:
+    class: Drupal\annotations_context\Drush\Commands\AnnotationsContextCommands
+    arguments:
+      - '@annotations_context.assembler'
+      - '@annotations_context.renderer'
+    tags:
+      - { name: drush.command }

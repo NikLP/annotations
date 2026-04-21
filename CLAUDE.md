@@ -259,7 +259,7 @@ Change detection for developers. Drush command comparing current scanner output 
 - [`annotations_ui`](modules/annotations_ui/CLAUDE.md) — complete
 - [`annotations_type_ui`](modules/annotations_type_ui/CLAUDE.md) — complete
 - [`annotations_coverage`](modules/annotations_coverage/CLAUDE.md) — complete (cron caching deferred)
-- [`annotations_context`](modules/annotations_context/CLAUDE.md) — largely complete (`drush annotations:export` parked)
+- [`annotations_context`](modules/annotations_context/CLAUDE.md) — largely complete; JSON API endpoint built; `drush annotations:export` parked
 - [`annotations_ai_context`](modules/annotations_ai_context/CLAUDE.md) — largely complete
 - [`annotations_overlay`](modules/annotations_overlay/CLAUDE.md) — largely complete (view-page display and per-field display mode override deferred)
 - [`annotations_workflows`](modules/annotations_workflows/CLAUDE.md) — complete; ships default workflow config; no custom form altering

@@ -6,6 +6,7 @@ core_version_requirement: ^11
 dependencies:
   - annotations:annotations
   - annotations:annotations_context
+  - drupal:path_alias
   - ai:ai
   - ai:ai_assistant_api
   - ai:ai_chatbot

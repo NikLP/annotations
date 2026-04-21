@@ -13,6 +13,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\annotations_context\ContextAssembler;
 use Drupal\annotations_context\ContextRenderer;
+use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -53,6 +54,11 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The alias manager.
+   */
+  protected AliasManagerInterface $aliasManager;
+
+  /**
    * The current user.
    */
   protected AccountProxyInterface $currentUser;
@@ -70,6 +76,7 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
     ContextRenderer $renderer,
     RequestStack $request_stack,
     EntityTypeManagerInterface $entity_type_manager,
+    AliasManagerInterface $alias_manager,
     AccountProxyInterface $current_user,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $context_definition_normalizer, $data_type_converter_manager);
@@ -77,6 +84,7 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
     $this->renderer = $renderer;
     $this->requestStack = $request_stack;
     $this->entityTypeManager = $entity_type_manager;
+    $this->aliasManager = $alias_manager;
     $this->currentUser = $current_user;
   }
 
@@ -94,6 +102,7 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
       $container->get('annotations_context.renderer'),
       $container->get('request_stack'),
       $container->get('entity_type.manager'),
+      $container->get('path_alias.manager'),
       $container->get('current_user'),
     );
   }
@@ -129,11 +138,14 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
   }
 
   /**
-   * Detects an annotation_target ID from the current_route context.
+   * Detects an annotation_target ID from context sent in the request body.
    *
-   * Reads contexts.current_route from the JSON request body (set by
-   * DeepChatFormBlock) and pattern-matches common Drupal entity URL patterns
-   * to resolve entity type + bundle.
+   * Strategy 1 (preferred): reads contexts.route_name and contexts.route_params
+   * sent by AnnotationsChatBlock and derives entity type + ID directly from the
+   * route parameter key (e.g. 'node' => '42').
+   *
+   * Strategy 2 (fallback): reads contexts.current_route, resolves any path
+   * alias to its system path, then pattern-matches common Drupal entity URLs.
    *
    * @return string|null
    *   An annotation_target ID like 'node__article', or NULL if not detected.
@@ -145,13 +157,30 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
     }
 
     $data = json_decode($content, TRUE);
-    $route = $data['contexts']['current_route'] ?? '';
+    $contexts = $data['contexts'] ?? [];
+
+    // Strategy 1: route-name based detection.
+    $routeParams = $contexts['route_params'] ?? [];
+    if (!empty($contexts['route_name']) && $routeParams) {
+      foreach (['node', 'taxonomy_term', 'media', 'user'] as $entityType) {
+        if (isset($routeParams[$entityType]) && is_numeric($routeParams[$entityType])) {
+          $result = $this->resolveTargetId($entityType, (int) $routeParams[$entityType]);
+          if ($result) {
+            return $result;
+          }
+        }
+      }
+    }
+
+    // Strategy 2: alias-resolved URL pattern matching.
+    $route = $contexts['current_route'] ?? '';
     if (empty($route)) {
       return NULL;
     }
 
     $path = parse_url($route, PHP_URL_PATH) ?? $route;
     $path = preg_replace('#/(edit|revisions|delete|latest|translations)$#', '', $path);
+    $path = $this->aliasManager->getPathByAlias($path);
 
     $createPatterns = [
       '#^/node/add/([^/]+)$#' => 'node',

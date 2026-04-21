@@ -6,6 +6,7 @@ services:
       - '@annotations.annotation_storage'
       - '@entity_field.manager'
       - '@annotations.discovery'
+      - '@module_handler'
 
   annotations_context.renderer:
     class: Drupal\annotations_context\ContextRenderer
@@ -18,3 +19,4 @@ services:
 
   annotations_context.hooks:
     class: Drupal\annotations_context\Hook\AnnotationsContextHooks
+
