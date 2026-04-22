@@ -1,14 +1,24 @@
 # Annotations
 
-Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and maps that to a structured annotation system. The annotations can be consumed in several ways:
+Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and maps that to a structured annotation system.
+
+Annotations can be consumed in several ways:
+
+AI:
+
+- scoped input for an AI agent - returns component-specific human-curated context
+- MCP-compliant JSON endpoint for pulling context info into other 'applications' (WIP!)
+
+User onboarding / Editing:
 
 - contextual help overlays while creating/editing entities - help onboard new users with complex forms
 - same for when viewing content - help text on learning materials or new user orientation
-- human- or machine-readable documentation export - provides drush commands to get (optionally scoped) annotations on the CLI
-- input for an AI chat scoped to a specific site - agent returns contextual information
 - annotation insertion into entity select screens - additional help text on e.g. /node/add to assist with selection
-- JSON endpoint for pulling info into other applications (Canvas?)
-- export your annotations to ship them with your product! - core script exports annotation to default content, only annotations core module plus a consumer reqd.
+
+Product documentation:
+
+- export your annotations and ship them with your product! - export annotations in default content, only core module plus a consumer reqd.
+- human- or machine-readable documentation export - provides drush commands to get (optionally scoped) annotations on the CLI
 
 Annotations entities support:
 

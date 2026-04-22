@@ -2,6 +2,8 @@
 
 Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
 
+> **This module is an old demo/prototype and will be replaced.** Do not build on it or extend it. Its replacement will own the AI chat integration and consume the `in_ai_context` third-party setting from `annotations_context`. The `GetSiteContext` plugin's `in_ai_context` filtering pattern (reading `annotations_ai_context.in_ai_context` as a third-party setting key) is superseded — the canonical key is now `annotations_context.in_ai_context`, set via the annotation type edit form.
+
 ## What this module does
 
 Connects annotations context to the site's AI chatbot. Provides a `GetSiteContext` function call tool that the LLM agent invokes to retrieve site-specific documentation, and an `AnnotationsChatBlock` to place the pre-configured chat UI on any page.

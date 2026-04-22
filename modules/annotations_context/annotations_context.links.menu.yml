@@ -4,3 +4,10 @@ annotations_context.preview:
   description: 'Preview and export assembled context documentation.'
   route_name: annotations_context.preview
   weight: 15
+
+annotations_context.mcp_settings:
+  title: 'MCP API key'
+  parent: annotations.admin
+  description: 'Generate or regenerate the API key for the MCP endpoint.'
+  route_name: annotations_context.mcp_settings
+  weight: 16

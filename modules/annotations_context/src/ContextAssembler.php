@@ -54,12 +54,13 @@ use Drupal\field\FieldConfigInterface;
  *               'annotations' => [ 'editorial' => ['label' => ..., 'value' => ..., 'extra_fields' => [...]] ],
  *             ],
  *           ],
- *           'references'  => [...],  // present only when ref_depth > 0
+ *           'references'    => [...],  // present only when ref_depth > 0
+ *           'incoming_refs' => [...],  // present only when include_incoming_refs = true
  *         ],
  *       ],
  *     ],
  *   ],
- *   'meta' => [ 'generated_at' => ..., 'ref_depth' => ..., 'target_count' => ... ],
+ *   'meta' => [ 'generated_at' => ..., 'ref_depth' => ..., 'include_incoming_refs' => ..., 'target_count' => ... ],
  * ]
  * @endcode
  */
@@ -87,6 +88,22 @@ class ContextAssembler {
    * Set by assemble() from the 'include_field_meta' option.
    */
   private bool $includeFieldMeta = FALSE;
+
+  /**
+   * Whether to include incoming entity-reference sources in the payload.
+   *
+   * Set by assemble() from the 'include_incoming_refs' option.
+   */
+  private bool $includeIncomingRefs = FALSE;
+
+  /**
+   * Reverse lookup index built once per assemble() call when include_incoming_refs is TRUE.
+   *
+   * Structure: [target_id => [source_target_id => ['label' => ..., 'via_fields' => [...]]]]
+   *
+   * @var array<string, array<string, array{label: string, via_fields: string[]}>>
+   */
+  private array $reverseIndex = [];
 
   /**
    * Cache metadata contributed by hook_annotations_context_alter() implementations.
@@ -141,13 +158,18 @@ class ContextAssembler {
    *   - 'include_field_meta' (bool): If TRUE, each field entry in the payload
    *     gains a 'meta' key containing 'type', 'cardinality', and optionally
    *     'description' (the field's configured help text). Default FALSE.
+   *   - 'include_incoming_refs' (bool): If TRUE, each target entry gains an
+   *     'incoming_refs' key listing annotation targets that reference it via
+   *     entity-reference fields in their annotation scope. Flat only — no
+   *     recursive reverse traversal. Default FALSE.
    *
    * @return array
    *   The assembled payload. See class docblock for structure.
    */
   public function assemble(array $options = []): array {
-    $this->fieldDefinitionCache = [];
-    $this->includeFieldMeta     = (bool) ($options['include_field_meta'] ?? FALSE);
+    $this->fieldDefinitionCache  = [];
+    $this->includeFieldMeta      = (bool) ($options['include_field_meta'] ?? FALSE);
+    $this->includeIncomingRefs   = (bool) ($options['include_incoming_refs'] ?? FALSE);
 
     $entity_type_filter = $options['entity_type'] ?? NULL;
     $target_id_filter   = $options['target_id'] ?? NULL;
@@ -158,14 +180,24 @@ class ContextAssembler {
 
     $types   = $this->loadAnnotationTypes($explicit_types, $role, $account);
     $targets = $this->loadTargets($entity_type_filter, $target_id_filter);
-    $groups  = $this->assembleGroups($targets, $types, $ref_depth, $explicit_types !== NULL);
+
+    if ($this->includeIncomingRefs) {
+      $all_targets = $this->entityTypeManager->getStorage('annotation_target')->loadMultiple();
+      $this->buildReverseIndex($all_targets);
+    }
+    else {
+      $this->reverseIndex = [];
+    }
+
+    $groups = $this->assembleGroups($targets, $types, $ref_depth, $explicit_types !== NULL);
 
     $payload = [
       'groups' => $groups,
       'meta'   => [
-        'generated_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-        'ref_depth'    => $ref_depth,
-        'target_count' => array_sum(array_map(
+        'generated_at'        => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+        'ref_depth'           => $ref_depth,
+        'include_incoming_refs' => $this->includeIncomingRefs,
+        'target_count'        => array_sum(array_map(
           fn($g) => count($g['targets']),
           $groups,
         )),
@@ -366,6 +398,13 @@ class ContextAssembler {
       }
     }
 
+    if ($this->includeIncomingRefs) {
+      $incoming = $this->resolveIncomingRefs($target);
+      if (!empty($incoming)) {
+        $result['incoming_refs'] = $incoming;
+      }
+    }
+
     return $result;
   }
 
@@ -431,6 +470,60 @@ class ContextAssembler {
     }
 
     return $refs;
+  }
+
+  /**
+   * Builds the reverse entity-reference index across all annotation targets.
+   *
+   * Only considers ER fields that are in each source target's annotation scope
+   * (getFields()), matching the forward resolveReferences() behaviour.
+   * Matches at bundle level — media__image and media__document are distinct.
+   *
+   * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $all_targets
+   */
+  private function buildReverseIndex(array $all_targets): void {
+    $this->reverseIndex = [];
+
+    foreach ($all_targets as $source_target) {
+      $source_id = $source_target->id();
+      $defs = $this->getFieldDefinitions(
+        $source_target->getTargetEntityTypeId(),
+        $source_target->getBundle(),
+      );
+
+      foreach (array_keys($source_target->getFields()) as $field_name) {
+        $def = $defs[$field_name] ?? NULL;
+        if ($def === NULL) {
+          continue;
+        }
+
+        $type = $def->getType();
+        if (!in_array($type, ['entity_reference', 'entity_reference_revisions'], TRUE)) {
+          continue;
+        }
+
+        $target_type = $def->getFieldStorageDefinition()->getSetting('target_type');
+        $target_bundles = $def->getSetting('handler_settings')['target_bundles'] ?? [];
+
+        foreach ((array) $target_bundles as $ref_bundle) {
+          $ref_id = $target_type . '__' . $ref_bundle;
+          if ($ref_id === $source_id) {
+            continue;
+          }
+          $this->reverseIndex[$ref_id][$source_id]['label'] ??= (string) $source_target->label();
+          $this->reverseIndex[$ref_id][$source_id]['via_fields'][] = $field_name;
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns incoming reference entries for a target from the pre-built reverse index.
+   *
+   * @return array<string, array{label: string, via_fields: string[]}>
+   */
+  private function resolveIncomingRefs(AnnotationTargetInterface $target): array {
+    return $this->reverseIndex[$target->id()] ?? [];
   }
 
   /**

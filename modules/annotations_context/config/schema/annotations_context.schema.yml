@@ -1,0 +1,15 @@
+annotations_context.settings:
+  type: config_object
+  label: 'Annotations context settings'
+  mapping:
+    mcp_api_key:
+      type: string
+      label: 'MCP API key'
+
+annotations.annotation_type.*.third_party.annotations_context:
+  type: mapping
+  label: 'Annotations context settings for annotation type'
+  mapping:
+    in_ai_context:
+      type: boolean
+      label: 'Include in AI contexts'

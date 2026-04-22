@@ -55,6 +55,7 @@ $payload = $assembler->assemble(['types' => ['editorial']]);       // explicit t
 $payload = $assembler->assemble(['ref_depth' => 1]);               // follow ER fields one hop
 $payload = $assembler->assemble(['account' => $currentUser]);      // filter by user permissions
 $payload = $assembler->assemble(['role' => 'editor']);             // simulate a role
+$payload = $assembler->assemble(['include_incoming_refs' => TRUE]); // add reverse ER sources
 ```
 
 All options are optional and combine freely.
@@ -70,6 +71,7 @@ All options are optional and combine freely.
 | `role` | `string\|null` | `null` | Simulate context as this Drupal role — only types that role can `consume` are included. Takes precedence over `account`. |
 | `account` | `AccountInterface\|null` | `null` | Filter to types the given account can view via its combined role permissions. Accounts with `administer annotations` bypass filtering. |
 | `include_field_meta` | `bool` | `false` | Add `type`, `cardinality`, and `description` to each field entry. Useful for AI context; noisy for human review. |
+| `include_incoming_refs` | `bool` | `false` | Add an `incoming_refs` key to each target listing annotation targets that reference it via entity-reference fields. Flat only — no recursive reverse traversal. |
 
 #### Role and account filtering
 
@@ -113,15 +115,22 @@ $payload = $assembler->assemble(['account' => $this->currentUser]);
               'meta' => ['type' => 'text_long', 'cardinality' => 'single value', 'description' => '...'],
             ],
           ],
-          'references' => [...], // only present when ref_depth > 0
+          'references'    => [...], // only present when ref_depth > 0
+          'incoming_refs' => [      // only present when include_incoming_refs = TRUE
+            'media__image' => [
+              'label'      => 'Image',
+              'via_fields' => ['field_featured_image'],
+            ],
+          ],
         ],
       ],
     ],
   ],
   'meta' => [
-    'generated_at' => '2026-04-20T12:00:00+00:00',
-    'ref_depth'    => 0,
-    'target_count' => 12,
+    'generated_at'        => '2026-04-20T12:00:00+00:00',
+    'ref_depth'           => 0,
+    'include_incoming_refs' => FALSE,
+    'target_count'        => 12,
   ],
 ]
 ```
@@ -198,7 +207,33 @@ Set `ref_depth` to follow entity reference fields into referenced targets:
 
 Each referenced target is assembled in full and nested under `references` → field name → target ID. Cycle detection prevents the same target appearing twice in a payload.
 
-Traversal is currently **forward-only**: the assembler follows ER fields *from* a target to the entities it references. Reverse relationships (surfaces which targets reference a given target) are not currently surfaced. They could be implemented via Drupal's entity query reverse-lookup, adding an `incoming_references` key alongside `references` in each target entry — useful for understanding a `Media` item's context by seeing which `Article` targets link to it. Deferred until there is a concrete use case.
+### Incoming references
+
+Set `include_incoming_refs => TRUE` to surface **reverse** relationships — which annotation targets reference a given target, rather than which targets it references. Useful for leaf entities: when assembling context for `media__image`, you can see that `node__article` and `node__landing_page` both reference it.
+
+```php
+$payload = $assembler->assemble([
+  'target_id'            => 'media__image',
+  'include_incoming_refs' => TRUE,
+]);
+```
+
+Each target entry gains an `incoming_refs` key keyed by source target ID:
+
+```php
+'incoming_refs' => [
+  'node__article' => [
+    'label'      => 'Article',
+    'via_fields' => ['field_featured_image'],
+  ],
+  'node__landing_page' => [
+    'label'      => 'Landing page',
+    'via_fields' => ['field_hero_media', 'field_gallery'],
+  ],
+],
+```
+
+`via_fields` is always an array — a source target with two ER fields targeting the same bundle will list both. Only ER fields in the source target's annotation scope (`getFields()`) are considered, matching the forward traversal behaviour. Reverse traversal is flat — incoming sources are not themselves expanded.
 
 ---
 
@@ -241,6 +276,7 @@ $assembler->getLastCacheableMetadata()->applyTo($build);
 GET /api/annotations/node__article
 GET /api/annotations/node__article?ref_depth=1
 GET /api/annotations/node__article?include_field_meta=1
+GET /api/annotations/media__image?include_incoming_refs=1
 ```
 
 **Query parameters** (all optional):
@@ -249,6 +285,7 @@ GET /api/annotations/node__article?include_field_meta=1
 | --- | --- | --- | --- |
 | `ref_depth` | `0`, `1`, `2` | `0` | Entity reference traversal depth. |
 | `include_field_meta` | `1` | off | Include field type, cardinality, and description. |
+| `include_incoming_refs` | `1` | off | Add `incoming_refs` to each target — reverse ER sources. |
 
 **Responses:**
 
@@ -291,6 +328,7 @@ GET /api/annotations/node__article?include_field_meta=1
   "meta": {
     "generated_at": "2026-04-21T12:00:00+01:00",
     "ref_depth": 0,
+    "include_incoming_refs": false,
     "target_count": 1
   }
 }

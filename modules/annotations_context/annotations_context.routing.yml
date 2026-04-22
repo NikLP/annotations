@@ -1,3 +1,20 @@
+annotations_context.mcp:
+  path: '/api/annotations/mcp'
+  defaults:
+    _controller: '\Drupal\annotations_context\Controller\ContextMcpController::handle'
+    _title: 'Annotations MCP'
+  requirements:
+    _mcp_access: 'TRUE'
+  methods: [POST]
+
+annotations_context.mcp_settings:
+  path: '/admin/config/annotations/context/mcp'
+  defaults:
+    _form: '\Drupal\annotations_context\Form\McpSettingsForm'
+    _title: 'MCP API key'
+  requirements:
+    _permission: 'administer annotations'
+
 annotations_context.api:
   path: '/api/annotations/{target_id}'
   defaults:

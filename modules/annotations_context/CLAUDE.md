@@ -20,7 +20,8 @@ Assembles annotation data into structured context payloads. Produces human-reada
 
 | Route | Path | Permission |
 | --- | --- | --- |
-| `annotations_context.api` | `/api/annotations/{target_id}` | `view annotations context` OR `administer annotations` |
+| `annotations_context.mcp` | `/api/annotations/mcp` | `view annotations context` OR `administer annotations` |
+| `annotations_context.api` | `/api/annotations/{target_id}` | same |
 | `annotations_context.preview` | `/admin/config/annotations/context` | same |
 | `annotations_context.export` | `/admin/config/annotations/context/export` | same |
 
@@ -30,12 +31,13 @@ Assembles annotation data into structured context payloads. Produces human-reada
 
 ```php
 $payload = $assembler->assemble([
-  'entity_type'  => 'node',          // limit to one entity type
-  'target_id'    => 'node__article', // limit to a single target
-  'types'        => ['editorial'],   // explicit type IDs to include
-  'ref_depth'    => 1,               // entity reference traversal depth (0–2)
-  'role'         => 'editor',        // simulate context as this Drupal role (preview page)
-  'account'      => $currentUser,    // filter by actual user's combined permissions
+  'entity_type'          => 'node',          // limit to one entity type
+  'target_id'            => 'node__article', // limit to a single target
+  'types'                => ['editorial'],   // explicit type IDs to include
+  'ref_depth'            => 1,               // entity reference traversal depth (0–2)
+  'role'                 => 'editor',        // simulate context as this Drupal role (preview page)
+  'account'              => $currentUser,    // filter by actual user's combined permissions
+  'include_incoming_refs' => TRUE,           // add incoming_refs to each target (flat, no recursion)
 ]);
 ```
 
@@ -138,21 +140,52 @@ These extension points are about assembler *output*. Flags-on-annotation-types d
 
 ---
 
-## JSON API endpoint
+## MCP endpoint
 
-`GET /api/annotations/{target_id}` — returns the assembled payload for a single target as `CacheableJsonResponse`. Intended for headless consumers (Canvas, React, Mercury) that need annotation data without an AI dependency.
+`POST /api/annotations/mcp` — MCP Streamable HTTP transport (2025-03-26 spec). Exposes every `annotation_target` as an MCP resource. Intended for AI tool consumers (Claude Desktop, Cursor, etc.).
 
-**Query parameters** (all optional, same semantics as preview page):
+**Resource URIs:** `annotation://target/{target_id}` — optional query params can be embedded directly:
+
+- `?ref_depth=0|1|2` — entity reference traversal depth (default 0)
+- `?include_field_meta=1` — include field type/cardinality/description
+
+Resource content is rendered as `text/plain` markdown (via `ContextRenderer`) rather than raw JSON — more token-efficient for AI consumption.
+
+**Supported methods:**
+
+| Method | Description |
+| --- | --- |
+| `initialize` | Capability handshake; negotiates `2025-03-26` or `2024-11-05` |
+| `notifications/*` | Acknowledged with HTTP 202, no response body |
+| `resources/list` | Returns all annotation targets as MCP resource descriptors |
+| `resources/read` | Returns assembled context markdown for one target |
+| `ping` | Keep-alive; returns `{}` |
+
+**Error codes** follow JSON-RPC 2.0 standard codes (`-32700` parse, `-32600` invalid request, `-32601` method not found, `-32602` invalid params) plus MCP's `-32002` for resource not found.
+
+**Auth:** uses Drupal's native permission check (`view annotations context` OR `administer annotations`). Bearer token support (for headless MCP clients without a Drupal session) requires a separate token auth module (`simple_oauth` or similar). Does not support `role` simulation — that is a preview-page concern.
+
+**Type filtering:** `resources/read` only returns annotation types where `getThirdPartySetting('annotations_context', 'in_ai_context', FALSE)` is truthy. The setting is set via the annotation type edit form (behavior fieldset, "Include in AI contexts" checkbox). Default is FALSE — types must be explicitly opted in. This module owns the setting key; the future AI chat replacement module should read `annotations_context.in_ai_context` rather than defining its own key.
+
+**GET is not implemented** — server-push SSE is not needed for stateless resource reads; a `POST` to `initialize` + `resources/list` + `resources/read` is the full flow.
+
+---
+
+## REST JSON endpoint
+
+`GET /api/annotations/{target_id}` — returns the assembled payload for a single target as `CacheableJsonResponse`. Kept for non-MCP headless consumers (browser JS, curl, etc.) that want simple GET + JSON without JSON-RPC overhead.
+
+**Query parameters** (all optional):
+
 - `ref_depth=0|1|2` — entity reference traversal depth (default 0)
 - `include_field_meta=1` — include field type/cardinality/description
 
 **Responses:**
+
 - 200: full assembler payload `{"groups": {...}, "meta": {...}}`
 - 404: `{"error": "Annotation target not found."}` — cached against `annotation_target_list`
 
-**Access:** filters types by the caller's actual permissions via `account => $this->currentUser()`. Does not support `role` simulation — that is a preview-page concern. The `administer annotations` bypass applies as usual.
-
-**Caching:** `CacheableJsonResponse` with tags `annotation_list`, `annotation_target_list`, `annotation_type_list` and contexts `user.permissions`, `url.query_args`, `languages:language_interface` (+ `languages:content` on multilingual sites). Alter hook metadata is merged in. Does not ship a `?format=flat` option — raw assembler structure is the contract; consumers flatten if needed.
+**Caching:** `CacheableJsonResponse` with tags `annotation_list`, `annotation_target_list`, `annotation_type_list` and contexts `user.permissions`, `url.query_args`, `languages:language_interface` (+ `languages:content` on multilingual sites). Alter hook metadata is merged in.
 
 ## Preview page
 
@@ -184,4 +217,3 @@ Currently `ContextAssembler` assembles annotations for a `annotation_target` wit
 - [x] `ContextApiController` — JSON endpoint at `/api/annotations/{target_id}`; `CacheableJsonResponse` with full cache tag/context set
 - [x] Routing, permissions, menu link
 - [ ] Tagged service provider pattern (`annotations.context_provider`) — deferred; alter hook covers current needs
-

@@ -17,6 +17,13 @@ services:
       - '@string_translation'
       - '@config.factory'
 
+  annotations_context.mcp_access_check:
+    class: Drupal\annotations_context\Access\McpAccessCheck
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: access_check, applies_to: _mcp_access }
+
   annotations_context.hooks:
     class: Drupal\annotations_context\Hook\AnnotationsContextHooks
 
