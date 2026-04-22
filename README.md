@@ -6,7 +6,7 @@ Annotations can be consumed in several ways:
 
 AI:
 
-- scoped input for an AI agent - returns component-specific human-curated context
+- scoped input for an AI agent - returns component-specific human-curated context (skills)
 - MCP-compliant JSON endpoint for pulling context info into other 'applications' (WIP!)
 
 User onboarding / Editing:
