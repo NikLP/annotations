@@ -1,17 +1,32 @@
 # Annotations
 
-Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and exposes that information as a structured annotation system. The annotations can be consumed in several ways:
+Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and maps that to a structured annotation system. The annotations can be consumed in several ways:
 
-- in-context help overlays while editing forms
-- human- or machine-readable documentation export
-- input for an AI chat scoped to a specific site's configuration
+- contextual help overlays while creating/editing entities - help onboard new users with complex forms
+- same for when viewing content - help text on learning materials or new user orientation
+- human- or machine-readable documentation export - provides drush commands to get (optionally scoped) annotations on the CLI
+- input for an AI chat scoped to a specific site - agent returns contextual information
+- annotation insertion into entity select screens - additional help text on e.g. /node/add to assist with selection
+- JSON endpoint for pulling info into other applications (Canvas?)
+- export your annotations to ship them with your product! - core script exports annotation to default content, only annotations core module plus a consumer reqd.
 
-Annotations supports:
+Annotations entities support:
 
 - multiple, fieldable annotation types
-- revisions
-- content moderation (optionally, with `diff`)
-- translation
+- revisions (`diff` support provided)
+- content moderation
+- workflows (via supplied integration module)
+- translation (via language switcher)
+- dynamic permissions system for edit/consume annotations
+
+Annotation type entities support:
+
+- 'behaviors' driven by third party settings for interfacing with other modules. (see: Extending annotation types with custom behaviors)
+
+Annotation target entities:
+
+- can be created on any entity target that exposes a plugin via the extensible system provided. (see: Adding a custom Target plugin)
+- target plugins already provided: [generic], paragraphs, media, node, view, user, taxonomy, etc.
 
 ---
 
@@ -36,9 +51,9 @@ Install annotations base module; enable submodules as needed.
 
 ## The module suite
 
-*All* modules should be considered a work in progress at this time!
+*All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core], _ui, _type_ui, _workflows`.
 
-The following modules are currently not well developed: annotations_scan, annotations_ai_context, annotations_context
+The following modules are currently not well developed: annotations_scan, annotations_ai_context; other features are not necessarily stable.
 
 | Module | Who it is for | Purpose |
 | --- | --- | --- |
@@ -47,8 +62,8 @@ The following modules are currently not well developed: annotations_scan, annota
 | `annotations_ui` | Agency + editors | Annotation editing UI. Used pre-launch to populate context and post-launch by editors maintaining it. |
 | `annotations_coverage` | Agency / dev | Annotation coverage tracking and report. Owns the `affects_coverage` behaviour and exposes `CoverageService` as a public API for enforcement or CI use. |
 | `annotations_context` | Agency / dev | Assembles annotations into a renderable documentation payload. Preview and export tool; the same payload assembly is consumed by `annotations_ai_context`. |
-| `annotations_overlay` | Editors / end users | In-context help overlays on entity edit forms. Shows field-level and bundle-level annotations as triggered modals. |
-| `annotations_ai_context` | Editors / end users | AI chat widget scoped to the current page's annotation context. Optional — sites can get full value from Annotations without it. |
+| `annotations_overlay` | Editors / end users | In-context help overlays on entity edit forms. Shows field-level and bundle-level annotations as triggered modals. Shows same on content view screens. Pending module split for this. |
+| `annotations_ai_context` | (Incomplete) Editors / end users | AI chat widget scoped to the current page's annotation context. |
 | `annotations_scan` | (Incomplete) Agency / dev | Crawls site structure on demand. Mostly a setup and CI tool. |
 
 ---
@@ -61,11 +76,11 @@ One `annotation_target` config entity per annotatable unit — one per content t
 
 ### annotation
 
-Stores all annotation text as content entity rows. Never touched by config sync - annotation content written on production survives deploys. Edited via `annotations_ui`.
+Stores all annotation text as content entity rows. Edited via `annotations_ui`. Base install uses only two tables. Config fields and translation bumps this up.
 
 ### Annotation types (AnnotationType)
 
-Define type of annotation. Three ship by default: `editorial`, `technical`, `rules`. Types are config entities — add, rename, or remove via config management or the `annotations_type_ui` browser UI.
+Define type of annotation - editorial guidance, tech notes, etc. Types are config entities — add, rename, or remove via config management or the `annotations_type_ui` browser UI.
 
 ---
 
@@ -123,11 +138,11 @@ foreach ($plugins as $entity_type_id => $plugin) {
 }
 ```
 
-### Extending annotation types with custom flags (ThirdPartySettingsInterface)
+### Extending annotation types with custom behaviors (ThirdPartySettingsInterface)
 
-`AnnotationType` implements `ThirdPartySettingsInterface`, which is the standard Drupal mechanism for contrib modules to attach their own properties to a config entity without modifying its schema.
+`AnnotationType` implements `ThirdPartySettingsInterface`, for contrib modules to attach their own properties to an annotation type.
 
-A module that wants to add a flag to annotation types (e.g. "expose this type in the front-end AI bot") does three things:
+A module that wants to add a behavior to annotation types (e.g. "expose this type in the front-end AI bot") does three things:
 
 **1. Declare a schema for the settings:**
 
@@ -169,20 +184,6 @@ $show = $annotationType->getThirdPartySetting('mymodule', 'in_frontend_bot', FAL
 The value is stored on the config entity alongside its first-party properties and is exported with `drush cex`. From the editor's perspective the checkbox appears as part of the type edit form with no visible indication it comes from a different module.
 
 This pattern is appropriate when the contributing module owns the full lifecycle of the flag: it writes it, reads it, and acts on it. Annotations' own services have no knowledge of third-party settings added by other modules.
-
-#### When a plugin system would be warranted
-
-If Annotations core services needed to enumerate flags across all installed modules — for example, if `ContextAssembler` needed to ask every installed module "does this annotation type affect your output?" — a plugin layer would be the right approach. The shape would be:
-
-- Annotations defines an `AnnotationTypeFlag` plugin type (annotated class, manager service)
-- Each plugin declares: ID, label, default value, and a form element definition
-- `AnnotationType` stores flag values in a `flags: {}` map in its schema
-- `annotations_type_ui` iterates discovered plugins to render the type edit form automatically
-- Annotations services call `$flagManager->getDefinitions()` to iterate all registered flags
-
-The values would still be stored on the config entity (in the flags map rather than third-party settings), and `drush cex` would capture them as normal. The cost is that Annotations must build and maintain the plugin manager, and all flags — first-party and contrib — would be expressed as plugins.
-
-Until Annotations core services need that enumeration, the `ThirdPartySettingsInterface` approach above is sufficient and idiomatic.
 
 ---
 
@@ -254,6 +255,4 @@ Annotation text lives in the database and is never touched by config management 
 
 ## Notes
 
-Views listed use a `text` variable instead of `value` because that was a reserved name.
-admin/structure/views/view/annotations_target
-admin/structure/views/view/annotations
+Views listed use a `text` variable instead of `value` because that was a reserved name: `admin/structure/views/view/annotations_target`, `admin/structure/views/view/annotations`
