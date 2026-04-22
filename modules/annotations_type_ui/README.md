@@ -22,19 +22,19 @@ ddev drush en annotations_type_ui
 
 **Site-building tool only.** Use this module during initial project setup to define annotation types without editing YAML directly. Disable or uninstall it when site building is complete — it is not intended for production use while editors are writing annotation content.
 
-Sites that manage annotation types exclusively via `drush cim`/`drush cex` do not need this module at all.
+Sites that create & manage annotation types exclusively via config management do not need this module at all.
 
 ---
 
 ## What it does
 
-Adds an **Annotation types** entry under Structure with CRUD for `AnnotationType` config entities (list, add, edit, delete). Draggable rows control `weight` ordering.
+Adds an **Annotation types** entry under Structure with CRUD for `AnnotationType` config entities (list, add, edit, delete). Rows are draggable — weight controls the order types appear in annotation forms and context output across the site (lower weight = shown first).
 
-The add/edit form exposes the core config fields (`label`, `description`, `weight`) plus any flags injected by installed submodules via `hook_form_annotation_type_form_alter`.
+The add/edit form exposes the core config fields (`label`, `description`, `weight`) plus any behaviors injected by installed submodules via `hook_form_annotation_type_form_alter`.
 
 ---
 
-## Important: permissions cache rebuild
+## Permissions cache rebuild
 
 When a new `AnnotationType` is created via this UI, its dynamically-generated permissions (`edit {type} annotations`, `consume {type} annotations`) **will not appear in People → Permissions** until caches are rebuilt:
 
@@ -46,24 +46,12 @@ The type itself works immediately in annotation forms. Only permission assignmen
 
 ---
 
-## Important: config-as-code
+## Config management
 
-Types created via this UI exist only in the active database config store until exported:
-
-```bash
-ddev drush cex
-git add config/sync/annotations.annotation_type.*.yml
-git commit -m "Add annotation types"
-```
-
-Running `drush cim` against un-exported config **will delete UI-created entities**.
+`AnnotationType` entities created here live only in the active config store until exported with `drush cex`. Running `drush cim` against un-exported types **will delete them**.
 
 ---
 
-## On deletion
+## Deletion
 
-Deleting an annotation type via this UI is permanent and removes all associated annotation text from the database:
-
-- Deleting an `AnnotationType` removes all `annotation` rows with that `type_id` across all targets.
-
-There is no undo. Export a database backup before deleting types that have annotation content.
+Deleting a type is permanent and removes all annotation rows with the corresponding type_id. The confirmation dialog shows how many annotations will be removed before you proceed. There is no undo.

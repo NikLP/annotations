@@ -94,9 +94,8 @@ Each type defines:
 - `label` — human-readable label
 - `description` — what this type is for
 - `weight` — integer; controls form/UI ordering (lower = shown first)
-- `in_view_context` — boolean (planned); whether this type appears in view-page overlays. Allows `technical` and `rules` types to be suppressed on view pages while `editorial` shows. Not yet implemented — gate on this flag when the view-page overlay is built.
 
-Additional behavior flags (e.g. `affects_coverage`, `in_ai_context`) are owned by their respective submodules as third-party settings via `ThirdPartySettingsInterface`. See root README for the extension pattern.
+Additional behaviors (e.g. `affects_coverage`, `in_ai_context`) are owned by their respective submodules as third-party settings via `ThirdPartySettingsInterface`. See root README for the extension pattern.
 
 Key methods:
 
@@ -235,7 +234,7 @@ Change detection for developers. Drush command comparing current scanner output 
 - **Fields map = inclusion list:** Presence in the `fields` map = included. No separate `excluded_fields` list.
 - **Split storage model:** Scope config in Drupal config (deployed via `drush cex`/`drush cim`). Annotation text in `annotation` content entity (never touched by config sync). Different lifecycles, different owners (developer vs editor), must not share storage.
 - **Plugin system in `annotations`:** `Target` plugins live in `annotations`, not `annotations_scan`. `GenericTarget` auto-fills for unclaimed **fieldable** types only — non-fieldable config entities always need a dedicated plugin.
-- **Annotation types as config entities:** Sites rename, remove, or add types via config management. The type definition is the identity contract; behavioural flags (`affects_coverage`, `in_ai_context`) are owned by the submodules that use them as third-party settings.
+- **Annotation types as config entities:** Sites rename, remove, or add types via config management. The type definition is the identity contract; behaviors (e.g. `affects_coverage`, `in_ai_context`) are owned by the submodules that use them as third-party settings.
 - **`annotations_context` is the non-AI output path:** AI integration (`annotations_ai_context`) is a second consumer of the same assembler payload. Sites that never use AI get full value via `annotations_context` export.
 - **Permission model:** `edit {type} annotations` gates write access per type (generated dynamically). `consume {type} annotations` gates per-role context output visibility. Static: `administer annotations` (restrict access), `edit any annotation` (restrict access), `access annotation overview`, `view annotations context`, `view annotation revisions` (view revision history; revert/delete still require `edit any annotation`), `administer annotation types` (`annotations_type_ui` CRUD routes).
 - **No multivalue annotation types:** All values are plain strings. The `rules` type uses markdown in a textarea rather than discrete stored entries.

@@ -25,7 +25,7 @@ ddev drush en annotations_context
 - **Context preview** at `/admin/config/annotations/context` — live HTML preview of assembled context, filterable by role, target, reference depth, and field metadata.
 - **Role simulation** — preview context as any Drupal role sees it (respects `consume {type} annotations` permissions).
 - **Markdown export** at `/admin/config/annotations/context/export` — downloads context as a `.md` file.
-- **JSON API endpoint** at `/api/annotations/{target_id}` — returns the assembled payload for a single target as JSON, for headless consumers (Canvas, React, Mercury). No AI dependency.
+- **JSON API endpoint** at `/api/annotations/{target_id}` — returns the assembled payload for a single target as JSON, for headless consumers (Canvas, React, Mercury).
 
 ---
 
@@ -70,6 +70,22 @@ All options are optional and combine freely.
 | `role` | `string\|null` | `null` | Simulate context as this Drupal role — only types that role can `consume` are included. Takes precedence over `account`. |
 | `account` | `AccountInterface\|null` | `null` | Filter to types the given account can view via its combined role permissions. Accounts with `administer annotations` bypass filtering. |
 | `include_field_meta` | `bool` | `false` | Add `type`, `cardinality`, and `description` to each field entry. Useful for AI context; noisy for human review. |
+
+#### Role and account filtering
+
+Use `role` to simulate what a role sees without impersonating a user — useful for previews and testing:
+
+```php
+$payload = $assembler->assemble(['role' => 'content_editor']);
+```
+
+Use `account` for real current-user context in live features. Accounts with `administer annotations` bypass all type filtering:
+
+```php
+$payload = $assembler->assemble(['account' => $this->currentUser]);
+```
+
+`role` takes precedence when both are supplied.
 
 #### Payload structure
 
@@ -182,6 +198,8 @@ Set `ref_depth` to follow entity reference fields into referenced targets:
 
 Each referenced target is assembled in full and nested under `references` → field name → target ID. Cycle detection prevents the same target appearing twice in a payload.
 
+Traversal is currently **forward-only**: the assembler follows ER fields *from* a target to the entities it references. Reverse relationships (surfaces which targets reference a given target) are not currently surfaced. They could be implemented via Drupal's entity query reverse-lookup, adding an `incoming_references` key alongside `references` in each target entry — useful for understanding a `Media` item's context by seeing which `Article` targets link to it. Deferred until there is a concrete use case.
+
 ---
 
 ## Extending the payload
@@ -219,7 +237,7 @@ $assembler->getLastCacheableMetadata()->applyTo($build);
 
 `GET /api/annotations/{target_id}` returns the assembled context payload as JSON. Designed for headless consumers that need annotation data without pulling in the AI module.
 
-```
+```code
 GET /api/annotations/node__article
 GET /api/annotations/node__article?ref_depth=1
 GET /api/annotations/node__article?include_field_meta=1
@@ -279,21 +297,3 @@ GET /api/annotations/node__article?include_field_meta=1
 ```
 
 The response is the raw assembler structure. Consumers that need a flatter shape (`{field_name: {type_label: value}}`) should flatten client-side — no `?format=flat` option is provided.
-
----
-
-## Role and account filtering
-
-Use `role` to simulate what a role sees without impersonating a user — useful for previews and testing:
-
-```php
-$payload = $assembler->assemble(['role' => 'content_editor']);
-```
-
-Use `account` for real current-user context in live features. Accounts with `administer annotations` bypass all type filtering:
-
-```php
-$payload = $assembler->assemble(['account' => $this->currentUser]);
-```
-
-`role` takes precedence when both are supplied.

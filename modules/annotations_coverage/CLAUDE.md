@@ -60,7 +60,7 @@ The "primary" type is the status-affecting type with the lowest weight. Only typ
 `affects_coverage` is stored as an `annotations_coverage` third-party setting on `AnnotationType`, not as a first-party entity property. This means:
 
 - `annotations_coverage` can be uninstalled without leaving orphaned schema on the annotation type entity
-- The flag only exists when coverage tracking is in use
+- The behavior only exists when coverage tracking is in use
 - The default is `FALSE` — opt-in only; types must be explicitly enabled to affect coverage status
 - `annotations_type_ui` shows the checkbox on the annotation type edit form only when `annotations_coverage` is installed (injected via `hook_form_alter`)
 

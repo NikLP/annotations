@@ -274,6 +274,18 @@ class AnnotationStorageService {
   }
 
   /**
+   * Counts annotation rows for a given annotation type ID.
+   */
+  public function countForType(string $type_id): int {
+    return (int) $this->entityTypeManager->getStorage('annotation')
+      ->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type_id', $type_id)
+      ->count()
+      ->execute();
+  }
+
+  /**
    * Deletes all annotation rows for a given annotation type ID.
    *
    * Called when an AnnotationType config entity is deleted, so no orphan

@@ -42,8 +42,17 @@ class AnnotationTypeDeleteForm extends EntityDeleteForm {
    * {@inheritdoc}
    */
   public function getDescription(): TranslatableMarkup {
-    return $this->t(
-      'All annotation text stored under this type will be permanently deleted from the database. The permissions <em>edit %id annotations</em> and <em>consume %id annotations</em> will also be removed.',
+    $count = $this->annotationStorage->countForType($this->entity->id());
+    if ($count === 0) {
+      return $this->t(
+        'No annotations are stored under this type. The permissions <em>edit %id annotations</em> and <em>consume %id annotations</em> will be removed.',
+        ['%id' => $this->entity->id()],
+      );
+    }
+    return $this->formatPlural(
+      $count,
+      '1 annotation stored under this type will be permanently deleted. The permissions <em>edit %id annotations</em> and <em>consume %id annotations</em> will also be removed.',
+      '@count annotations stored under this type will be permanently deleted. The permissions <em>edit %id annotations</em> and <em>consume %id annotations</em> will also be removed.',
       ['%id' => $this->entity->id()],
     );
   }

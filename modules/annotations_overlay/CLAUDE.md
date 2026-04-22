@@ -180,6 +180,8 @@ Cache metadata is merged after the target and display-mode checks pass, before t
 
 Output is themed via two hooks: `annotations_overlay_chooser` (wraps the original description + annotation items) and `annotations_overlay_chooser_item` (type label + rendered annotation entity). Both have dedicated templates. `buildBundleAnnotationRenderItems()` returns an `annotations_overlay_chooser` render array with `#description => NULL`; callers set `#description` to the original entity description before placing it.
 
+**Why separate chooser hooks rather than theme suggestions on the dialog hooks:** The variable signatures genuinely differ. `annotations_overlay_chooser` carries a `description` variable (the original entity description) with no equivalent in `annotations_overlay_wrapper`, which is dialog-shaped (`close_label`, `close_attributes`). `annotations_overlay_chooser_item` drops `edit_url` and `single_type`, which have no meaning in a chooser context. Two parallel pairs with minimal variable sets is cleaner than suggestions that silently ignore half their variables.
+
 Annotation entities are rendered via the `overlay` view mode. A dedicated `chooser` view mode would allow site builders to control what content appears on chooser pages independently of the dialog overlay — parked as complementary work.
 
 **Claro/Gin compatibility note — `node_add_list`:** Claro's `claro_preprocess_node_add_list` is a theme-level preprocess that runs *after* all module preprocesses. It rebuilds `$variables['bundles']` from scratch by reading `$type->getDescription()` on each entity object directly — it does not read `$variables['types']`. Module-level `hook_preprocess_node_add_list` implementations cannot modify `bundles` because Claro overwrites it afterward. The fix is to modify the entity description property in memory (`$type->set('description', ...)`) before Claro runs; Claro then reads the modified description when building `bundles`. The Claro path renders the full `annotations_overlay_chooser` render array to string via `renderInIsolation()`. The in-memory change is request-scoped only — no entity save is triggered.
@@ -193,6 +195,18 @@ Parked because: our dialog approach is already built and works independently of 
 ## Workflow integration (annotations_workflows)
 
 All `getForTarget()` calls in `AnnotationsOverlayHooks` pass `TRUE` as `$published_only`. When `annotations_workflows` is installed only published annotations appear in overlays. When `annotations_workflows` is not installed the filter is a no-op and all non-empty annotations appear as before.
+
+## Per-type view-page suppression — parked
+
+`consume {type} annotations` permissions gate type visibility by role, not by context. A role that legitimately has `consume technical annotations` (needs it on edit forms) cannot currently be prevented from seeing `technical` on view pages without revoking the permission entirely.
+
+The right fix is a `show_on_view_pages` third-party setting on `AnnotationType`, owned by this module — same pattern as `affects_coverage` in `annotations_coverage`. Implementation:
+
+1. Register a schema entry in `annotations_overlay.schema.yml` for `annotations.annotation_type.*.third_party.annotations_overlay.show_on_view_pages` (boolean, default `TRUE`).
+2. Add a checkbox to the type edit form via `hook_form_alter` on `annotation_type_edit_form`.
+3. In `entityViewAlter`, after `filterAnnotationEntities()`, skip types where `$type->getThirdPartySetting('annotations_overlay', 'show_on_view_pages', TRUE) === FALSE`.
+
+This is not a first-party property on `AnnotationType` — it belongs here because only this module has the view-page context concept.
 
 ## Current status
 

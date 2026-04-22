@@ -878,4 +878,88 @@ class AnnotationsOverlayHooks {
     return $injected;
   }
 
+  /**
+   * Implements hook_entity_view_alter() for annotation entities.
+   *
+   * Adds a "Preview overlay" button and dialog to the annotation View page,
+   * showing exactly how this annotation appears in the overlay modal context.
+   * Only fires on the full (canonical) display mode so the overlay view mode
+   * itself is unaffected.
+   */
+  #[Hook('entity_view_alter')]
+  public function annotationPreviewViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display): void {
+    if ($entity->getEntityTypeId() !== 'annotation') {
+      return;
+    }
+    // The canonical view page uses the 'default' display (no explicit 'full'
+    // display is configured). Skip the overlay view mode to avoid recursion.
+    if (!in_array($display->getMode(), ['full', 'default'], TRUE)) {
+      return;
+    }
+
+    $build['#cache']['contexts'][] = 'user.permissions';
+
+    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+      return;
+    }
+
+    /** @var \Drupal\annotations\Entity\Annotation $annotation */
+    $annotation = $entity;
+    $type_id    = $annotation->get('type_id')->value ?? '';
+    $field_name = $annotation->get('field_name')->value ?? '';
+    $target_id  = $annotation->get('target_id')->value ?? '';
+
+    if ($type_id === '') {
+      return;
+    }
+
+    if ($field_name === '') {
+      $heading = (string) $this->t('Overview');
+    }
+    else {
+      /** @var \Drupal\annotations\Entity\AnnotationTargetInterface|null $target */
+      $target = $target_id !== ''
+        ? $this->entityTypeManager->getStorage('annotation_target')->load($target_id)
+        : NULL;
+      $heading = $target !== NULL
+        ? $this->resolveFieldLabel($target->getTargetEntityTypeId(), $target->getBundle(), $field_name)
+        : $field_name;
+    }
+
+    $roles = array_filter(
+      $this->currentUser->getRoles(),
+      fn($r) => $r !== 'authenticated',
+    );
+    $role_labels = array_map(function (string $role_id): string {
+      $role = $this->entityTypeManager->getStorage('user_role')->load($role_id);
+      return $role ? (string) $role->label() : $role_id;
+    }, $roles);
+
+    $build['annotations_preview_trigger'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'type' => 'button',
+        'class' => ['button', 'js-annotations-overlay-trigger'],
+        'data-annotations-field' => '_preview',
+        'title' => $role_labels
+          ? (string) $this->t('Previewing as: @roles', ['@roles' => implode(', ', $role_labels)])
+          : (string) $this->t('Previewing as: authenticated user'),
+      ],
+      '#value' => Markup::create(
+        '<span aria-hidden="true">?</span> ' . $this->t('Overlay preview')
+      ),
+      '#weight' => -500,
+    ];
+
+    $build['annotations_preview_dialog'] = [
+      '#type' => 'container',
+      '#weight' => 999,
+      'dialog' => $this->buildDialog('_preview', $heading, [$type_id => $annotation], TRUE),
+    ];
+
+    $build['#attached']['library'][] = 'annotations_overlay/overlay';
+    $build['#attributes']['class'][] = 'annotations-has-overlay';
+  }
+
 }

@@ -87,7 +87,7 @@
   // On form pages the trigger is already a child, so the guard is a no-op.
   document.querySelectorAll('.js-annotations-overlay-trigger[data-annotations-field]').forEach(function (trigger) {
     const fieldKey = trigger.dataset.annotationsField;
-    if (fieldKey === '_bundle') return;
+    if (fieldKey === '_bundle' || fieldKey === '_preview') return;
     const wrapper = document.querySelector('[data-annotations-field="' + CSS.escape(fieldKey) + '"]:not(button)');
     if (wrapper && !wrapper.contains(trigger)) {
       wrapper.appendChild(trigger);

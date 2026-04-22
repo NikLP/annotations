@@ -2,7 +2,9 @@
 
 Annotation coverage tracking and reporting for the Annotations module suite.
 
-Owns the `affects_coverage` flag on annotation types and provides `CoverageService` as a stable public API for any module that needs to read, report on, or enforce annotation completeness.
+Owns the `affects_coverage` behavior on annotation types and provides `CoverageService` as a stable public API for any module that needs to read, report on, or enforce annotation completeness.
+
+Coverage enforcement is deliberately not built into this module because enforcement is site policy, not mechanism. Different consumers need different behaviour: a workflow module blocks a publish transition if coverage is incomplete; a CI integration exits non-zero if any target is empty; a content dashboard surfaces a score badge. All of them need the same underlying calculation, but none of them should share an implementation. `CoverageService` is the shared, stable calculation layer. Enforcement belongs in the module that owns the policy — and that module injects this service to get the data it needs.
 
 ---
 
@@ -36,9 +38,9 @@ $score = $coverageService->getScore($coverage);
 $affects = $coverageService->affectsCoverage($annotationType);
 ```
 
-### affects_coverage flag
+### affects_coverage behavior
 
-Each `AnnotationType` can declare whether a missing annotation of that type degrades coverage status. This flag is stored as an `annotations_coverage` third-party setting on the type config entity, so it only exists when this module is installed.
+Each `AnnotationType` can declare whether a missing annotation of that type degrades coverage status. This behavior is stored as an `annotations_coverage` third-party setting on the type config entity, so it only exists when this module is installed.
 
 The checkbox appears on the annotation type edit form (provided by `annotations_type_ui`) when `annotations_coverage` is installed. Default: `FALSE` (opt-in).
 
