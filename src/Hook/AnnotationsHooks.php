@@ -66,7 +66,7 @@ class AnnotationsHooks {
     // EntityViewsData exposes the underlying raw columns they map to.
     $data['annotation_field_data']['target_label'] = [
       'title'      => t('Target label'),
-      'help'       => t('Human-readable label of the annotation_target.'),
+      'help'       => t('Label for the annotation_target.'),
       'real field' => 'target_id',
       'field'      => ['id' => 'annotation_target_label'],
       'filter'     => ['id' => 'annotation_target_filter'],
@@ -74,7 +74,7 @@ class AnnotationsHooks {
 
     $data['annotation_field_data']['field_label'] = [
       'title'      => t('Field label'),
-      'help'       => t('Human-readable label of the annotated field.'),
+      'help'       => t('Label for the annotated field.'),
       'real field' => 'field_name',
       'field'      => ['id' => 'annotation_field_label'],
       'filter'     => ['id' => 'annotation_field_filter'],
@@ -82,7 +82,7 @@ class AnnotationsHooks {
 
     $data['annotation_field_data']['type_label'] = [
       'title'      => t('Annotation type label'),
-      'help'       => t('Human-readable label of the annotation type or site section.'),
+      'help'       => t('Label for the annotation type or site section.'),
       'real field' => 'type_id',
       'field'      => ['id' => 'annotation_type_label'],
       'filter'     => ['id' => 'annotation_type_filter'],

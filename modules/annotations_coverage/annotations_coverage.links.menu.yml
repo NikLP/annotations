@@ -3,4 +3,4 @@ annotations_coverage.report:
   parent: system.admin_reports
   description: 'View annotation coverage across all included targets.'
   route_name: annotations_coverage.report
-  weight: -100
+  weight: 0

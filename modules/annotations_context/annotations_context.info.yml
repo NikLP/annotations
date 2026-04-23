@@ -1,6 +1,6 @@
 name: 'Annotations Context'
 type: module
-description: 'Assembles annotation data into structured context payloads. Produces human-readable documentation (markdown) and structured data for optional AI delivery.'
+description: 'Assembles annotation data into structured context payloads. Produces human-readable documentation and structured data for optional AI delivery.'
 package: Annotations
 core_version_requirement: ^11
 dependencies:

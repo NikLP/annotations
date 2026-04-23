@@ -32,7 +32,7 @@ class AnnotationsUiPermissions {
     $storage = $entity_type_manager->getStorage('annotation_type');
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface $type */
     foreach ($storage->loadMultiple() as $type) {
-      $permissions[$type->getPermission()] = [
+      $permissions[$type->getEditPermission()] = [
         'title' => t('%label: edit annotations', ['%label' => $type->label()]),
         'restrict access' => TRUE,
       ];

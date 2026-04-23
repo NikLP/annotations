@@ -544,7 +544,7 @@ class ContextAssembler {
       'cardinality' => $cardinality_label,
     ];
 
-    $description = trim((string) ($def->getDescription() ?? ''));
+    $description = $this->flattenHtml(trim((string) ($def->getDescription() ?? '')));
     if ($description !== '') {
       $meta['description'] = $description;
     }
@@ -568,7 +568,7 @@ class ContextAssembler {
     foreach ($types as $type_id => $type) {
       /** @var \Drupal\annotations\Entity\Annotation|null $entity */
       $entity = $raw[$type_id] ?? NULL;
-      $value  = $entity !== NULL ? trim((string) $entity->get('value')->value) : '';
+      $value  = $entity !== NULL ? $this->flattenHtml(trim((string) $entity->get('value')->value)) : '';
       $extra  = $entity !== NULL ? $this->extractExtraFields($entity, $type_id) : [];
 
       if ($value === '' && empty($extra)) {
@@ -610,7 +610,7 @@ class ContextAssembler {
       }
       $values = [];
       foreach ($item_list as $item) {
-        $str = $this->fieldItemToString($item, $def);
+        $str = $this->flattenHtml($this->fieldItemToString($item, $def));
         if ($str !== '') {
           $values[] = $str;
         }
@@ -650,6 +650,22 @@ class ContextAssembler {
     }
 
     return trim((string) ($item->value ?? ''));
+  }
+
+  /**
+   * Strips HTML tags from an annotation value and decodes any HTML entities.
+   *
+   * Annotation values are plain text but may contain markup if content was
+   * pasted from a rich-text source. Strip tags so all consumers (preview,
+   * markdown, MCP, JSON) receive clean text. No-op when no '<' is present.
+   */
+  private function flattenHtml(string $value): string {
+    if ($value === '' || !str_contains($value, '<')) {
+      return $value;
+    }
+    $value = preg_replace('/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', '$2 ($1)', $value);
+    $decoded = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return preg_replace('/\s+/', ' ', trim($decoded));
   }
 
   /**

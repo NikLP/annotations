@@ -19,6 +19,7 @@ function annotations_workflows_install(): void {
   if (!$workflow) {
     return;
   }
+  
   $plugin = $workflow->getTypePlugin();
   $types = $etm->getStorage('annotation_type')->loadMultiple();
   foreach (array_keys($types) as $type_id) {

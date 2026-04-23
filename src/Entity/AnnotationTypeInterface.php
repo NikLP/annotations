@@ -26,7 +26,7 @@ interface AnnotationTypeInterface extends ConfigEntityInterface {
    *
    * e.g. "edit editorial annotations"
    */
-  public function getPermission(): string;
+  public function getEditPermission(): string;
 
   /**
    * Returns the Drupal permission machine name required to consume this type

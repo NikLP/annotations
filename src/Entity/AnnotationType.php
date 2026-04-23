@@ -78,7 +78,7 @@ class AnnotationType extends ConfigEntityBundleBase implements AnnotationTypeInt
   /**
    * {@inheritdoc}
    */
-  public function getPermission(): string {
+  public function getEditPermission(): string {
     return 'edit ' . $this->id() . ' annotations';
   }
 

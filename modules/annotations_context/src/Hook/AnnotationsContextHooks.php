@@ -16,24 +16,6 @@ class AnnotationsContextHooks {
   use StringTranslationTrait;
 
   /**
-   * Implements hook_theme().
-   */
-  #[Hook('theme')]
-  public function theme(): array {
-    return [
-      'annotations_context_checkbox' => [
-        'variables' => [
-          'id'      => '',
-          'name'    => '',
-          'value'   => '1',
-          'checked' => FALSE,
-          'label'   => '',
-        ],
-      ],
-    ];
-  }
-
-  /**
    * Implements hook_form_annotation_type_form_alter().
    *
    * Adds the 'in_ai_context' checkbox to the annotation type behavior fieldset.

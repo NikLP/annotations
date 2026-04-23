@@ -1,11 +1,11 @@
 {
     "name": "drupal/annotations",
-    "description": "Uses site structure to store and drive annotation-based in-context help, documentation exports, and AI chat.",
-    "type": "drupal-custom-module",
+    "description": "Maps entity structure to customisable annotations with multiple use cases.",
+    "type": "drupal-module",
     "license": "proprietary",
     "maintainer": "NikLP",
     "support": {
-        "source": "https://github.com/NikLP/dot"
+        "source": "https://github.com/NikLP/annotations"
     },
     "require": {
         "php": "^8.3",

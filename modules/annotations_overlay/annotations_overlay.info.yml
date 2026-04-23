@@ -1,6 +1,6 @@
 name: 'Annotations Overlay'
 type: module
-description: 'Inline annotation panels for entity forms. Shows annotations as a triggered help overlay per field and per content type.'
+description: 'Inline annotation panels for entity forms. Shows annotations as a triggered help overlay per field/type.'
 package: Annotations
 core_version_requirement: ^11
 dependencies:

@@ -10,6 +10,8 @@ declare(strict_types=1);
 /**
  * Implements hook_uninstall().
  *
+ * REMOVE THIS AFTER SUITABLE LEVEL OF DEV?
+ * 
  * Drops annotation entity tables explicitly. In a healthy install Drupal's
  * entity storage handler handles this automatically, but an explicit drop here
  * guards against the case where the entity class is unloadable at uninstall

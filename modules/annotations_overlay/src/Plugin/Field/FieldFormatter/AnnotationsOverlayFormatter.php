@@ -62,7 +62,7 @@ class AnnotationsOverlayFormatter extends FormatterBase implements ContainerFact
 
     $element['annotation_view_mode'] = [
       '#type' => 'select',
-      '#title' => $this->t('Annotation view mode'),
+      '#title' => $this->t('View mode'),
       '#options' => $options,
       '#default_value' => $this->getSetting('annotation_view_mode'),
     ];

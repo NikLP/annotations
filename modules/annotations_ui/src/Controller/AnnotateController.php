@@ -423,7 +423,7 @@ class AnnotateController extends ControllerBase {
     $account = $this->currentUser();
     $types = array_filter(
       $types,
-      fn($type) => $account->hasPermission($type->getPermission()),
+      fn($type) => $account->hasPermission($type->getEditPermission()),
     );
     uasort($types, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
     return $types;

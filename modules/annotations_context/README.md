@@ -137,6 +137,8 @@ $payload = $assembler->assemble(['account' => $this->currentUser]);
 
 Only non-empty annotation values are included. Targets with no matching annotations are omitted when type-filtering is active.
 
+**HTML normalisation:** All string values in the payload (annotation `value`, configurable extra fields, and field help text) are passed through `flattenHtml()` before being added to the payload. This strips markup, preserves links as `text (url)`, decodes HTML entities, and collapses whitespace. Annotation storage is plain text but values may contain markup if content was pasted from a rich-text source; normalisation happens at read time so all consumers — HTML preview, markdown, JSON API, MCP — receive clean text.
+
 #### Cache metadata from alter implementations
 
 If your code produces a cacheable page from an assembled payload, merge alter-contributed cache requirements:
@@ -193,7 +195,7 @@ class MyJsonRenderer {
 }
 ```
 
-**Security:** Always escape annotation values when producing HTML. Values are stored raw — safe in admin-only contexts, must be escaped for any end-user-facing output.
+**Security:** Always escape annotation values when producing HTML output. Although `ContextAssembler` strips HTML markup from values at read time, the resulting plain text must still be escaped (via `Html::escape()` or `#plain_text`) before insertion into HTML.
 
 ---
 

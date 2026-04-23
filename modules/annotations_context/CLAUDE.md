@@ -2,21 +2,17 @@
 
 Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
 
-## What this module does
+Assembles annotation data into structured context payloads: HTML preview, markdown download, REST JSON, and MCP endpoint. AI integration is handled by `annotations_ai_context`.
 
-Assembles annotation data into structured context payloads. Produces human-readable documentation (HTML preview + markdown download), a JSON API endpoint for headless consumers, and a PHP array payload that `annotations_ai_context` can consume without depending on this module. No AI dependency — AI integration is handled by a separate consumer.
-
-## What it owns
-
-### Services
+## Services
 
 | Service ID | Class | Purpose |
 | --- | --- | --- |
-| `annotations_context.assembler` | `ContextAssembler` | Builds the PHP array payload from annotation data |
-| `annotations_context.renderer` | `ContextRenderer` | Renders payload to markdown (stateless, no DI) |
+| `annotations_context.assembler` | `ContextAssembler` | Builds the PHP array payload |
+| `annotations_context.renderer` | `ContextRenderer` | Renders payload to markdown |
 | `annotations_context.html_renderer` | `ContextHtmlRenderer` | Renders payload to Drupal render arrays |
 
-### Routes and access
+## Routes
 
 | Route | Path | Permission |
 | --- | --- | --- |
@@ -25,25 +21,23 @@ Assembles annotation data into structured context payloads. Produces human-reada
 | `annotations_context.preview` | `/admin/config/annotations/context` | same |
 | `annotations_context.export` | `/admin/config/annotations/context/export` | same |
 
-`view annotations context` is not `restrict access: true` — it can be granted to non-admin roles (e.g. project managers reviewing documentation).
+`view annotations context` is not `restrict access: true` — can be granted to non-admin roles.
 
 ## ContextAssembler options
 
 ```php
 $payload = $assembler->assemble([
-  'entity_type'          => 'node',          // limit to one entity type
-  'target_id'            => 'node__article', // limit to a single target
-  'types'                => ['editorial'],   // explicit type IDs to include
-  'ref_depth'            => 1,               // entity reference traversal depth (0–2)
-  'role'                 => 'editor',        // simulate context as this Drupal role (preview page)
-  'account'              => $currentUser,    // filter by actual user's combined permissions
-  'include_incoming_refs' => TRUE,           // add incoming_refs to each target (flat, no recursion)
+  'entity_type'           => 'node',
+  'target_id'             => 'node__article',
+  'types'                 => ['editorial'],
+  'ref_depth'             => 1,               // 0–2
+  'role'                  => 'editor',        // simulate role (preview page); takes precedence over account
+  'account'               => $currentUser,    // filter by real user permissions
+  'include_incoming_refs' => TRUE,            // flat, no recursion
 ]);
 ```
 
-**`role`** — simulate context as a specific Drupal role. Takes precedence over `account`. Powers the "View as role" simulation on the preview page.
-
-**`account`** — filter to types the given `AccountInterface` can view, using its combined permissions across all roles. Accounts with `administer annotations` bypass filtering. Use this for real current-user context in `annotations_ai_context`; use `role` for simulation previews.
+`role` takes precedence over `account`. Accounts with `administer annotations` bypass type filtering. Use `account` for real consumers (e.g. `annotations_ai_context`), `role` for preview simulation.
 
 ## Payload structure
 
@@ -60,160 +54,79 @@ $payload = $assembler->assemble([
           'entity_type' => 'node',
           'bundle'      => 'article',
           'annotations' => ['editorial' => ['label' => 'Editorial', 'value' => '...']],
-          'fields'      => [
-            'title' => [
-              'label'       => 'Title',
-              'annotations' => ['editorial' => ['label' => 'Editorial', 'value' => '...']],
-            ],
-          ],
-          'references'  => [...],  // only present when ref_depth > 0
+          'fields'      => ['title' => ['label' => 'Title', 'annotations' => [...]]],
+          'references'  => [...],  // only when ref_depth > 0
         ],
       ],
     ],
   ],
-  'meta' => [
-    'generated_at' => '2026-03-17T12:00:00+00:00',
-    'ref_depth'    => 0,
-    'target_count' => 12,
-  ],
+  'meta' => ['generated_at' => '...', 'ref_depth' => 0, 'target_count' => 12],
 ]
 ```
 
-Only non-empty annotation values are included. Targets with no matching annotations are omitted when type-filtering (`skip_empty` behaviour in `assembleGroups()`). Group labels come from `DiscoveryService::getPlugins()` — consistent with the Targets page.
+Targets with no matching annotations are omitted when type-filtering (`skip_empty` in `assembleGroups()`).
+
+## HTML normalisation
+
+All string values leaving the assembler — annotation `value`, configurable extra fields, and field `meta.description` — pass through `ContextAssembler::flattenHtml()`:
+
+1. `<a href="url">text</a>` → `text (url)` (URL preserved)
+2. Remaining tags stripped via `strip_tags()`
+3. HTML entities decoded via `html_entity_decode()`
+4. Whitespace collapsed
+
+No-op when no `<` is present. Annotation storage is plain text, but values may contain markup if content was pasted from a rich-text source. Normalisation at assembly time means all consumers (preview, markdown, JSON API, MCP) receive clean text without each needing its own sanitisation pass.
 
 ## Rendering
 
-### ContextRenderer (markdown)
+**ContextRenderer (markdown):** H1 (entity type group) → H2 (target) → H3 (Fields/References) → H4 (field name). Annotation text as plain paragraphs.
 
-Outputs raw markdown — safe for file download. Heading hierarchy: H1 (entity type group) → H2 (target) → H3 (Fields/References) → H4 (field name). Annotation text as plain paragraphs.
+**ContextHtmlRenderer (render arrays):** Values escaped via `Html::escape()` wrapped in `Markup::create()`. `details/summary` for collapsible target cards. "Overview" label suppressed when target has no fields or references.
 
-### ContextHtmlRenderer (render arrays)
+Custom renderers just consume the payload array — no base class needed.
 
-All annotation values are escaped via `Html::escape()` wrapped in `Markup::create()`. Uses `details/summary` for collapsible target cards. `h3` for Overview/Fields/References section labels. "Overview" label suppressed when the target has no fields or references.
+## Extending the assembler
 
-### Writing a custom renderer
+**Alter hook (built):** `ContextAssembler::assemble()` invokes `hook_annotations_context_alter(&$payload, $options, &$cacheableMetadata)`. Callers producing cacheable output must call `$assembler->getLastCacheableMetadata()->applyTo($build)`.
 
-A renderer receives the plain PHP array from `ContextAssembler::assemble()` and converts it to any output format. No base class required — just consume the array structure documented above.
-
-```php
-class MyRenderer {
-  public function render(array $payload): string {
-    $output = '';
-    foreach ($payload['groups'] as $group) {
-      foreach ($group['targets'] as $target) {
-        // $target['annotations'], $target['fields'], $target['references']
-      }
-    }
-    return $output;
-  }
-}
-```
-
-**Security:** Always escape annotation values when producing HTML. They are stored raw (admin-input context is safe; end-user-facing output is not).
-
-## Extending the assembler output
-
-### Alter hook (built)
-
-`ContextAssembler::assemble()` invokes `hook_annotations_context_alter()` at the end of every assembly. Implementations receive `$payload` by reference, `$options` as read-only context, and `$cacheableMetadata` by reference for contributing cache requirements.
-
-```php
-function mymodule_annotations_context_alter(array &$payload, array $options, CacheableMetadata &$cacheableMetadata): void {
-  $payload['my_section'] = ['key' => 'value'];
-  $cacheableMetadata->addCacheTags(['mymodule_data_list']);
-}
-```
-
-`ContextPreviewController` automatically merges the assembled `CacheableMetadata` into its page build via `$assembler->getLastCacheableMetadata()->applyTo($build)`. Any caller producing cacheable output from the payload must do the same.
-
-Appropriate when: a submodule or contrib module needs to add a flat section (e.g. `annotations_ai_context` appending model routing hints) and ordering between contributors does not matter.
-
-### Tagged services (deferred)
-
-The same pattern used by `annotations.target` plugins. Define an `annotations.context_provider` service tag; `ContextAssembler` collects tagged services at construction and calls `provideContext(array $options): array` on each, merging results in priority order. Providers also declare `getCacheableMetadata(array $options): CacheableMetadata` so the assembler can fold their cache requirements in automatically.
-
-Preferred over the alter hook for contrib modules adding structured payload sections — discoverable, ordered, and consistent with the plugin pattern. Deferred until there is a concrete use case requiring ordering guarantees.
-
-### Neither pattern requires the `AnnotationTypeFlag` plugin system
-
-These extension points are about assembler *output*. Flags-on-annotation-types discussion in the root README is about assembler *input* (which types to include). Independent concerns, can be built at different times.
-
----
+**Tagged services (deferred):** `annotations.context_provider` tag pattern — same as `annotations.target` plugins. Providers implement `provideContext(array $options): array` + `getCacheableMetadata(array $options): CacheableMetadata`. Deferred until ordering guarantees are needed.
 
 ## MCP endpoint
 
-`POST /api/annotations/mcp` — MCP Streamable HTTP transport (2025-03-26 spec). Exposes every `annotation_target` as an MCP resource. Intended for AI tool consumers (Claude Desktop, Cursor, etc.).
+`POST /api/annotations/mcp` — MCP Streamable HTTP (2025-03-26 spec). Resource URIs: `annotation://target/{target_id}`. Content returned as `text/plain` markdown (token-efficient for AI).
 
-**Resource URIs:** `annotation://target/{target_id}` — optional query params can be embedded directly:
+Query params: `?ref_depth=0|1|2`, `?include_field_meta=1`.
 
-- `?ref_depth=0|1|2` — entity reference traversal depth (default 0)
-- `?include_field_meta=1` — include field type/cardinality/description
+Supported methods: `initialize`, `notifications/*` (202 no-body), `resources/list`, `resources/read`, `ping`. Error codes: standard JSON-RPC 2.0 + MCP `-32002` for resource not found.
 
-Resource content is rendered as `text/plain` markdown (via `ContextRenderer`) rather than raw JSON — more token-efficient for AI consumption.
+**Type filtering:** `resources/read` only returns types where `getThirdPartySetting('annotations_context', 'in_ai_context', FALSE)` is truthy. Set via annotation type edit form. Default FALSE — must opt in. Future AI consumers must read `annotations_context.in_ai_context`, not define their own key.
 
-**Supported methods:**
-
-| Method | Description |
-| --- | --- |
-| `initialize` | Capability handshake; negotiates `2025-03-26` or `2024-11-05` |
-| `notifications/*` | Acknowledged with HTTP 202, no response body |
-| `resources/list` | Returns all annotation targets as MCP resource descriptors |
-| `resources/read` | Returns assembled context markdown for one target |
-| `ping` | Keep-alive; returns `{}` |
-
-**Error codes** follow JSON-RPC 2.0 standard codes (`-32700` parse, `-32600` invalid request, `-32601` method not found, `-32602` invalid params) plus MCP's `-32002` for resource not found.
-
-**Auth:** uses Drupal's native permission check (`view annotations context` OR `administer annotations`). Bearer token support (for headless MCP clients without a Drupal session) requires a separate token auth module (`simple_oauth` or similar). Does not support `role` simulation — that is a preview-page concern.
-
-**Type filtering:** `resources/read` only returns annotation types where `getThirdPartySetting('annotations_context', 'in_ai_context', FALSE)` is truthy. The setting is set via the annotation type edit form (behavior fieldset, "Include in AI contexts" checkbox). Default is FALSE — types must be explicitly opted in. This module owns the setting key; the future AI chat replacement module should read `annotations_context.in_ai_context` rather than defining its own key.
-
-**GET is not implemented** — server-push SSE is not needed for stateless resource reads; a `POST` to `initialize` + `resources/list` + `resources/read` is the full flow.
-
----
+Auth: Drupal native permissions. Bearer token (for headless clients) requires `simple_oauth` or similar. No `role` simulation — preview-page concern only.
 
 ## REST JSON endpoint
 
-`GET /api/annotations/{target_id}` — returns the assembled payload for a single target as `CacheableJsonResponse`. Kept for non-MCP headless consumers (browser JS, curl, etc.) that want simple GET + JSON without JSON-RPC overhead.
-
-**Query parameters** (all optional):
-
-- `ref_depth=0|1|2` — entity reference traversal depth (default 0)
-- `include_field_meta=1` — include field type/cardinality/description
-
-**Responses:**
-
-- 200: full assembler payload `{"groups": {...}, "meta": {...}}`
-- 404: `{"error": "Annotation target not found."}` — cached against `annotation_target_list`
-
-**Caching:** `CacheableJsonResponse` with tags `annotation_list`, `annotation_target_list`, `annotation_type_list` and contexts `user.permissions`, `url.query_args`, `languages:language_interface` (+ `languages:content` on multilingual sites). Alter hook metadata is merged in.
+`GET /api/annotations/{target_id}` — `CacheableJsonResponse`. Query params: `ref_depth`, `include_field_meta`. Returns full assembler payload or 404 JSON error. Cache tags: `annotation_list`, `annotation_target_list`, `annotation_type_list`; contexts: `user.permissions`, `url.query_args`, `languages:language_interface`.
 
 ## Preview page
 
 - Toolbar: filter form (left) + Download .md button (right)
 - Filters: role simulation, specific target, ref depth, include field metadata
 - Collapsed "Raw markdown" `details` drawer at bottom
-- Export: `text/markdown` response, `Content-Disposition: attachment`, filename derived from active filters (e.g. `annotations-context-node-article.md`)
-
-## View modes and annotation render context
-
-Currently `ContextAssembler` assembles annotations for a `annotation_target` without any concept of which display mode or rendering context the entity will appear in. This is fine for documentation exports and AI context — you want the full picture regardless. But it becomes relevant in two future scenarios:
-
-**1. View-page overlay (annotations_overlay):** The overlay hook fires in a specific display mode (e.g. `full`). A field may be in annotations scope but not rendered in that display mode. The overlay must check `EntityViewDisplay::getComponents()` for the active display mode before injecting a trigger — see `annotations_overlay/CLAUDE.md` for implementation detail. This is an overlay concern, not an assembler concern.
-
-**2. AI context scoped to a display mode:** When a user is editing a node that renders in `full` mode on the public site, the AI assistant's context is most useful if it reflects what fields the user actually sees published. The assembler currently includes all fields in the `annotation_target` fields map regardless of display mode. A future `display_mode` option on `ContextAssembler::assemble()` could filter fields to only those rendered in a given display mode. Not urgent — the current "all fields in scope" approach is a reasonable default — but worth noting as the system matures and per-context AI guidance becomes more precise.
+- Export: `text/markdown`, `Content-Disposition: attachment`, filename from active filters (e.g. `annotations-context-node-article.md`)
+- `ContextFilterForm` uses `#method => 'get'` with `#token => FALSE` and an `#after_build` callback that strips `form_build_id`, `form_token`, and `form_id` — keeps the URL clean (only meaningful filter params appear in the query string)
 
 ## Deferred
 
-- `drush dot:export` — parked; trivially small when ready: call `ContextRenderer::render($assembler->assemble($options))` and pipe to stdout. Same filter options as the UI.
-- `display_mode` assembler option — filter payload fields to those rendered in a given `EntityViewDisplay`; low priority, document intent above.
+- `display_mode` assembler option — filter fields to those rendered in a given `EntityViewDisplay`. Low priority; overlay must check `EntityViewDisplay::getComponents()` for its own purposes (see `annotations_overlay/CLAUDE.md`).
+- `drush annotations:export` — trivial when ready: `ContextRenderer::render($assembler->assemble($options))` piped to stdout.
 
-## Current status
+## Status
 
 - [x] `ContextAssembler` — all options, entity reference traversal, cycle detection, skip_empty
-- [x] `hook_annotations_context_alter()` — invoked at end of assemble(); `CacheableMetadata` contract enforced
-- [x] `ContextRenderer` — markdown output
-- [x] `ContextHtmlRenderer` — render array output with XSS-safe value escaping
-- [x] `ContextPreviewController` — preview page, export download; merges alter hook cache metadata
-- [x] `ContextApiController` — JSON endpoint at `/api/annotations/{target_id}`; `CacheableJsonResponse` with full cache tag/context set
+- [x] `hook_annotations_context_alter()` — `CacheableMetadata` contract enforced
+- [x] `ContextRenderer`, `ContextHtmlRenderer`
+- [x] `ContextPreviewController` — preview + export; merges alter hook cache metadata
+- [x] `ContextApiController` — JSON endpoint; `CacheableJsonResponse` with full cache tags/contexts
 - [x] Routing, permissions, menu link
-- [ ] Tagged service provider pattern (`annotations.context_provider`) — deferred; alter hook covers current needs
+- [ ] Tagged service provider pattern (`annotations.context_provider`) — deferred
+- [ ] `drush annotations:export` — parked

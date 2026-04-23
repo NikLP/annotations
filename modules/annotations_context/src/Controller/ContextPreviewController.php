@@ -9,11 +9,11 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\annotations\DiscoveryService;
+use Drupal\annotations_context\ContextAssembler;
 use Drupal\annotations_context\ContextHtmlRenderer;
 use Drupal\annotations_context\ContextRenderer;
-use Drupal\annotations_context\ContextAssembler;
+use Drupal\annotations_context\Form\ContextFilterForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -59,11 +59,7 @@ class ContextPreviewController extends ControllerBase {
   /**
    * Admin preview page.
    */
-  public function page(Request $request): array|RedirectResponse {
-    if ($request->query->get('op') === 'clear') {
-      return new RedirectResponse(Url::fromRoute('annotations_context.preview')->toString());
-    }
-
+  public function page(Request $request): array {
     $options = $this->optionsFromRequest($request);
     $payload = $this->assembler->assemble($options);
 
@@ -75,11 +71,9 @@ class ContextPreviewController extends ControllerBase {
         $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
       ),
     ];
-    // Merge cache metadata contributed by hook_annotations_context_alter() implementations.
     $this->assembler->getLastCacheableMetadata()->applyTo($build);
     $build['#attached']['library'][] = 'annotations/annotations.admin';
 
-    // Build export URL preserving current filters.
     $export_query = [];
     if (!empty($options['entity_type'])) {
       $export_query['target_id'] = 'et:' . $options['entity_type'];
@@ -99,12 +93,11 @@ class ContextPreviewController extends ControllerBase {
 
     $export_url = Url::fromRoute('annotations_context.export', [], ['query' => $export_query]);
 
-    // Toolbar: filter form + download button side by side.
     $build['toolbar'] = [
       '#type'       => 'container',
       '#attributes' => ['class' => ['annotations-context__toolbar']],
-      'filters' => $this->buildFilterForm($options),
-      'export'  => [
+      'filters'     => $this->formBuilder()->getForm(ContextFilterForm::class, $options),
+      'export'      => [
         '#type'       => 'link',
         '#title'      => $this->t('Download .md'),
         '#url'        => $export_url,
@@ -170,12 +163,10 @@ class ContextPreviewController extends ControllerBase {
       return $build;
     }
 
-    // Main rendered document.
     $build['content'] = $this->htmlRenderer->render($payload);
 
-    // Raw markdown — collapsed, plain output for copy/export reference.
     $exclusive = (bool) $this->config('annotations.settings')->get('use_accordion_single');
-    $markdown = $this->markdownRenderer->render($payload);
+    $markdown  = $this->markdownRenderer->render($payload);
     if ($markdown !== '') {
       $build['raw'] = [
         '#type'       => 'details',
@@ -223,7 +214,6 @@ class ContextPreviewController extends ControllerBase {
   private function optionsFromRequest(Request $request): array {
     $options = [];
 
-    // Specific target or entity-type filter (encoded as "et:{entity_type}").
     $target_id = (string) $request->query->get('target_id', '');
     if (str_starts_with($target_id, 'et:')) {
       $options['entity_type'] = substr($target_id, 3);
@@ -241,162 +231,12 @@ class ContextPreviewController extends ControllerBase {
       $options['include_field_meta'] = TRUE;
     }
 
-    // Role simulation filter.
     $role = (string) $request->query->get('role', '');
     if ($role !== '') {
       $options['role'] = $role;
     }
 
     return $options;
-  }
-
-  /**
-   * Filter form for the preview page.
-   *
-   * Controls: role (primary), specific target, ref depth, include field metadata.
-   */
-  private function buildFilterForm(array $current_options): array {
-    // Role options — exclude admin roles (bypasses all permission checks).
-    $role_options = ['' => $this->t('All roles (no filter)')];
-    /** @var \Drupal\user\RoleInterface[] $roles */
-    $roles = $this->entityTypeManager()->getStorage('user_role')->loadMultiple();
-    foreach ($roles as $role) {
-      if ($role->isAdmin()) {
-        continue;
-      }
-      $role_options[$role->id()] = $role->label();
-    }
-
-    // Target options — all annotation_targets grouped by entity type as optgroups.
-    /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $all_targets */
-    $all_targets = $this->entityTypeManager()->getStorage('annotation_target')->loadMultiple();
-    uasort($all_targets, fn($a, $b) =>
-      $a->getTargetEntityTypeId() <=> $b->getTargetEntityTypeId()
-      ?: strcmp((string) $a->label(), (string) $b->label())
-    );
-
-    $plugins = $this->discoveryService->getPlugins();
-    $target_options = ['' => $this->t('All targets')];
-    $grouped = [];
-    foreach ($all_targets as $target) {
-      $grouped[$target->getTargetEntityTypeId()][] = $target;
-    }
-    foreach ($grouped as $et_id => $targets) {
-      $plugin      = $plugins[$et_id] ?? NULL;
-      $group_label = $plugin ? (string) $plugin->getLabel() : ucfirst(str_replace('_', ' ', $et_id));
-      // Selectable entity-type-level option for "all bundles of this type".
-      $target_options['et:' . $et_id] = $this->t('All @label', ['@label' => $group_label]);
-      $target_options[$group_label] = [];
-      foreach ($targets as $target) {
-        $target_options[$group_label][$target->id()] = (string) $target->label();
-      }
-    }
-
-    $form = [
-      '#type'       => 'html_tag',
-      '#tag'        => 'form',
-      '#attributes' => [
-        'method' => 'get',
-        'action' => Url::fromRoute('annotations_context.preview')->toString(),
-        'class'  => ['annotations-context__filters', 'form--inline'],
-      ],
-    ];
-
-    $form['role'] = [
-      '#type'       => 'select',
-      '#title'      => $this->t('View as role'),
-      '#options'    => $role_options,
-      '#value'      => $current_options['role'] ?? '',
-      '#name'       => 'role',
-      '#attributes' => ['id' => 'annotations-context-role'],
-    ];
-
-    $form['target_id'] = [
-      '#type'       => 'select',
-      '#title'      => $this->t('Target'),
-      '#options'    => $target_options,
-      '#value'      => isset($current_options['entity_type'])
-        ? 'et:' . $current_options['entity_type']
-        : ($current_options['target_id'] ?? ''),
-      '#name'       => 'target_id',
-      '#attributes' => ['id' => 'annotations-context-target-id'],
-    ];
-
-    $form['ref_depth'] = $this->buildRefDepthSelect($current_options);
-
-    $form['include_field_meta'] = $this->buildIncludeFieldMetaCheckbox($current_options);
-
-    $form['actions'] = $this->buildSubmitButton();
-    $form['actions']['clear'] = $this->buildClearButton();
-
-    return $form;
-  }
-
-  /**
-   * Builds the "Include metadata" checkbox for GET forms.
-   *
-   * Off by default — field type/cardinality/help text adds useful context for
-   * AI use but is noisy in the human-readable preview.
-   */
-  private function buildIncludeFieldMetaCheckbox(array $current_options): array {
-    return [
-      '#theme'   => 'annotations_context_checkbox',
-      '#id'      => 'annotations-context-include-field-meta',
-      '#name'    => 'include_field_meta',
-      '#value'   => '1',
-      '#checked' => !empty($current_options['include_field_meta']),
-      '#label'   => $this->t('Include metadata'),
-    ];
-  }
-
-  /**
-   * Builds the References depth select.
-   */
-  private function buildRefDepthSelect(array $current_options): array {
-    return [
-      '#type'       => 'select',
-      '#title'      => $this->t('References'),
-      '#options'    => [
-        0 => $this->t('None'),
-        1 => $this->t('One hop'),
-        2 => $this->t('Two hops'),
-      ],
-      '#value'      => $current_options['ref_depth'] ?? ContextAssembler::DEFAULT_REF_DEPTH,
-      '#name'       => 'ref_depth',
-      '#attributes' => ['id' => 'annotations-context-ref-depth'],
-    ];
-  }
-
-  /**
-   * Builds the filter form submit button.
-   */
-  private function buildSubmitButton(): array {
-    return [
-      '#type'       => 'html_tag',
-      '#tag'        => 'div',
-      '#attributes' => ['class' => ['annotations-context__filter-actions']],
-      'submit'      => [
-        '#type'       => 'html_tag',
-        '#tag'        => 'button',
-        '#value'      => (string) $this->t('Filter'),
-        '#attributes' => ['type' => 'submit', 'class' => ['button']],
-      ],
-    ];
-  }
-
-  /**
-   * Builds a "Clear" submit button that resets all filters to defaults.
-   *
-   * Submits the form with op=clear; the controller detects this and issues a
-   * redirect to the bare route URL, stripping all query parameters.
-   */
-  private function buildClearButton(): array {
-    return [
-      '#type'       => 'html_tag',
-      '#tag'        => 'button',
-      '#value'      => (string) $this->t('Clear'),
-      '#attributes' => ['type' => 'submit', 'name' => 'op', 'value' => 'clear', 'class' => ['button', 'button--secondary']],
-    ];
   }
 
 }

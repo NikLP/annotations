@@ -76,7 +76,7 @@ class ContextHtmlRenderer {
       'heading'     => [
         '#type'  => 'html_tag',
         '#tag'   => 'h2',
-        '#value' => e($group['label']),
+        '#value' => Html::escape($group['label']),
         '#attributes' => ['class' => ['annotations-context__group-heading']],
       ],
     ];
@@ -106,7 +106,7 @@ class ContextHtmlRenderer {
     $card = [
       '#type'       => 'details',
       '#open'       => FALSE,
-      '#title'      => e($target_data['label']),
+      '#title'      => Html::escape($target_data['label']),
       '#attributes' => $attrs,
     ];
 
@@ -169,14 +169,14 @@ class ContextHtmlRenderer {
         'name'        => [
           '#type'       => 'html_tag',
           '#tag'        => 'p',
-          '#value'      => e($field_data['label']),
+          '#value'      => Html::escape($field_data['label']),
           '#attributes' => ['class' => ['annotations-context__field-name']],
         ],
       ];
 
       if (!empty($field_data['meta'])) {
         $meta = $field_data['meta'];
-        $summary = e($meta['type']) . ' &middot; ' . e($meta['cardinality']);
+        $summary = Html::escape($meta['type']) . ' &middot; ' . Html::escape($meta['cardinality']);
         $field['meta'] = [
           '#type'       => 'html_tag',
           '#tag'        => 'p',
@@ -187,7 +187,7 @@ class ContextHtmlRenderer {
           $field['meta_description'] = [
             '#type'       => 'html_tag',
             '#tag'        => 'p',
-            '#value'      => Markup::create(e($meta['description'])),
+            '#value'      => Markup::create(Html::escape($meta['description'])),
             '#attributes' => ['class' => ['annotations-context__field-meta-desc']],
           ];
         }
@@ -228,8 +228,8 @@ class ContextHtmlRenderer {
           '#type'       => 'details',
           '#open'       => FALSE,
           '#title'      => Markup::create(
-            e($ref_data['label'])
-            . ' <em>(' . e((string) $this->t('via @field', ['@field' => $field_name])) . ')</em>'
+            Html::escape($ref_data['label'])
+            . ' <em>(' . Html::escape((string) $this->t('via @field', ['@field' => $field_name])) . ')</em>'
           ),
           '#attributes' => ['class' => ['annotations-context__target', 'annotations-context__target--ref']],
         ];
@@ -276,7 +276,7 @@ class ContextHtmlRenderer {
       $block['label'] = [
         '#type'       => 'html_tag',
         '#tag'        => 'p',
-        '#value'      => e($type_label),
+        '#value'      => Html::escape($type_label),
         '#attributes' => ['class' => ['annotations-context__type-label']],
       ];
     }
@@ -285,7 +285,7 @@ class ContextHtmlRenderer {
       $block['text'] = [
         '#type'       => 'html_tag',
         '#tag'        => 'p',
-        '#value'      => Markup::create(e($value)),
+        '#value'      => Markup::create(Html::escape($value)),
         '#attributes' => ['class' => ['annotations-context__annotation-text']],
       ];
     }
@@ -295,8 +295,8 @@ class ContextHtmlRenderer {
         '#type'       => 'html_tag',
         '#tag'        => 'p',
         '#value'      => Markup::create(
-          '<strong>' . e($extra['label']) . ':</strong> '
-          . implode(', ', array_map('Drupal\annotations_context\e', $extra['values']))
+          '<strong>' . Html::escape($extra['label']) . ':</strong> '
+          . implode(', ', array_map(Html::escape(...), $extra['values']))
         ),
         '#attributes' => ['class' => ['annotations-context__annotation-extra']],
       ];
@@ -325,14 +325,4 @@ class ContextHtmlRenderer {
     return count($ids);
   }
 
-}
-
-/**
- * Shorthand for htmlspecialchars with consistent flags.
- *
- * Named 'e' to keep call sites readable without compromising safety.
- * Only for use within this file.
- */
-function e(string $value): string {
-  return Html::escape($value);
 }

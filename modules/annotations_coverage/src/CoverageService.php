@@ -203,6 +203,7 @@ class CoverageService {
       uasort($types, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
       $this->annotationTypeCache = $types;
     }
+    
     return $this->annotationTypeCache;
   }
 

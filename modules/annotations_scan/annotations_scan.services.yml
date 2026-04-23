@@ -10,6 +10,7 @@ services:
       - '@entity_type.manager'
       - '@logger.channel.annotations_scan'
       - '@annotations.discovery'
+      - '@database'
 
   Drupal\annotations_scan\ScanService:
     alias: annotations_scan.scanner

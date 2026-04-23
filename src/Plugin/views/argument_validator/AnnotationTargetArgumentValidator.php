@@ -42,9 +42,11 @@ class AnnotationTargetArgumentValidator extends ArgumentValidatorPluginBase {
 
   public function validateArgument($arg): bool {
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($arg);
+
     if ($target === NULL) {
       return FALSE;
     }
+
     $this->argument->validated_title = $target->label();
     return TRUE;
   }

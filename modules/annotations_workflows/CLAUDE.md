@@ -79,12 +79,3 @@ Assign `submit_for_review` to annotator roles. Assign `publish` and `reject` to 
 | `annotation_field_revision` | All historical field values per revision per language |
 
 When a draft revision is saved, `content_moderation` sets `isDefaultRevision = false`. Drupal's `SqlContentEntityStorage` only writes to `annotation_field_data` (the live table) when saving a default revision. Draft saves write only to `annotation_field_revision`. `getForTarget($id, TRUE)` reads from `annotation_field_data` — consumer contexts always see the last published value. `getLatestForTarget($id)` queries `allRevisions()` — editors see the current draft.
-
-This is confirmed working by smoke tests on the 2.x branch.
-
-## Current status
-
-- [x] Default workflow config ships in `config/install`
-- [x] Module description is accurate
-- [x] No broken form altering code
-- [ ] Role permission assignments (assign via UI / config after install)
