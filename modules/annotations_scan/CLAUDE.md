@@ -14,4 +14,3 @@ Crawls opted-in `annotation_target` entities and produces a structured snapshot 
 - `AnnotationsScanCommands` (`src/Drush/Commands/`) — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`
 - `administer annotations scanner` permission
 - Logger channel `annotations_scan`
-

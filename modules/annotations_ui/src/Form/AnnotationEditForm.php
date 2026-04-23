@@ -178,13 +178,28 @@ class AnnotationEditForm extends ContentEntityForm {
     $cardinality_label = $cardinality === -1 ? (string) $this->t('Unlimited') : (string) $cardinality;
 
     $rows = [
-      [['data' => ['#plain_text' => (string) $this->t('Machine name')]], ['data' => ['#markup' => '<code>' . Html::escape($field_name) . '</code>']]],
-      [['data' => ['#plain_text' => (string) $this->t('Type')]], ['data' => ['#plain_text' => $definition->getType()]]],
-      [['data' => ['#plain_text' => (string) $this->t('Cardinality')]], ['data' => ['#plain_text' => $cardinality_label]]],
-      [['data' => ['#plain_text' => (string) $this->t('Required')]], ['data' => ['#plain_text' => (string) ($definition->isRequired() ? $this->t('Yes') : $this->t('No'))]]],
+      [
+        ['data' => ['#plain_text' => (string) $this->t('Machine name')]],
+        ['data' => ['#markup' => '<code>' . Html::escape($field_name) . '</code>']],
+      ],
+      [
+        ['data' => ['#plain_text' => (string) $this->t('Type')]],
+        ['data' => ['#plain_text' => $definition->getType()]],
+      ],
+      [
+        ['data' => ['#plain_text' => (string) $this->t('Cardinality')]],
+        ['data' => ['#plain_text' => $cardinality_label]],
+      ],
+      [
+        ['data' => ['#plain_text' => (string) $this->t('Required')]],
+        ['data' => ['#plain_text' => (string) ($definition->isRequired() ? $this->t('Yes') : $this->t('No'))]],
+      ],
     ];
     if ($description = (string) $definition->getDescription()) {
-      $rows[] = [['data' => ['#plain_text' => (string) $this->t('Description')]], ['data' => ['#plain_text' => $description]]];
+      $rows[] = [
+        ['data' => ['#plain_text' => (string) $this->t('Description')]],
+        ['data' => ['#plain_text' => $description]]
+      ];
     }
     return [
       '#type' => 'details',

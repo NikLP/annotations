@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\annotations\Plugin\Target;
 
-use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-
 /**
  * Target plugin for Workflow states (requires core Workflows module).
  *

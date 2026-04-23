@@ -79,6 +79,9 @@ class AnnotationsTypeUiHooks {
     }
   }
 
+  /**
+   * Implements hook_entity_type_alter().
+   */
   #[Hook('entity_type_alter')]
   public function entityTypeAlter(array &$entity_types): void {
     if (isset($entity_types['annotation_type'])) {
@@ -93,8 +96,8 @@ class AnnotationsTypeUiHooks {
     }
 
     // field_ui_base_route enables "Manage fields / form display / display"
-    // routes per bundle, which AnnotationTypeListBuilder surfaces as operations.
-    // Side-effect: Admin Toolbar Extra Tools adds these routes to the admin menu.
+    // routes per bundle, which AnnotationTypeListBuilder surfaces as ops.
+    // Side-effect: Admin Toolbar Extra Tools adds these routes to admin menu.
     if (isset($entity_types['annotation'])) {
       $entity_types['annotation']->set(
         'field_ui_base_route',

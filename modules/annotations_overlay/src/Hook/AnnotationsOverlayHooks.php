@@ -97,7 +97,7 @@ class AnnotationsOverlayHooks {
           'items' => [],
         ],
       ],
-      // Single annotation item — type heading, entity content, optional edit link.
+      // Single annotation item: type heading,entity content,optional edit link.
       'annotations_overlay_item' => [
         'variables' => [
           'type_id' => NULL,
@@ -116,7 +116,7 @@ class AnnotationsOverlayHooks {
           'items' => [],
         ],
       ],
-      // Single annotation item on a chooser page — no dialog chrome, no edit link.
+      // Single annotation item on chooser page — no dialog chrome / edit link.
       'annotations_overlay_chooser_item' => [
         'variables' => [
           'type_id' => NULL,
@@ -172,9 +172,12 @@ class AnnotationsOverlayHooks {
       return;
     }
 
-    // Consumer context: only show published annotations. When annotations_workflow is
-    // not installed, entities have no moderation_state field and the 'published'
-    // filter is a silent no-op — all non-empty values are returned.
+    /**
+     * Consumer context: only show published annotations. When
+     * annotations_workflow is not installed, entities have no moderation_state
+     * field and the 'published' filter is a silent no-op — all non-empty
+     * values are returned.
+     */
     $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
     $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
 
@@ -196,7 +199,11 @@ class AnnotationsOverlayHooks {
           '#tag' => 'button',
           '#attributes' => [
             'type' => 'button',
-            'class' => ['annotations-overlay-trigger', 'annotations-overlay-trigger--bundle', 'js-annotations-overlay-trigger'],
+            'class' => [
+                'annotations-overlay-trigger',
+                'annotations-overlay-trigger--bundle',
+                'js-annotations-overlay-trigger'
+              ],
             'data-annotations-field' => '_bundle',
             'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),
           ],
@@ -262,14 +269,14 @@ class AnnotationsOverlayHooks {
    * Implements hook_entity_view_alter().
    *
    * Injects field-level "?" triggers and annotation dialogs into entity view
-   * pages. Only fires when the annotations_overlay field is placed in an active
-   * display region — site builders opt in per view mode via Manage Display.
-   * The formatter's annotation_view_mode setting controls which view mode is
-   * used to render annotation entities inside dialogs.
+   * pages. Only fires when the annotations_overlay field is placed in an
+   * active display region — site builders opt in per view mode via Manage
+   * Display. The formatter's annotation_view_mode setting controls which view
+   * mode is used to render annotation entities inside dialogs.
    *
    * Triggers are added as top-level build siblings (not nested inside field
-   * render elements) because field.html.twig does not render arbitrary children.
-   * CSS positions them relative to the entity view output.
+   * render elements) because field.html.twig does not render arbitrary
+   * children. CSS positions them relative to the entity view output.
    */
   #[Hook('entity_view_alter')]
   public function entityViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display): void {
@@ -339,7 +346,11 @@ class AnnotationsOverlayHooks {
         '#tag' => 'button',
         '#attributes' => [
           'type' => 'button',
-          'class' => ['annotations-overlay-trigger', 'annotations-overlay-trigger--bundle', 'js-annotations-overlay-trigger'],
+          'class' => [
+            'annotations-overlay-trigger',
+            'annotations-overlay-trigger--bundle',
+            'js-annotations-overlay-trigger'
+          ],
           'data-annotations-field' => '_bundle',
           'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),
         ],
@@ -348,9 +359,12 @@ class AnnotationsOverlayHooks {
       ];
     }
 
-    // Field triggers — added as top-level build siblings because field.html.twig
-    // does not render arbitrary children. data-annotations-field on the field
-    // element itself allows CSS to associate the trigger with its field.
+    /**
+     * Field triggers — added as top-level build siblings because
+     * field.html.twig does not render arbitrary children.
+     * data-annotations-field on the field element itself allows CSS to
+     * associate the trigger with its field.
+     */
     foreach (array_keys($fields_with_annotations) as $field_name) {
       $field_label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
       if (isset($build[$field_name])) {

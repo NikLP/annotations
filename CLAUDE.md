@@ -7,7 +7,6 @@ Drupal module suite: reads site structure (content types, fields, roles, workflo
 ```text
 annotations/                ← root module (always required)
 └── modules/
-    ├── annotations_scan/           ← CLAUDE.md, README.md
     ├── annotations_ui/             ← CLAUDE.md, README.md
     ├── annotations_type_ui/        ← CLAUDE.md, README.md
     ├── annotations_coverage/       ← CLAUDE.md, README.md
@@ -15,6 +14,7 @@ annotations/                ← root module (always required)
     ├── annotations_ai_context/     ← CLAUDE.md
     ├── annotations_overlay/        ← CLAUDE.md, README.md
     ├── annotations_workflows/      ← CLAUDE.md, README.md
+    ├── annotations_scan/           ← CLAUDE.md, README.md
     ├── annotations_demo/           ← default types, form displays, starter content
     └── annotations_delta/          ← not started
 ```
@@ -120,9 +120,9 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - `annotations_ui` — complete
 - `annotations_type_ui` — complete
 - `annotations_coverage` — complete (cron caching deferred)
-- `annotations_context` — largely complete; JSON API endpoint built; `drush annotations:export` parked
+- `annotations_context` — largely complete
 - `annotations_ai_context` — largely complete
-- `annotations_overlay` — largely complete (view-page display and per-field display mode override deferred)
+- `annotations_overlay` — largely complete (per-field display mode override deferred)
 - `annotations_workflows` — complete
-- `annotations_demo` — complete (YAML content export migration deferred)
+- `annotations_demo` — complete
 - `annotations_delta` — not started

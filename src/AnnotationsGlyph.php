@@ -12,16 +12,16 @@ namespace Drupal\annotations;
  */
 class AnnotationsGlyph {
 
-  /** Checkmark — yes, included, complete. */
+  /* Checkmark — yes, included, complete. */
   const CHECK = '&#x2714;';
 
-  /** Cross — no, excluded, empty. */
+  /* Cross — no, excluded, empty. */
   const CROSS = '&#x2718;';
 
-  /** Half-filled circle — partial coverage. */
+  /* Half-filled circle — partial coverage. */
   const PARTIAL = '&#x25D1;';
 
-  /** Pencil — edit action. */
+  /* Pencil — edit action. */
   const PENCIL = '📝';
 
 }

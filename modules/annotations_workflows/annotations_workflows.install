@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the annotations_workflows module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Attaches the annotations workflow to all existing annotation types.
+ * New types are handled automatically via hook_entity_insert.
+ */
+function annotations_workflows_install(): void {
+  $etm = \Drupal::entityTypeManager();
+  $workflow = $etm->getStorage('workflow')->load('annotations');
+  if (!$workflow) {
+    return;
+  }
+
+  $plugin = $workflow->getTypePlugin();
+  $types = $etm->getStorage('annotation_type')->loadMultiple();
+  foreach (array_keys($types) as $type_id) {
+    if (!$plugin->appliesToEntityTypeAndBundle('annotation', $type_id)) {
+      $plugin->addEntityTypeAndBundle('annotation', $type_id);
+    }
+  }
+  $workflow->save();
+}

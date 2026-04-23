@@ -16,7 +16,7 @@ The workflow YAML ships with `entity_types: {}` — no bundles attached. Annotat
 
 Bundle attachment is handled automatically in two places:
 
-- **`annotations_workflows_install()`** (procedural, in `.module`) — runs after the workflow config is imported; iterates all existing `annotation_type` entities and attaches each one. Covers the case where `annotations_workflows` is enabled after types already exist.
+- **`annotations_workflows_install()`** (procedural, in `.install`) — runs after the workflow config is imported; iterates all existing `annotation_type` entities and attaches each one. Covers the case where `annotations_workflows` is enabled after types already exist.
 - **`AnnotationsWorkflowHooks::entityInsert()`** — fires on every new `annotation_type` save and attaches the workflow immediately.
 - **`AnnotationsWorkflowHooks::entityDelete()`** — fires on `annotation_type` deletion and detaches the workflow to avoid orphaned bundle references.
 
