@@ -14,6 +14,9 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Exposes the annotation_view_mode setting in the Manage Display UI.
+ */
 #[FieldFormatter(
   id: 'annotations_overlay',
   label: new TranslatableMarkup('Annotations overlay'),
@@ -34,6 +37,9 @@ class AnnotationsOverlayFormatter extends FormatterBase implements ContainerFact
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
@@ -47,10 +53,16 @@ class AnnotationsOverlayFormatter extends FormatterBase implements ContainerFact
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultSettings(): array {
     return ['annotation_view_mode' => 'overlay'] + parent::defaultSettings();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function settingsForm(array $form, FormStateInterface $form_state): array {
     $element = parent::settingsForm($form, $form_state);
 
@@ -70,10 +82,16 @@ class AnnotationsOverlayFormatter extends FormatterBase implements ContainerFact
     return $element;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function settingsSummary(): array {
     return [$this->t('View mode: @mode', ['@mode' => $this->getSetting('annotation_view_mode')])];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     // Rendering is handled by hook_entity_view_alter which reads this field's
     // display component settings. This formatter exists to surface the

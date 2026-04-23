@@ -10,6 +10,9 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 
+/**
+ * Computed field type that marks an entity as having an annotations overlay.
+ */
 #[FieldType(
   id: 'annotations_overlay',
   label: new TranslatableMarkup('Annotations overlay'),
@@ -17,6 +20,9 @@ use Drupal\Core\TypedData\DataDefinition;
 )]
 class AnnotationsOverlayItem extends FieldItemBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties['value'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Value'))
@@ -24,10 +30,16 @@ class AnnotationsOverlayItem extends FieldItemBase {
     return $properties;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function isEmpty(): bool {
     return FALSE;
   }

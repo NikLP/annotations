@@ -31,6 +31,9 @@ class AnnotationModerationStateField extends FieldPluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -40,20 +43,32 @@ class AnnotationModerationStateField extends FieldPluginBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function usesGroupBy(): bool {
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function clickSortable(): bool {
     // Sorting is not supported: this field loads from a separate entity type
     // in render() and adds nothing to the SQL query.
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query(): void {
     // No extra query needed; we load via entity type manager in render().
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function render(ResultRow $values): mixed {
     $annotation = $values->_entity ?? NULL;
     if ($annotation === NULL) {

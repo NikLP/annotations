@@ -24,12 +24,18 @@ class AnnotationTargetFilter extends InOperator {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($configuration, $plugin_id, $plugin_definition,
       $container->get('entity_type.manager'),
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getValueOptions(): array {
     if (isset($this->valueOptions)) {
       return $this->valueOptions;

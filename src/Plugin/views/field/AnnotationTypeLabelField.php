@@ -25,17 +25,26 @@ class AnnotationTypeLabelField extends FieldPluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($configuration, $plugin_id, $plugin_definition,
       $container->get('entity_type.manager'),
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query(): void {
     $this->ensureMyTable();
     parent::query();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function render(ResultRow $values): mixed {
     $type_id = (string) ($this->getValue($values) ?? '');
     $entity = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);

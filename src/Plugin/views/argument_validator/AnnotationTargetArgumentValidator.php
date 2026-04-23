@@ -31,6 +31,9 @@ class AnnotationTargetArgumentValidator extends ArgumentValidatorPluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -40,6 +43,9 @@ class AnnotationTargetArgumentValidator extends ArgumentValidatorPluginBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function validateArgument($arg): bool {
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($arg);
 

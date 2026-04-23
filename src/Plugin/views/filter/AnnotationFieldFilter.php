@@ -30,6 +30,9 @@ class AnnotationFieldFilter extends InOperator {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -40,6 +43,9 @@ class AnnotationFieldFilter extends InOperator {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getValueOptions(): array {
     if (isset($this->valueOptions)) {
       return $this->valueOptions;

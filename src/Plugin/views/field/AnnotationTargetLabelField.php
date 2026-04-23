@@ -25,12 +25,18 @@ class AnnotationTargetLabelField extends FieldPluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($configuration, $plugin_id, $plugin_definition,
       $container->get('entity_type.manager'),
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function render(ResultRow $values): mixed {
     $target_id = (string) ($this->getValue($values) ?? '');
     if ($target_id === '') {

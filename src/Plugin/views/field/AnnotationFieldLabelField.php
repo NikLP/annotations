@@ -28,6 +28,9 @@ class AnnotationFieldLabelField extends FieldPluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($configuration, $plugin_id, $plugin_definition,
       $container->get('entity_type.manager'),
@@ -35,6 +38,9 @@ class AnnotationFieldLabelField extends FieldPluginBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query(): void {
     $this->ensureMyTable();
     $this->additional_fields['target_id'] = 'target_id';
@@ -42,6 +48,9 @@ class AnnotationFieldLabelField extends FieldPluginBase {
     parent::query();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function render(ResultRow $values): mixed {
     $field_name = (string) ($this->getValue($values) ?? '');
     $target_id  = (string) ($this->getValue($values, 'target_id') ?? '');
