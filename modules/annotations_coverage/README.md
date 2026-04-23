@@ -63,6 +63,7 @@ The score percentage is slot-based: `(filled high-priority slots / total high-pr
 `CoverageService` is the extension point. No hooks, plugins, or gate interfaces are needed — inject the service and call it.
 
 **Workflow transition enforcement:**
+
 ```php
 $entry = $coverageService->getCoverageForTarget($target);
 if ($entry['status'] !== 'complete') {
@@ -71,6 +72,7 @@ if ($entry['status'] !== 'complete') {
 ```
 
 **CI / Drush check:**
+
 ```php
 $coverage = $coverageService->getCoverage();
 $incomplete = array_filter($coverage, fn($r) => $r['status'] !== 'complete');

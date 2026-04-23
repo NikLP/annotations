@@ -1,0 +1,10 @@
+services:
+  annotations_context_ccc.system_prompt_subscriber:
+    class: Drupal\annotations_context_ccc\EventSubscriber\AnnotationsContextCccSubscriber
+    arguments:
+      - '@annotations_context.assembler'
+      - '@annotations_context.renderer'
+      - '@entity_type.manager'
+      - '@current_route_match'
+    tags:
+      - { name: event_subscriber }

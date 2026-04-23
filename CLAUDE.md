@@ -11,7 +11,8 @@ annotations/                ← root module (always required)
     ├── annotations_type_ui/        ← CLAUDE.md, README.md
     ├── annotations_coverage/       ← CLAUDE.md, README.md
     ├── annotations_context/        ← CLAUDE.md, README.md
-    ├── annotations_ai_context/     ← CLAUDE.md
+    ├── annotations_ai_context/     ← CLAUDE.md (deprecated prototype)
+    ├── annotations_context_ccc/    ← CLAUDE.md
     ├── annotations_overlay/        ← CLAUDE.md, README.md
     ├── annotations_workflows/      ← CLAUDE.md, README.md
     ├── annotations_scan/           ← CLAUDE.md, README.md
@@ -92,7 +93,8 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_type_ui` | Browser CRUD for annotation types |
 | `annotations_coverage` | Coverage tracking; `CoverageService` API; status rollup |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI |
-| `annotations_ai_context` | AI chat via `ai` module suite; `GetSiteContext` function call plugin; `AnnotationsChatBlock` |
+| `annotations_ai_context` | *Deprecated prototype.* AI chat via `ai` module suite; superseded by `annotations_context_ccc` |
+| `annotations_context_ccc` | Injects annotations context into CCC (ai_context) agent system prompts via `BuildSystemPromptEvent` |
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
 | `annotations_demo` | editorial/technical/rules types, form displays, starter annotations; install for dev/eval |
@@ -107,7 +109,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - **Split storage:** Scope in Drupal config (cex/cim); annotation text in `annotation` content entity (never config sync). Different lifecycles, different owners.
 - **Plugin system in `annotations`:** Target plugins live in root module, not `annotations_scan`. `GenericTarget` only covers fieldable types — non-fieldable always need a dedicated plugin.
 - **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the consuming submodule.
-- **`annotations_context` is the non-AI output path:** `annotations_ai_context` is a second consumer of the same assembler payload.
+- **`annotations_context` is the payload API:** `annotations_context_ccc` is the CCC consumer; `annotations_ai_context` is a deprecated prototype.
 - **Permissions:** `edit {type} annotations` (write per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `edit any annotation`, `access annotation overview`, `view annotations context`, `view annotation revisions`, `administer annotation types`.
 - **No multivalue types:** All values are plain strings; `rules` type uses markdown in a textarea.
 
@@ -121,7 +123,8 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - `annotations_type_ui` — complete
 - `annotations_coverage` — complete (cron caching deferred)
 - `annotations_context` — largely complete
-- `annotations_ai_context` — largely complete
+- `annotations_ai_context` — deprecated prototype, do not extend
+- `annotations_context_ccc` — complete
 - `annotations_overlay` — largely complete (per-field display mode override deferred)
 - `annotations_workflows` — complete
 - `annotations_demo` — complete
