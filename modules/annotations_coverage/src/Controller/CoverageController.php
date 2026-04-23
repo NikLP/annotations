@@ -13,7 +13,6 @@ use Drupal\Core\Url;
 use Drupal\annotations\AnnotationsGlyph;
 use Drupal\annotations\DiscoveryService;
 use Drupal\annotations\Entity\AnnotationTargetInterface;
-use Drupal\annotations\Entity\AnnotationTypeInterface;
 use Drupal\annotations_coverage\CoverageService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +46,7 @@ class CoverageController extends ControllerBase {
     $coverage = $this->coverageService->getCoverage();
     $score = $this->coverageService->getScore($coverage);
 
-    /** @var AnnotationTypeInterface[] $all_types */
+    /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all_types */
     $all_types = $this->entityTypeManager()
       ->getStorage('annotation_type')
       ->loadMultiple();
@@ -194,9 +193,9 @@ class CoverageController extends ControllerBase {
    */
   private function buildStatusCell(string $status): array {
     $map = [
-      'complete' => [AnnotationsGlyph::CHECK,   $this->t('Complete'), 'complete'],
-      'partial'  => [AnnotationsGlyph::PARTIAL, $this->t('Partial'),  'partial'],
-      'empty'    => [AnnotationsGlyph::CROSS,   $this->t('Empty'),    'empty'],
+      'complete' => [AnnotationsGlyph::CHECK, $this->t('Complete'), 'complete'],
+      'partial'  => [AnnotationsGlyph::PARTIAL, $this->t('Partial'), 'partial'],
+      'empty'    => [AnnotationsGlyph::CROSS, $this->t('Empty'), 'empty'],
     ];
 
     [$glyph, $label, $modifier] = $map[$status] ?? ['?', $status, ''];

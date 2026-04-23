@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Install hooks for the annotations_ui module.
  */
+
+declare(strict_types=1);
 
 /**
  * Implements hook_uninstall().
@@ -43,7 +43,7 @@ function annotations_ui_uninstall(bool $is_syncing): void {
   // because the bundle config entities are already gone at this point.
   $database = \Drupal::database();
   $tables[] = ['annotation', 'annotation_field_data', 'annotation_field_revision', 'annotation_revision'];
-  
+
   foreach ($tables as $table) {
     if ($database->schema()->tableExists($table)) {
       $database->delete($table)->execute();

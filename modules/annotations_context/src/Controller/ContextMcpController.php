@@ -88,6 +88,9 @@ class ContextMcpController extends ControllerBase {
     };
   }
 
+  /**
+   * Handle initialize.
+   */
   private function handleInitialize(mixed $id, array $params): JsonResponse {
     $clientVersion = $params['protocolVersion'] ?? '';
     $negotiated    = in_array($clientVersion, self::SUPPORTED_VERSIONS, TRUE)
@@ -109,6 +112,9 @@ class ContextMcpController extends ControllerBase {
     ]);
   }
 
+  /**
+   * Handle resources list.
+   */
   private function handleResourcesList(mixed $id): JsonResponse {
     $targets   = $this->entityTypeManager()->getStorage('annotation_target')->loadMultiple();
     $resources = [];
@@ -125,6 +131,9 @@ class ContextMcpController extends ControllerBase {
     return $this->successResponse($id, ['resources' => $resources]);
   }
 
+  /**
+   * Handle resource read.
+   */
   private function handleResourcesRead(mixed $id, array $params, Request $request): JsonResponse {
     $uri = $params['uri'] ?? '';
 
@@ -179,6 +188,9 @@ class ContextMcpController extends ControllerBase {
     ]);
   }
 
+  /**
+   * Success response.
+   */
   private function successResponse(mixed $id, array|object $result): JsonResponse {
     return new JsonResponse([
       'jsonrpc' => '2.0',
@@ -187,6 +199,9 @@ class ContextMcpController extends ControllerBase {
     ]);
   }
 
+  /**
+   * Error response.
+   */
   private function errorResponse(mixed $id, int $code, string $message, array $data = [], int $httpStatus = Response::HTTP_OK): JsonResponse {
     $error = ['code' => $code, 'message' => $message];
     if ($data) {

@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Install and uninstall hooks for the Annotations module.
  */
+
+declare(strict_types=1);
 
 /**
  * Implements hook_uninstall().

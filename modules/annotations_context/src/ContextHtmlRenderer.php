@@ -264,7 +264,7 @@ class ContextHtmlRenderer {
    *   when the annotation entity has configurable extra fields but no value.
    * @param array $extra_fields
    *   Configurable field values keyed by field name:
-   *   ['field_foo' => ['label' => 'Foo', 'values' => ['bar', 'baz']], ...]
+   *   ['field_foo' => ['label' => 'Foo', 'values' => ['bar', 'baz']], ...].
    */
   private function annotationBlock(string $type_label, string $value, array $extra_fields = []): array {
     $block = [

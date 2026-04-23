@@ -31,10 +31,16 @@ class McpAccessCheck implements AccessInterface {
     private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
+  /**
+   * Check validity.
+   */
   public function applies(Route $route): bool {
     return $route->hasRequirement('_mcp_access');
   }
 
+  /**
+   * Access handler.
+   */
   public function access(Route $route, Request $request, AccountInterface $account): AccessResultInterface {
     // Session-based: standard Drupal permission check.
     if ($account->hasPermission('view annotations context') || $account->hasPermission('administer annotations')) {

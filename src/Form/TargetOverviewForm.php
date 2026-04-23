@@ -147,7 +147,7 @@ class TargetOverviewForm extends FormBase {
                 $selected_count,
                 'The field is selected',
                 'All @count fields selected'
-              ),
+            ),
           ];
           $operations_links['configure'] = [
             'title' => $this->t('Configure'),

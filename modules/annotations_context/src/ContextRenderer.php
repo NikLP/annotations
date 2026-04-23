@@ -137,6 +137,7 @@ class ContextRenderer {
    * a blank paragraph.
    *
    * @param array{label: string, value: string, extra_fields?: array} $annotation
+   *
    * @return string[]
    */
   private function annotationLines(array $annotation): array {

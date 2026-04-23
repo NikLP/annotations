@@ -134,7 +134,7 @@ class ContextPreviewController extends ControllerBase {
         $unfiltered = $this->assembler->assemble($options_without_role);
         if ($unfiltered['meta']['target_count'] > 0) {
           $role_entity = $this->entityTypeManager()->getStorage('user_role')->load($options['role']);
-          $role_label  = $role_entity ? $role_entity->label() : $options['role'];
+          $role_label = $role_entity ? $role_entity->label() : $options['role'];
           $build['empty'] = [
             '#type'       => 'html_tag',
             '#tag'        => 'p',

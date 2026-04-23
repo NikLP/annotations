@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Annotations Workflows — content moderation for annotation entities.
  */
 
+declare(strict_types=1);

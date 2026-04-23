@@ -110,12 +110,12 @@ class AnnotationStorageService {
 
     $result = [];
     foreach ($storage->loadMultiple($ids) as $entity) {
-      $translation = $entity->hasTranslation($langcode)
+      $translation                   = $entity->hasTranslation($langcode)
         ? $entity->getTranslation($langcode)
         : $entity;
-      $field_name = (string) ($entity->get('field_name')->value ?? '');
-      $type_id    = (string) $entity->get('type_id')->value;
-      $value      = (string) $translation->get('value')->value;
+      $field_name                    = (string) ($entity->get('field_name')->value ?? '');
+      $type_id                       = (string) $entity->get('type_id')->value;
+      $value                         = (string) $translation->get('value')->value;
       $result[$field_name][$type_id] = $value;
     }
 
@@ -146,12 +146,12 @@ class AnnotationStorageService {
 
     $result = [];
     foreach ($this->getEntitiesForTarget($target_id) as $entity) {
-      $translation = $entity->hasTranslation($langcode)
+      $translation                   = $entity->hasTranslation($langcode)
         ? $entity->getTranslation($langcode)
         : $entity;
-      $field_name = (string) ($entity->get('field_name')->value ?? '');
-      $type_id    = (string) $entity->get('type_id')->value;
-      $value      = (string) $translation->get('value')->value;
+      $field_name                    = (string) ($entity->get('field_name')->value ?? '');
+      $type_id                       = (string) $entity->get('type_id')->value;
+      $value                         = (string) $translation->get('value')->value;
       $result[$field_name][$type_id] = $value;
     }
     return $result;
@@ -183,8 +183,8 @@ class AnnotationStorageService {
 
     $keyed = [];
     foreach ($storage->loadMultipleRevisions($revision_ids) as $entity) {
-      $field_name = (string) ($entity->get('field_name')->value ?? '');
-      $type_id    = (string) $entity->get('type_id')->value;
+      $field_name                          = (string) ($entity->get('field_name')->value ?? '');
+      $type_id                             = (string) $entity->get('type_id')->value;
       $keyed[$field_name . '|' . $type_id] = $entity;
     }
     return $keyed;
@@ -227,11 +227,11 @@ class AnnotationStorageService {
 
     $result = [];
     foreach ($storage->loadMultiple($ids) as $entity) {
-      $translation = $entity->hasTranslation($langcode)
+      $translation                   = $entity->hasTranslation($langcode)
         ? $entity->getTranslation($langcode)
         : $entity;
-      $field_name = (string) ($entity->get('field_name')->value ?? '');
-      $type_id    = (string) $entity->get('type_id')->value;
+      $field_name                    = (string) ($entity->get('field_name')->value ?? '');
+      $type_id                       = (string) $entity->get('type_id')->value;
       $result[$field_name][$type_id] = $translation;
     }
 

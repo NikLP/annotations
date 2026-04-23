@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\annotations\Plugin\Target\GenericTarget;
-use Drupal\annotations\Plugin\Target\TargetInterface;
 
 /**
  * Collects and exposes all registered Target plugins.
@@ -52,7 +51,7 @@ class DiscoveryService {
     // appear in the scope UI automatically without requiring a dedicated plugin.
     /** @var array<string, \Drupal\Core\Entity\EntityTypeInterface> $definitions */
     $definitions = $this->entityTypeManager->getDefinitions();
-    
+
     foreach ($definitions as $type_id => $definition) {
       if (isset($plugins[$type_id])) {
         continue;

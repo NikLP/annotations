@@ -36,14 +36,16 @@ final class AnnotationsContextCommands extends DrushCommands {
   #[CLI\Usage(name: 'drush ann:ctx --type=node --ref-depth=1', description: 'All node targets, follow ER fields one hop')]
   #[CLI\Usage(name: 'drush ann:ctx --strip-headings', description: 'Plain-text output without heading markers')]
   #[CLI\Usage(name: 'drush ann:ctx > context.md', description: 'Export to file')]
-  public function export(array $options = [
-    'target'         => NULL,
-    'type'           => NULL,
-    'types'          => NULL,
-    'ref-depth'      => 0,
-    'field-meta'     => FALSE,
-    'strip-headings' => FALSE,
-  ]): void {
+  public function export(
+    array $options = [
+      'target'         => NULL,
+      'type'           => NULL,
+      'types'          => NULL,
+      'ref-depth'      => 0,
+      'field-meta'     => FALSE,
+      'strip-headings' => FALSE,
+    ],
+  ): void {
     $assemblerOptions = [];
 
     if (!empty($options['target'])) {

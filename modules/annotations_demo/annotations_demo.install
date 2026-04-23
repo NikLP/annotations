@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 /**
  * @file
+ */
+
+/**
+ * @file
  * Install hooks for Annotations Demo.
  *
  * Demo annotation values are created programmatically here rather than shipped

@@ -63,7 +63,9 @@ class AnnotationsUiHooks {
       ->save();
   }
 
-  // Adds routes to list that qualifies for gin sidebar.
+  /**
+ * Adds routes to list that qualifies for gin sidebar.
+ */
   #[Hook('gin_content_form_routes')]
   public function ginContentFormRoutes(): array {
     return [

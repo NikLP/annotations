@@ -22,6 +22,9 @@ class ContextFilterForm extends FormBase {
     private readonly DiscoveryService $discoveryService,
   ) {}
 
+  /**
+   *
+   */
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
@@ -29,10 +32,16 @@ class ContextFilterForm extends FormBase {
     );
   }
 
+  /**
+   *
+   */
   public function getFormId(): string {
     return 'annotations_context_filter';
   }
 
+  /**
+   *
+   */
   public function buildForm(array $form, FormStateInterface $form_state, array $options = []): array {
     $form['#method'] = 'get';
     $form['#action'] = Url::fromRoute('annotations_context.preview')->toString();
@@ -92,13 +101,22 @@ class ContextFilterForm extends FormBase {
     return $form;
   }
 
+  /**
+   *
+   */
   public function submitForm(array &$form, FormStateInterface $form_state): void {}
 
+  /**
+   *
+   */
   public static function removeFormSystemFields(array $form, FormStateInterface $form_state): array {
     unset($form['form_build_id'], $form['form_token'], $form['form_id']);
     return $form;
   }
 
+  /**
+   *
+   */
   private function buildRoleOptions(): array {
     $options = ['' => $this->t('All roles (no filter)')];
     foreach ($this->entityTypeManager->getStorage('user_role')->loadMultiple() as $role) {
@@ -109,6 +127,9 @@ class ContextFilterForm extends FormBase {
     return $options;
   }
 
+  /**
+   *
+   */
   private function buildTargetOptions(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $all_targets */
     $all_targets = $this->entityTypeManager->getStorage('annotation_target')->loadMultiple();
@@ -126,8 +147,8 @@ class ContextFilterForm extends FormBase {
     }
 
     foreach ($grouped as $et_id => $targets) {
-      $plugin      = $plugins[$et_id] ?? NULL;
-      $group_label = $plugin ? (string) $plugin->getLabel() : ucfirst(str_replace('_', ' ', $et_id));
+      $plugin                  = $plugins[$et_id] ?? NULL;
+      $group_label             = $plugin ? (string) $plugin->getLabel() : ucfirst(str_replace('_', ' ', $et_id));
       $options['et:' . $et_id] = $this->t('All @label', ['@label' => $group_label]);
       $options[$group_label]   = [];
       foreach ($targets as $target) {

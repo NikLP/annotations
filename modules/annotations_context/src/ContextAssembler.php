@@ -167,9 +167,9 @@ class ContextAssembler {
    *   The assembled payload. See class docblock for structure.
    */
   public function assemble(array $options = []): array {
-    $this->fieldDefinitionCache  = [];
-    $this->includeFieldMeta      = (bool) ($options['include_field_meta'] ?? FALSE);
-    $this->includeIncomingRefs   = (bool) ($options['include_incoming_refs'] ?? FALSE);
+    $this->fieldDefinitionCache = [];
+    $this->includeFieldMeta     = (bool) ($options['include_field_meta'] ?? FALSE);
+    $this->includeIncomingRefs  = (bool) ($options['include_incoming_refs'] ?? FALSE);
 
     $entity_type_filter = $options['entity_type'] ?? NULL;
     $target_id_filter   = $options['target_id'] ?? NULL;
@@ -312,7 +312,7 @@ class ContextAssembler {
     $visited = [];
 
     foreach ($targets as $target) {
-      $et_id    = $target->getTargetEntityTypeId();
+      $et_id     = $target->getTargetEntityTypeId();
       $assembled = $this->assembleTarget($target, $types, $ref_depth, 0, $visited);
 
       if ($skip_empty && empty($assembled['annotations']) && empty($assembled['fields'])) {
@@ -425,11 +425,11 @@ class ContextAssembler {
     int $current_depth,
     array &$visited,
   ): array {
-    $et_id  = $target->getTargetEntityTypeId();
-    $bundle = $target->getBundle();
-    $defs   = $this->getFieldDefinitions($et_id, $bundle);
+    $et_id   = $target->getTargetEntityTypeId();
+    $bundle  = $target->getBundle();
+    $defs    = $this->getFieldDefinitions($et_id, $bundle);
     $storage = $this->entityTypeManager->getStorage('annotation_target');
-    $refs   = [];
+    $refs    = [];
 
     foreach (array_keys($target->getFields()) as $field_name) {
       $def = $defs[$field_name] ?? NULL;

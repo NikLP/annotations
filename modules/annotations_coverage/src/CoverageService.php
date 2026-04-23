@@ -33,7 +33,7 @@ class CoverageService {
    * Entity storage already caches loaded entities, but this avoids repeating
    * the uasort() on every internal call within a single page build.
    *
-   * @var AnnotationTypeInterface[]|null
+   * @var \Drupal\annotations\Entity\AnnotationTypeInterface[]|null
    */
   private ?array $annotationTypeCache = NULL;
 
@@ -96,8 +96,8 @@ class CoverageService {
 
     $all_types = $this->loadAnnotationTypes();
 
-    $tracked_slots   = 0;
-    $tracked_missing = 0;
+    $tracked_slots    = 0;
+    $tracked_missing  = 0;
     $optional_slots   = 0;
     $optional_missing = 0;
 
@@ -143,7 +143,7 @@ class CoverageService {
   /**
    * Assesses a single target and returns its coverage entry.
    *
-   * @param AnnotationTypeInterface[] $types
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
    * @param array<string, array<string, string>> $annotations
    */
   protected function assessTarget(AnnotationTargetInterface $target, array $types, array $annotations): array {
@@ -198,12 +198,12 @@ class CoverageService {
    */
   protected function loadAnnotationTypes(): array {
     if ($this->annotationTypeCache === NULL) {
-      /** @var AnnotationTypeInterface[] $types */
+      /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $types */
       $types = $this->entityTypeManager->getStorage('annotation_type')->loadMultiple();
       uasort($types, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
       $this->annotationTypeCache = $types;
     }
-    
+
     return $this->annotationTypeCache;
   }
 

@@ -152,7 +152,7 @@ class ScanService {
    *   added: array<string, array<string, mixed>>,
    *   removed: array<string, array<string, mixed>>,
    *   changed: array<string, array{fields_added: list<string>, fields_removed: list<string>, fields_changed: list<string>}>
-   * }
+   *   }
    */
   public function computeDiff(array $current, array $stored): array {
     $added = array_diff_key($current, $stored);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\annotations\Entity;
 
-use Drupal\Core\Entity\Annotation\ContentEntityType;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -72,7 +71,6 @@ class Annotation extends EditorialContentEntityBase {
     // storage (StringItem::isEmpty() treats '' as empty). All entity queries
     // for these sentinel values must use IS NULL, not = ''. See
     // AnnotationStorageService for the correct query pattern.
-
     // status: managed by workflow or defaults to 1. Never show on the form.
     $fields['status']
       ->setDisplayOptions('form', ['region' => 'hidden'])

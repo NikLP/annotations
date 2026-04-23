@@ -200,10 +200,10 @@ class AnnotationsOverlayHooks {
           '#attributes' => [
             'type' => 'button',
             'class' => [
-                'annotations-overlay-trigger',
-                'annotations-overlay-trigger--bundle',
-                'js-annotations-overlay-trigger'
-              ],
+              'annotations-overlay-trigger',
+              'annotations-overlay-trigger--bundle',
+              'js-annotations-overlay-trigger',
+            ],
             'data-annotations-field' => '_bundle',
             'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),
           ],
@@ -349,7 +349,7 @@ class AnnotationsOverlayHooks {
           'class' => [
             'annotations-overlay-trigger',
             'annotations-overlay-trigger--bundle',
-            'js-annotations-overlay-trigger'
+            'js-annotations-overlay-trigger',
           ],
           'data-annotations-field' => '_bundle',
           'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),

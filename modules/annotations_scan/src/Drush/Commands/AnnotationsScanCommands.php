@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_scan\Drush\Commands;
 
+use Symfony\Component\Yaml\Yaml;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 use Drupal\annotations_scan\ScanService;
@@ -20,6 +21,9 @@ final class AnnotationsScanCommands extends DrushCommands {
     parent::__construct();
   }
 
+  /**
+   *
+   */
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('annotations_scan.scanner'),
@@ -63,7 +67,7 @@ final class AnnotationsScanCommands extends DrushCommands {
     }
 
     if ($options['format'] === 'yaml') {
-      $this->io()->writeln(\Symfony\Component\Yaml\Yaml::dump($result, 4));
+      $this->io()->writeln(Yaml::dump($result, 4));
       return self::EXIT_SUCCESS;
     }
 
@@ -95,7 +99,7 @@ final class AnnotationsScanCommands extends DrushCommands {
       $this->io()->writeln(\json_encode($diff, JSON_PRETTY_PRINT));
     }
     elseif ($options['format'] === 'yaml') {
-      $this->io()->writeln(\Symfony\Component\Yaml\Yaml::dump($diff, 4));
+      $this->io()->writeln(Yaml::dump($diff, 4));
     }
     else {
       $this->printDiffTable($diff);

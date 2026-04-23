@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\annotations\Form;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -115,7 +116,7 @@ class TargetFieldsForm extends EntityForm {
    * {@inheritdoc}
    */
   protected function copyFormValuesToEntity(
-    \Drupal\Core\Entity\EntityInterface $entity,
+    EntityInterface $entity,
     array $form,
     FormStateInterface $form_state,
   ): void {

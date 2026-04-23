@@ -7,7 +7,7 @@ namespace Drupal\annotations\Plugin\Target;
 /**
  * Target plugin for Media types (requires Media module).
  *
- * isAvailable() returns FALSE if the media entity type is not installed,
+ * Fn isAvailable() returns FALSE if the media entity type is not installed,
  * so this plugin gracefully does nothing on sites without the Media module.
  */
 class MediaTarget extends TargetBase {

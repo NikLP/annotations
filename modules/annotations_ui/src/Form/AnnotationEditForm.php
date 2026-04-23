@@ -198,7 +198,7 @@ class AnnotationEditForm extends ContentEntityForm {
     if ($description = (string) $definition->getDescription()) {
       $rows[] = [
         ['data' => ['#plain_text' => (string) $this->t('Description')]],
-        ['data' => ['#plain_text' => $description]]
+        ['data' => ['#plain_text' => $description]],
       ];
     }
     return [

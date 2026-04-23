@@ -47,4 +47,5 @@ trait AnnotationTitleTrait {
       '@type'   => $type_label,
     ];
   }
+
 }

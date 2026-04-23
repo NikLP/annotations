@@ -38,7 +38,7 @@ class ContextApiController extends ControllerBase {
    *
    * Query parameters (all optional):
    *   ref_depth=0|1|2        — entity reference traversal depth (default 0)
-   *   include_field_meta=1   — include field type/cardinality/description
+   *   include_field_meta=1   — include field type/cardinality/description.
    */
   public function endpoint(string $target_id, Request $request): CacheableJsonResponse {
     $target = $this->entityTypeManager()->getStorage('annotation_target')->load($target_id);

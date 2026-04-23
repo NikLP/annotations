@@ -1,8 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Annotations Overlay — inline annotation panels and toolbar help trigger.
  */
+
+declare(strict_types=1);
