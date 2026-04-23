@@ -36,7 +36,7 @@ Annotation type entities support:
 Annotation target entities:
 
 - can be created on any entity target that exposes a plugin via the extensible system provided. (see: Adding a custom Target plugin)
-- target plugins already provided: [generic], paragraphs, media, node, view, user, taxonomy, etc.
+- target plugins already provided: [generic], paragraphs, media, node, view, user, taxonomy, etc. Obvious future targets: webform
 
 ---
 
@@ -63,20 +63,19 @@ Install annotations base module; enable submodules as needed.
 
 *All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core], _ui, _type_ui, _workflows`.
 
-The following modules are currently not well developed: annotations_scan, annotations_ai_context; other features are not necessarily stable.
-
-| Module | Who it is for | Purpose |
-| --- | --- | --- |
-| `annotations` | All | Core — entities, plugin system, scope UI. Always required. |
-| `annotations_type_ui` | Agency / dev only | Browser CRUD for annotation types. Site-building tool only — use during initial setup, not for ongoing production use. |
-| `annotations_ui` | Agency + editors | Annotation editing UI with revision history and moderation controls. The primary authoring interface. |
-| `annotations_coverage` | Agency / dev | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
-| `annotations_context` | Agency / dev | Assembles annotations into a structured payload. Provides an admin preview, markdown export, JSON API endpoint, and the shared payload consumed by `annotations_ai_context`. |
-| `annotations_workflows` | Agency / dev | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
-| `annotations_overlay` | Editors / end users | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
-| `annotations_scan` | Agency / dev | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI and `drush annotations:scan` command. Snapshot storage and `--diff`/`--strict` flags are parked pending `annotations_delta`. |
-| `annotations_ai_context` | Editors / end users | AI chat widget scoped to the current page's annotation context. Depends on the `ai` module suite. |
-| `annotations_demo` | Dev / evaluation | Ships the default editorial/technical/rules annotation types, form displays, a sample target, and starter content. Install for dev or evaluation; omit for blank-slate production. |
+| Module | Who it is for | Status | Purpose |
+| --- | --- | --- | --- |
+| `annotations` | All | Stable | Core — entities, plugin system, scope UI. Always required. |
+| `annotations_type_ui` | Agency / dev only | Stable | Browser CRUD for annotation types. Site-building tool only — use during initial setup, not for ongoing production use. |
+| `annotations_ui` | Agency + editors | Stable | Annotation editing UI with revision history and moderation controls. The primary authoring interface. |
+| `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
+| `annotations_context` | Agency / dev | Largely stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, JSON API endpoint, and the shared payload consumed by `annotations_context_ccc`. |
+| `annotations_context_ccc` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context (CCC)](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. Supersedes `annotations_ai_context`. |
+| `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
+| `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
+| `annotations_scan` | Agency / dev | WIP | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI and `drush annotations:scan` command. Snapshot storage and `--diff`/`--strict` flags are parked pending `annotations_delta`. |
+| `annotations_ai_context` | — | Deprecated | Deprecated prototype. Superseded by `annotations_context_ccc`. Do not enable alongside it. |
+| `annotations_demo` | Dev / evaluation | Stable | Ships the default editorial/technical/rules annotation types, form displays, a sample target, and starter content. Install for dev or evaluation; omit for blank-slate production. |
 
 ---
 
