@@ -19,6 +19,7 @@ trait AnnotationTitleTrait {
    * Resolves the target, field, and type labels for an annotation entity.
    *
    * @return array{'@target': string, '@field': string, '@type': string}
+   *   Substitution tokens for the annotation title format string.
    */
   protected static function resolveAnnotationTitleParts(Annotation $annotation): array {
     $target_id  = (string) $annotation->get('target_id')->value;

@@ -14,10 +14,13 @@ use Drupal\annotations\Entity\AnnotationTarget;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Confirmation form for deleting all annotations for a single annotation_target.
+ * Confirmation form for deleting all annotations for single annotation_target.
  */
-class TargetAnnotationsDeleteForm extends ConfirmFormBase {
+class AnnotationDeleteAllForm extends ConfirmFormBase {
 
+  /**
+   * The annotation target whose annotations will be deleted.
+   */
   protected AnnotationTarget $target;
 
   public function __construct(

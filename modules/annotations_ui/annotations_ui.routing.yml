@@ -3,7 +3,7 @@
 annotations_ui.annotate.collection:
   path: '/admin/content/annotations'
   defaults:
-    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::page'
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::page'
     _title: 'Annotations'
   requirements:
     _permission: 'access annotation overview'
@@ -11,7 +11,7 @@ annotations_ui.annotate.collection:
 annotations_ui.target.delete_all:
   path: '/admin/content/annotations/{annotation_target}/delete-all'
   defaults:
-    _form: '\Drupal\annotations_ui\Form\TargetAnnotationsDeleteForm'
+    _form: '\Drupal\annotations_ui\Form\AnnotationDeleteAllForm'
     _title: 'Delete annotations'
   requirements:
     _permission: 'edit any annotation'
@@ -35,8 +35,8 @@ entity.annotation.delete_multiple_form:
 annotations_ui.target.collection:
   path: '/admin/content/annotations/{annotation_target}'
   defaults:
-    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::collectionPage'
-    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::collectionTitle'
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::collectionPage'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::collectionTitle'
   requirements:
     _permission: 'access annotation overview'
   options:
@@ -48,8 +48,8 @@ annotations_ui.target.collection:
 annotations_ui.target.add:
   path: '/admin/content/annotations/{annotation_target}/add'
   defaults:
-    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::addPage'
-    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::addTitle'
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::addPage'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::addTitle'
   requirements:
     _permission: 'edit any annotation'
   options:
@@ -61,8 +61,8 @@ annotations_ui.target.add:
 annotations_ui.target.create:
   path: '/admin/content/annotations/{annotation_target}/add/{field_name}/{type_id}'
   defaults:
-    _controller: '\Drupal\annotations_ui\Controller\AnnotateController::createAnnotationForm'
-    _title_callback: '\Drupal\annotations_ui\Controller\AnnotateController::createAnnotationTitle'
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::createAnnotationForm'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::createAnnotationTitle'
     field_name: '_overview'
   requirements:
     _permission: 'edit any annotation'

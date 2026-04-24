@@ -1,7 +1,7 @@
 services:
   annotations_ui.hooks:
     class: Drupal\annotations_ui\Hook\AnnotationsUiHooks
-    arguments: ['@config.factory']
+    arguments: ['@config.factory', '@entity_type.manager']
 
   annotations_ui.route_subscriber:
     class: Drupal\annotations_ui\Routing\AnnotationsUiRouteSubscriber

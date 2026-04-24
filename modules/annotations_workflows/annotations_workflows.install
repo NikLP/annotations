@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Install, update, and uninstall functions for the annotations_workflows module.
+ * Install, update, and uninstall functions for annotations_workflows module.
  */
 
 declare(strict_types=1);

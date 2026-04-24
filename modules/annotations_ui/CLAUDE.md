@@ -9,7 +9,7 @@ Provides the annotation editing UI. Editors write overview text and per-field an
 ## What it owns
 
 - `AnnotationEditForm` — full `ContentEntityForm` for a single `annotation` entity. Primary editing interface. Gets `content_moderation_control` widget, revision log field, and language tabs automatically. `show_revision_ui = TRUE` on the entity type, so the "Create new revision" checkbox and log message appear in the Gin sidebar (checkbox defaults to checked; content_moderation hides it when `annotations_workflows` is installed). At `/admin/content/annotations/value/{annotation}/edit`.
-- `AnnotateController` — landing page, per-target records page (embeds the `annotations_target` view), add-new-annotations table, and the create-annotation form (renders `AnnotationEditForm` for new entities).
+- `AnnotationController` — landing page, per-target records page (embeds the `annotations_target` view), add-new-annotations table, and the create-annotation form (renders `AnnotationEditForm` for new entities).
 - Revision history and per-revision view via core's `VersionHistoryController` / `EntityRevisionViewController` / `RevisionRevertForm` / `RevisionDeleteForm` — registered automatically by `RevisionHtmlRouteProvider`.
 - `AnnotationDeleteForm`, `AnnotationViewController`.
 - `AnnotationsUiHooks` — registers form classes, link templates, and route providers (`AdminHtmlRouteProvider`, `RevisionHtmlRouteProvider`) on `annotation`; registers Gin content-form routes; grants entity and revision access via `hook_entity_access`.

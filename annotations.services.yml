@@ -12,14 +12,14 @@ services:
       - '@entity_type.manager'
 
   annotations.discovery:
-    class: Drupal\annotations\DiscoveryService
+    class: Drupal\annotations\AnnotationDiscoveryService
     arguments:
       - '@entity_type.manager'
       - !tagged_iterator annotations.target
       - '@entity_type.bundle.info'
       - '@entity_field.manager'
 
-  # Target plugins — tagged annotations.target so DiscoveryService
+  # Target plugins — tagged annotations.target so AnnotationDiscoveryService
   # receives them all. Any module can contribute a plugin by tagging a
   # service the same way.
   annotations.target.node:

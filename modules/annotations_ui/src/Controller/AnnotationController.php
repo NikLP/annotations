@@ -14,7 +14,7 @@ use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\annotations\AnnotationStorageService;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations\Entity\AnnotationTarget;
 use Drupal\annotations\Plugin\Target\TargetBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,11 +36,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Create form: returns AnnotationEditForm pre-populated for a new entity so
  * the user can write the annotation text and choose a moderation state.
  */
-class AnnotateController extends ControllerBase {
+class AnnotationController extends ControllerBase {
 
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
-    private readonly DiscoveryService $discoveryService,
+    private readonly AnnotationDiscoveryService $discoveryService,
     private readonly EntityFieldManagerInterface $fieldManager,
     private readonly AnnotationStorageService $annotationStorage,
   ) {
@@ -325,8 +325,22 @@ class AnnotateController extends ControllerBase {
     foreach ($all_fields as $field_name => $info) {
       $in = array_key_exists($field_name, $in_scope);
       $scope_cell = $in
-        ? ['data' => ['#theme' => 'annotations_status_icon', '#glyph' => AnnotationsGlyph::CHECK, '#label' => $this->t('Yes'), '#modifier' => 'yes']]
-        : ['data' => ['#theme' => 'annotations_status_icon', '#glyph' => AnnotationsGlyph::CROSS, '#label' => $this->t('No'), '#modifier' => 'no']];
+        ? [
+          'data' => [
+            '#theme' => 'annotations_status_icon',
+            '#glyph' => AnnotationsGlyph::CHECK,
+            '#label' => $this->t('Yes'),
+            '#modifier' => 'yes',
+          ],
+        ]
+        : [
+          'data' => [
+            '#theme' => 'annotations_status_icon',
+            '#glyph' => AnnotationsGlyph::CROSS,
+            '#label' => $this->t('No'),
+            '#modifier' => 'no',
+          ],
+        ];
       $rows[] = [
         ['data' => ['#plain_text' => $info['label']]],
         ['data' => ['#markup' => '<code>' . Html::escape($field_name) . '</code>']],
@@ -362,7 +376,7 @@ class AnnotateController extends ControllerBase {
   }
 
   /**
-   * Builds a table row for a field/overview slot with Add links per missing type.
+   * Builds a table row for a field/overview slot w/ Add links per missing type.
    *
    * @param \Drupal\annotations\Entity\AnnotationTarget $annotation_target
    *   The target.
@@ -405,6 +419,7 @@ class AnnotateController extends ControllerBase {
    *   All accessible types.
    *
    * @return \Drupal\annotations\Entity\AnnotationTypeInterface[]
+   *   Types that have no annotation for this slot.
    */
   private function missingTypes(array $existing, array $types): array {
     return array_filter($types, fn($type) => !array_key_exists($type->id(), $existing));
@@ -414,6 +429,7 @@ class AnnotateController extends ControllerBase {
    * Loads annotation types the current user may edit, sorted by weight.
    *
    * @return array<string, \Drupal\annotations\Entity\AnnotationTypeInterface>
+   *   Annotation types keyed by type ID, sorted by weight.
    */
   private function loadAnnotationTypes(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $types */
@@ -430,9 +446,10 @@ class AnnotateController extends ControllerBase {
   }
 
   /**
-   * Returns field info keyed by machine name for the given entity type + bundle.
+   * Returns field info keyed by machine name for given entity type + bundle.
    *
    * @return array<string, array{label: string, type: string}>
+   *   Field info arrays keyed by field machine name.
    */
   private function getFieldInfo(string $entity_type_id, string $bundle_id): array {
     $info = [];

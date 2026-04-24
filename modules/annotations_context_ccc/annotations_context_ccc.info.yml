@@ -1,4 +1,4 @@
-name: 'Annotations Context CCC'
+name: 'Annotations Context CCC (WIP)'
 type: module
 description: 'Injects annotations context into AI Context (CCC) agent system prompts.'
 package: Annotations

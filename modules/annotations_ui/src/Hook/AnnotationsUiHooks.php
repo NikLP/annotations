@@ -7,6 +7,7 @@ namespace Drupal\annotations_ui\Hook;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Form\RevisionDeleteForm;
 use Drupal\Core\Entity\Form\RevisionRevertForm;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
@@ -14,14 +15,18 @@ use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Hook implementations for the annotations_ui module.
  */
 class AnnotationsUiHooks {
 
+  use StringTranslationTrait;
+
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
+    private readonly EntityTypeManagerInterface $entityTypeManager,
   ) {}
 
   /**
@@ -38,15 +43,15 @@ class AnnotationsUiHooks {
 
     $form['ui']['show_target_details'] = [
       '#type' => 'checkbox',
-      '#title' => t('Show target details on annotation pages'),
-      '#description' => t('When enabled, a collapsible <em>Target details</em> panel is shown at the top of each <em>Add annotations</em> page, listing fields and their inclusion status. Useful for initial site development.'),
+      '#title' => $this->t('Show target details on annotation pages'),
+      '#description' => $this->t('When enabled, a collapsible <em>Target details</em> panel is shown at the top of each <em>Add annotations</em> page, listing fields and their inclusion status. Useful for initial site development.'),
       '#default_value' => $config->get('show_target_details'),
     ];
 
     $form['ui']['show_field_metadata'] = [
       '#type' => 'checkbox',
-      '#title' => t('Show target metadata on annotation forms'),
-      '#description' => t('When enabled, a collapsible <em>Metadata</em> panel is shown at the top of annotation view and edit forms, showing field type, cardinality, allowed values, etc.'),
+      '#title' => $this->t('Show target metadata on annotation forms'),
+      '#description' => $this->t('When enabled, a collapsible <em>Metadata</em> panel is shown at the top of annotation view and edit forms, showing field type, cardinality, allowed values, etc.'),
       '#default_value' => $config->get('show_field_metadata'),
     ];
 
@@ -64,8 +69,8 @@ class AnnotationsUiHooks {
   }
 
   /**
- * Adds routes to list that qualifies for gin sidebar.
- */
+   * Adds routes to list that qualifies for gin sidebar.
+   */
   #[Hook('gin_content_form_routes')]
   public function ginContentFormRoutes(): array {
     return [
@@ -89,7 +94,7 @@ class AnnotationsUiHooks {
   public function viewsDataAlter(array &$data): void {
     if (!isset($data['annotation_field_data']['moderation_state'])) {
       $data['annotation_field_data']['moderation_state'] = [
-        'title' => t('Status'),
+        'title' => $this->t('Status'),
       ];
     }
     $data['annotation_field_data']['moderation_state']['field'] = [
@@ -145,14 +150,15 @@ class AnnotationsUiHooks {
   /**
    * Implements hook_entity_delete().
    *
-   * Works around a core content_moderation bug: EntityOperations::entityDelete()
-   * calls loadFromModeratedEntity() which queries by content_entity_revision_id
-   * (the currently loaded revision only). Because each new moderated-entity
+   * Works around a core content_moderation bug:
+   * EntityOperations::entityDelete() calls loadFromModeratedEntity() which
+   * queries by content_entity_revision_id (the currently loaded revision
+   * only). Because each new moderated-entity
    * revision creates a *new* content_moderation_state entity rather than a new
-   * revision of the existing one, only the current revision's record is found and
-   * deleted — every other revision's record is left as an orphan. On a dev site
-   * that is reinstalled frequently this eventually causes a duplicate-key error
-   * when the annotation revision auto_increment cycles back through an ID
+   * revision of the existing one, only the current revision's record is found
+   * and deleted — every other revision's record is left as an orphan. On a dev
+   * site that is reinstalled frequently this eventually causes a duplicate-key
+   * error when the annotation revision auto_increment cycles back through an ID
    * that still has an orphan row in content_moderation_state.
    *
    * Because annotations_ui (a) sorts before content_moderation (c), our hook
@@ -171,7 +177,7 @@ class AnnotationsUiHooks {
     if ($entity->getEntityTypeId() !== 'annotation') {
       return;
     }
-    $etm = \Drupal::entityTypeManager();
+    $etm = $this->entityTypeManager;
     if (!$etm->hasDefinition('content_moderation_state')) {
       return;
     }
@@ -189,7 +195,8 @@ class AnnotationsUiHooks {
   /**
    * Implements hook_entity_access().
    *
-   * - view / update / delete / revert / delete revision: requires 'edit any annotation'.
+   * - view / update / delete / revert / delete revision: requires
+   *   'edit any annotation'.
    * - view all revisions / view revision: requires 'view annotation revisions'
    *   OR 'edit any annotation' (the latter already implies full access).
    */

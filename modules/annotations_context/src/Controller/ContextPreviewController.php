@@ -8,7 +8,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations_context\ContextAssembler;
 use Drupal\annotations_context\ContextHtmlRenderer;
 use Drupal\annotations_context\ContextRenderer;
@@ -37,7 +37,7 @@ class ContextPreviewController extends ControllerBase {
     private readonly ContextAssembler $assembler,
     private readonly ContextRenderer $markdownRenderer,
     private readonly ContextHtmlRenderer $htmlRenderer,
-    private readonly DiscoveryService $discoveryService,
+    private readonly AnnotationDiscoveryService $discoveryService,
     EntityTypeManagerInterface $entityTypeManager,
   ) {
     $this->entityTypeManager = $entityTypeManager;

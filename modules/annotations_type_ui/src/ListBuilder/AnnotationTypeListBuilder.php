@@ -13,6 +13,9 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class AnnotationTypeListBuilder extends DraggableListBuilder {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $weightKey = 'weight';
 
   /**
@@ -39,7 +42,7 @@ class AnnotationTypeListBuilder extends DraggableListBuilder {
   public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface $entity */
     return [
-      // Plain string — DraggableListBuilder::buildForm() wraps label in #markup.
+      // Plain string: DraggableListBuilder::buildForm() wraps label in #markup.
       'label' => $entity->label(),
       'description' => ['#plain_text' => $entity->getDescription() ?: ''],
       'weight' => [

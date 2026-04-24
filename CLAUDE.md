@@ -76,7 +76,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - All three entity types above (schema, storage, interfaces)
 - `AnnotationStorageService` (`annotations.annotation_storage`) — central CRUD
 - `AnnotationsPermissions` — dynamic `edit {type}` + `consume {type}` permissions
-- `DiscoveryService` — collects tagged `annotations.target` plugins; auto-instantiates `GenericTarget` for unclaimed fieldable types
+- `AnnotationDiscoveryService` — collects tagged `annotations.target` plugins; auto-instantiates `GenericTarget` for unclaimed fieldable types
 - Target plugins: `NodeTarget`, `TaxonomyTarget`, `UserTarget`, `MediaTarget`, `ParagraphTarget`, `GenericTarget` (fieldable); `RoleTarget`, `ViewTarget`, `MenuTarget`, `WorkflowTarget` (non-fieldable — always need a dedicated plugin)
 - Scope management UI: `TargetOverviewForm`, `TargetFieldsForm`, `TargetDeleteConfirmForm`
 - Views field plugins: `AnnotationTargetLabelField`, `AnnotationFieldLabelField`, `AnnotationTypeLabelField`

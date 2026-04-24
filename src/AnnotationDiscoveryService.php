@@ -19,7 +19,7 @@ use Drupal\annotations\Plugin\Target\GenericTarget;
  * GenericTarget is auto-instantiated for any fieldable entity type
  * not claimed by a specific plugin.
  */
-class DiscoveryService {
+class AnnotationDiscoveryService {
 
   /**
    * @param iterable<\Drupal\annotations\Plugin\Target\TargetInterface> $scanTargets

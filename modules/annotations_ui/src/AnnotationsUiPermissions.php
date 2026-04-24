@@ -22,6 +22,7 @@ class AnnotationsUiPermissions {
    * Returns per-type edit permissions.
    *
    * @return array<string, array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, restrict access: bool}>
+   *   Permission definitions keyed by permission name.
    */
   public static function permissions(): array {
     $permissions = [];

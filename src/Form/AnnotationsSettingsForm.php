@@ -10,7 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * General Annotations settings form.
  */
-class SettingsForm extends ConfigFormBase {
+class AnnotationsSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}

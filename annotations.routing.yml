@@ -2,7 +2,7 @@
 annotations.settings:
   path: '/admin/config/annotations/settings'
   defaults:
-    _form: '\Drupal\annotations\Form\SettingsForm'
+    _form: '\Drupal\annotations\Form\AnnotationsSettingsForm'
     _title: 'Annotations settings'
   requirements:
     _permission: 'administer annotations'
