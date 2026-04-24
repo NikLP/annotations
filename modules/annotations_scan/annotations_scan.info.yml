@@ -1,4 +1,4 @@
-name: Annotations Scan
+name: Annotations Scan (WIP)
 type: module
 description: 'Crawls the Drupal site structure and produces a structured snapshot of targets for annotation.'
 package: Annotations

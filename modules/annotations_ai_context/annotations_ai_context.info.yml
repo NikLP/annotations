@@ -1,4 +1,4 @@
-name: 'Annotations AI Context'
+name: 'Annotations AI Context (Deprecated)'
 type: module
 description: 'Injects annotations context into an AI assistant system prompt for site-specific chat.'
 package: Annotations

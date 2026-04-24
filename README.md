@@ -6,7 +6,7 @@ Annotations can be consumed in several ways:
 
 AI:
 
-- scoped input for an AI agent - returns component-specific human-curated context (skills)
+- scoped input for an AI agent - returns component-specific human-curated context
 - MCP-compliant JSON endpoint for pulling context info into other 'applications' (WIP!)
 
 User onboarding / Editing:
@@ -153,52 +153,9 @@ foreach ($plugins as $entity_type_id => $plugin) {
 }
 ```
 
-### Extending annotation types with custom behaviors (ThirdPartySettingsInterface)
+### Extending annotation types with custom behaviors
 
-`AnnotationType` implements `ThirdPartySettingsInterface`, for contrib modules to attach their own properties to an annotation type.
-
-A module that wants to add a behavior to annotation types (e.g. "expose this type in the front-end AI bot") does three things:
-
-**1. Declare a schema for the settings:**
-
-```yaml
-# config/schema/mymodule.schema.yml
-annotations.annotation_type.*.third_party.mymodule:
-  type: mapping
-  label: 'My module annotation type settings'
-  mapping:
-    in_frontend_bot:
-      type: boolean
-      label: 'Show in front-end bot'
-```
-
-**2. Inject a form element via `hook_form_alter`:**
-
-```php
-function mymodule_form_annotation_type_edit_form_alter(array &$form, FormStateInterface $form_state): void {
-  $type = $form_state->getFormObject()->getEntity();
-  $form['in_frontend_bot'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Show in front-end bot'),
-    '#default_value' => $type->getThirdPartySetting('mymodule', 'in_frontend_bot', FALSE),
-  ];
-  $form['#entity_builders'][] = 'mymodule_form_annotation_type_edit_form_builder';
-}
-
-function mymodule_form_annotation_type_edit_form_builder(string $entity_type, AnnotationType $type, array &$form, FormStateInterface $form_state): void {
-  $type->setThirdPartySetting('mymodule', 'in_frontend_bot', (bool) $form_state->getValue('in_frontend_bot'));
-}
-```
-
-**3. Read the setting wherever needed:**
-
-```php
-$show = $annotationType->getThirdPartySetting('mymodule', 'in_frontend_bot', FALSE);
-```
-
-The value is stored on the config entity alongside its first-party properties and is exported with `drush cex`. From the editor's perspective the checkbox appears as part of the type edit form with no visible indication it comes from a different module.
-
-This pattern is appropriate when the contributing module owns the full lifecycle of the behavior: it writes it, reads it, and acts on it. Annotations' own services have no knowledge of third-party settings added by other modules.
+`AnnotationType` implements `ThirdPartySettingsInterface`. See [annotations_type_ui/README.md](modules/annotations_type_ui/README.md) for the full pattern.
 
 ---
 
