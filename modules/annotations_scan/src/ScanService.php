@@ -12,9 +12,9 @@ use Psr\Log\LoggerInterface;
 /**
  * Executes site structure scans and manages scan snapshots.
  *
- * Uses DiscoveryService (from annotations) to get available plugins, loads opted-in
- * annotation_target entities as scope, then calls each plugin's discover() to produce
- * a structured snapshot of the site's content model.
+ * Uses DiscoveryService (from annotations) to get available plugins, loads
+ * opted-in annotation_target entities as scope, then calls each plugin's
+ * discover() to produce * a structured snapshot of the site's content model.
  *
  * Usage:
  * @code
@@ -151,7 +151,8 @@ class ScanService {
    * @return array{
    *   added: array<string, array<string, mixed>>,
    *   removed: array<string, array<string, mixed>>,
-   *   changed: array<string, array{fields_added: list<string>, fields_removed: list<string>, fields_changed: list<string>}>
+   *   changed: array<string, array{fields_added: list<string>,
+   *   fields_removed: list<string>, fields_changed: list<string>}>
    *   }
    */
   public function computeDiff(array $current, array $stored): array {
@@ -197,9 +198,10 @@ class ScanService {
   }
 
   /**
-   * Loads all annotation_target config entities, keyed by "{entity_type}__{bundle}".
+   * Loads annotation_target entities, keyed by "{entity_type}__{bundle}".
    *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   *   All opted-in targets, keyed by "{entity_type}__{bundle}".
    */
   protected function loadScopes(): array {
     $scopes = $this->entityTypeManager

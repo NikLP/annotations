@@ -13,7 +13,7 @@ use Drupal\annotations\Entity\AnnotationTypeInterface;
  * Computes annotation coverage across all opted-in annotation_target entities.
  *
  * Whether a given annotation type affects coverage status is controlled by the
- * annotations_coverage third-party setting on AnnotationType (affects_coverage).
+ * annotations_coverage 3rd-party setting on AnnotationType (affects_coverage).
  * The default is FALSE, so types only affect status when explicitly opted in.
  *
  * Status rollup per target:
@@ -23,7 +23,8 @@ use Drupal\annotations\Entity\AnnotationTypeInterface;
  *
  * This service is the public API for coverage data. Any module that needs to
  * act on coverage (reporting, enforcement, CI checks) should inject
- * annotations_coverage.coverage_service and call getCoverage() or getCoverageForTarget().
+ * annotations_coverage.coverage_service and call getCoverage() or
+ * getCoverageForTarget().
  */
 class CoverageService {
 
@@ -43,7 +44,7 @@ class CoverageService {
   ) {}
 
   /**
-   * Returns coverage data for all annotation_target entities, keyed by target ID.
+   * Returns coverage data for annotation_target entities, keyed by target ID.
    *
    * Each entry:
    *   - 'target': AnnotationTargetInterface
@@ -52,6 +53,7 @@ class CoverageService {
    *     locations: 'overview' (target level) or a field machine name.
    *
    * @return array<string, array{target: AnnotationTargetInterface, status: string, missing: array}>
+   *   Coverage data indexed by annotation_target entity ID.
    */
   public function getCoverage(): array {
     $types   = $this->loadAnnotationTypes();
@@ -71,6 +73,7 @@ class CoverageService {
    * Returns coverage data for a single target.
    *
    * @return array{target: AnnotationTargetInterface, status: string, missing: array}
+   *   Coverage entry for the given target.
    */
   public function getCoverageForTarget(AnnotationTargetInterface $target): array {
     $types       = $this->loadAnnotationTypes();
@@ -89,6 +92,7 @@ class CoverageService {
    *   Output from getCoverage().
    *
    * @return array{complete: int, total: int, percent: int, filled_tracked: int, total_tracked: int, filled_optional: int, total_optional: int}
+   *   Aggregate score data for the provided coverage set.
    */
   public function getScore(array $coverage): array {
     $total    = count($coverage);
@@ -143,8 +147,15 @@ class CoverageService {
   /**
    * Assesses a single target and returns its coverage entry.
    *
+   * @param \Drupal\annotations\Entity\AnnotationTargetInterface $target
+   *   The target to assess.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   All annotation types sorted by weight.
    * @param array<string, array<string, string>> $annotations
+   *   Annotations for the target, keyed by field name then type ID.
+   *
+   * @return array
+   *   Coverage entry with 'target', 'status', and 'missing' keys.
    */
   protected function assessTarget(AnnotationTargetInterface $target, array $types, array $annotations): array {
     $missing = [];
@@ -195,6 +206,7 @@ class CoverageService {
    * Loads all annotation types sorted by weight ascending.
    *
    * @return array<string, AnnotationTypeInterface>
+   *   All annotation types keyed by machine name, sorted by weight ascending.
    */
   protected function loadAnnotationTypes(): array {
     if ($this->annotationTypeCache === NULL) {

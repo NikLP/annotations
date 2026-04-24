@@ -22,7 +22,7 @@ final class AnnotationsScanCommands extends DrushCommands {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container): static {
     return new static(
@@ -31,7 +31,7 @@ final class AnnotationsScanCommands extends DrushCommands {
   }
 
   /**
-   * Run a full annotations scan against all opted-in targets and print a summary.
+   * Run an annotations scan against all opted-in targets and print a summary.
    */
   #[CLI\Command(name: 'annotations:scan', aliases: ['ann:scan'])]
   #[CLI\Option(name: 'fields', description: 'Show per-target field names instead of a field count')]

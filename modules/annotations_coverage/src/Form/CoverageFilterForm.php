@@ -22,9 +22,16 @@ class CoverageFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
    * @param array<string, string> $entity_types
+   *   Entity type options keyed by machine name.
    * @param string $current_type
+   *   Currently selected entity type filter value.
    * @param string $current_status
+   *   Currently selected status filter value.
    */
   public function buildForm(array $form, FormStateInterface $form_state, array $entity_types = [], string $current_type = '', string $current_status = ''): array {
     $form['#method'] = 'get';

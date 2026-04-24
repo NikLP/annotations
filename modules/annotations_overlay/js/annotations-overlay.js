@@ -13,14 +13,16 @@
   'use strict';
 
   // Track the trigger that opened a dialog so focus can be returned on close.
-  let lastTrigger = null;
+  let lastTrigger = NULL;
 
   // Open the dialog that matches the given field key.
   function openDialog(fieldKey, trigger) {
     const dialog = document.querySelector(
       '.annotations-overlay-dialog[data-annotations-field="' + CSS.escape(fieldKey) + '"]'
     );
-    if (!dialog) return;
+    if (!dialog) {
+      return;
+    }
 
     lastTrigger = trigger;
     const scrollX = window.scrollX;
@@ -29,7 +31,9 @@
     // showModal() can scroll the page to the dialog's natural DOM position before
     // top-layer promotion. rAF runs after the promotion so the dialog is already
     // position:fixed and the scroll restoration does not affect its visual position.
-    requestAnimationFrame(function () { window.scrollTo(scrollX, scrollY); });
+    requestAnimationFrame(function () {
+      window.scrollTo(scrollX, scrollY);
+    });
 
     // Belt-and-braces live region announcement for AT that does not pick up
     // focus movement into the dialog. aria-label is already set server-side.
@@ -37,7 +41,8 @@
     if (announcer) {
       const label = dialog.getAttribute('aria-label') || '';
       announcer.textContent = '';
-      setTimeout(function () { announcer.textContent = label; }, 50);
+      setTimeout(function () {
+        announcer.textContent = label; }, 50);
     }
   }
 
@@ -46,7 +51,9 @@
     const closeBtn = e.target.closest('.annotations-overlay-close');
     if (closeBtn) {
       const dialog = closeBtn.closest('dialog');
-      if (dialog) dialog.close();
+      if (dialog) {
+        dialog.close();
+      }
       return;
     }
 
@@ -59,9 +66,13 @@
 
     // Overlay trigger.
     const trigger = e.target.closest('.js-annotations-overlay-trigger');
-    if (!trigger) return;
+    if (!trigger) {
+      return;
+    }
     const fieldKey = trigger.dataset.annotationsField;
-    if (!fieldKey) return;
+    if (!fieldKey) {
+      return;
+    }
     openDialog(fieldKey, trigger);
   });
 
@@ -73,12 +84,13 @@
   document.addEventListener('close', function (e) {
     if (e.target.classList?.contains('annotations-overlay-dialog')) {
       const trigger = lastTrigger;
-      lastTrigger = null;
+      lastTrigger = NULL;
       if (trigger) {
-        setTimeout(function () { trigger.focus({ preventScroll: true }); }, 0);
+        setTimeout(function () {
+          trigger.focus({ preventScroll: TRUE }); }, 0);
       }
     }
-  }, true);
+  }, TRUE);
 
   // On view pages, entityViewAlter injects triggers as build-array siblings of
   // their fields because field.html.twig discards arbitrary children. Move each
@@ -87,7 +99,9 @@
   // On form pages the trigger is already a child, so the guard is a no-op.
   document.querySelectorAll('.js-annotations-overlay-trigger[data-annotations-field]').forEach(function (trigger) {
     const fieldKey = trigger.dataset.annotationsField;
-    if (fieldKey === '_bundle' || fieldKey === '_preview') return;
+    if (fieldKey === '_bundle' || fieldKey === '_preview') {
+      return;
+    }
     const wrapper = document.querySelector('[data-annotations-field="' + CSS.escape(fieldKey) + '"]:not(button)');
     if (wrapper && !wrapper.contains(trigger)) {
       wrapper.appendChild(trigger);

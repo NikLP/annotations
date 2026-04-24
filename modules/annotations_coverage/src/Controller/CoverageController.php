@@ -258,7 +258,19 @@ class CoverageController extends ControllerBase {
   /**
    * Builds a gap section for one priority tier.
    *
+   * @param string $heading
+   *   Section heading text.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Annotation types to include in this section.
+   * @param array $missing
+   *   Missing locations keyed by type ID.
+   * @param string $modifier
+   *   BEM modifier class for the section.
+   * @param array $field_labels
+   *   Field machine name to human-readable label map.
+   *
+   * @return array
+   *   Render array for the gap section, or empty array if no gaps.
    */
   private function buildGapSection(string $heading, array $types, array $missing, string $modifier = '', array $field_labels = []): array {
     $items = [];
@@ -326,7 +338,7 @@ class CoverageController extends ControllerBase {
     return [
       '#theme'                  => 'annotations_coverage_gap_section',
       '#heading'                => $this->t('No annotations at all'),
-      '#visually_hidden_prefix' => $this->t('Urgent: '),
+      '#visually_hidden_prefix' => $this->t('Urgent:'),
       '#modifier'               => 'urgent',
       '#items'                  => ['#theme' => 'item_list', '#items' => $items, '#list_type' => 'ul'],
     ];

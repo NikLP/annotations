@@ -172,12 +172,10 @@ class AnnotationsOverlayHooks {
       return;
     }
 
-    /**
-     * Consumer context: only show published annotations. When
-     * annotations_workflow is not installed, entities have no moderation_state
-     * field and the 'published' filter is a silent no-op — all non-empty
-     * values are returned.
-     */
+    // Consumer context: only show published annotations. When
+    // annotations_workflow is not installed, entities have no moderation_state
+    // field and the 'published' filter is a silent no-op — all non-empty
+    // values are returned.
     $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
     $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
 
@@ -295,8 +293,8 @@ class AnnotationsOverlayHooks {
 
     $annotation_view_mode = $components['annotations_overlay']['settings']['annotation_view_mode'] ?? 'overlay';
 
-    // Merge cache metadata so permission/annotation changes correctly invalidate
-    // cached view pages.
+    // Merge cache metadata so permission/annotation changes correctly
+    // invalidate cached view pages.
     $this->mergeCacheMetadata($build);
 
     if (!$this->currentUser->hasPermission('view annotations overlay')) {
@@ -359,12 +357,10 @@ class AnnotationsOverlayHooks {
       ];
     }
 
-    /**
-     * Field triggers — added as top-level build siblings because
-     * field.html.twig does not render arbitrary children.
-     * data-annotations-field on the field element itself allows CSS to
-     * associate the trigger with its field.
-     */
+    // Field triggers — added as top-level build siblings because
+    // field.html.twig does not render arbitrary children.
+    // data-annotations-field on the field element itself allows CSS to
+    // associate the trigger with its field.
     foreach (array_keys($fields_with_annotations) as $field_name) {
       $field_label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
       if (isset($build[$field_name])) {
@@ -457,11 +453,12 @@ class AnnotationsOverlayHooks {
 
     $modified = FALSE;
 
-    // Claro/Gin theme preprocess (claro_preprocess_node_add_list) runs after all
-    // module preprocesses and rebuilds $variables['bundles'] directly from
+    // Claro/Gin theme preprocess (claro_preprocess_node_add_list) runs after
+    // all module preprocesses and rebuilds $variables['bundles'] directly from
     // $variables['content'] entity objects using $type->getDescription(). It
-    // ignores $variables['types'] entirely. Modifying the entity description in
-    // memory here ensures Claro/Gin reads our annotation text. No save is triggered.
+    // ignores $variables['types'] entirely. Modifying the entity description
+    // in memory here ensures Claro/Gin reads our annotation text.
+    // No save is triggered.
     foreach ($variables['content'] ?? [] as $type) {
       $chooser = $this->buildBundleAnnotationRenderItems('node__' . $type->id(), $visible_types);
       if ($chooser === NULL) {
@@ -570,6 +567,7 @@ class AnnotationsOverlayHooks {
    * Loads annotation types visible to the current user, sorted by weight.
    *
    * @return \Drupal\annotations\Entity\AnnotationTypeInterface[]
+   *   Annotation types keyed by ID, sorted by weight.
    */
   private function loadVisibleAnnotationTypes(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all_types */
@@ -579,14 +577,14 @@ class AnnotationsOverlayHooks {
   }
 
   /**
-   * Builds a render array of bundle-level annotation entities for chooser pages.
+   * Builds render array of bundle-level annotation entities for chooser pages.
    *
    * Annotation entities are rendered via the 'overlay' view mode so that
    * Manage Display controls which fields appear. Returns NULL when no target
    * exists or no visible, published bundle annotations are found.
    *
    * @param string $target_id
-   *   e.g. 'node__article' or 'media__image'.
+   *   The annotation target ID, e.g. 'node__article' or 'media__image'.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $visible_types
    *   Pre-loaded visible annotation types.
    *
@@ -630,8 +628,10 @@ class AnnotationsOverlayHooks {
    * @param array<string, \Drupal\annotations\Entity\Annotation> $entities
    *   Annotation entities keyed by type_id.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $visible_types
+   *   Annotation types visible to the current user.
    *
    * @return array<string, \Drupal\annotations\Entity\Annotation>
+   *   Entities from $entities whose type_id is in $visible_types.
    */
   private function filterAnnotationEntities(array $entities, array $visible_types): array {
     $result = [];
@@ -644,7 +644,7 @@ class AnnotationsOverlayHooks {
   }
 
   /**
-   * Returns TRUE when exactly one annotation type appears across all given maps.
+   * Returns TRUE when exactly 1 annotation type appears across all given maps.
    *
    * Each argument is an annotation entity map keyed by type_id. Accepts
    * variadic maps so callers can spread a fields array directly:
@@ -670,11 +670,17 @@ class AnnotationsOverlayHooks {
    * The <dialog> element is natively hidden until JS calls showModal() on it.
    * Content is fully rendered server-side.
    *
+   * @param string $field_key
+   *   Field machine name or '_bundle'; used as data-annotations-field value.
+   * @param string $label
+   *   Human-readable heading shown at the top of the dialog.
    * @param array<string, \Drupal\annotations\Entity\Annotation> $annotation_entities
    *   Annotation entities keyed by type_id.
    * @param bool $single_type
    *   TRUE when only one annotation type is expressed across all dialogs on the
    *   page for the current user. When TRUE the type heading is suppressed.
+   * @param string $view_mode
+   *   View mode used to render annotation entities inside the dialog.
    */
   private function buildDialog(string $field_key, string $label, array $annotation_entities, bool $single_type, string $view_mode = 'overlay'): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('annotation');
@@ -827,7 +833,11 @@ class AnnotationsOverlayHooks {
             '#tag' => 'button',
             '#attributes' => [
               'type' => 'button',
-              'class' => ['annotations-overlay-trigger', 'annotations-overlay-trigger--bundle', 'js-annotations-overlay-trigger'],
+              'class' => [
+                'annotations-overlay-trigger',
+                'annotations-overlay-trigger--bundle',
+                'js-annotations-overlay-trigger',
+              ],
               'data-annotations-field' => $prefix . '_bundle',
               'aria-label' => (string) $this->t('About @label', ['@label' => $para_target->label()]),
             ],

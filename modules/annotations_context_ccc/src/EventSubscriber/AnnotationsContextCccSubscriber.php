@@ -20,8 +20,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * Only injects types with the annotations_context.in_ai_context third-party
  * setting enabled. When an entity is detectable from the current route or
- * event tokens, injection is scoped to the matching annotation_target; otherwise
- * all opted-in targets are included.
+ * event tokens, injection is scoped to the matching annotation_target;
+ * otherwise all opted-in targets are included.
  */
 final class AnnotationsContextCccSubscriber implements EventSubscriberInterface {
 
@@ -72,6 +72,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
    * Returns IDs of annotation types opted in to AI context injection.
    *
    * @return string[]
+   *   Annotation type machine names opted in to AI context injection.
    */
   private function getAiContextTypeIds(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all */
@@ -144,7 +145,8 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
           return $entity;
         }
       }
-      catch (\Throwable) {}
+      catch (\Throwable) {
+      }
     }
 
     return NULL;

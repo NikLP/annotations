@@ -38,7 +38,7 @@ class AnnotationsCoverageHooks {
   }
 
   /**
-   * Injects the "Affects coverage status" checkbox into the annotation type form.
+   * Injects the "Affects coverage status" checkbox into annotation type form.
    */
   #[Hook('form_annotation_type_form_alter')]
   public function formAnnotationTypeFormAlter(array &$form, FormStateInterface $form_state): void {
