@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * JSON endpoint returning the assembled context payload for a single target.
  *
- * Intended for headless consumers (Canvas, React, Mercury) that need annotation
- * data without an AI dependency. Shares the assembler with annotations_ai_context
- * and ContextPreviewController; no AI module required.
+ * Intended for headless consumers (Canvas, React, Mercury) that need
+ * annotation data without an AI dependency. Shares the assembler with
+ * annotations_ai_context * and ContextPreviewController; no AI module required.
  */
 class ContextApiController extends ControllerBase {
 
@@ -46,7 +46,7 @@ class ContextApiController extends ControllerBase {
     if (!$target) {
       $response = new CacheableJsonResponse(['error' => 'Annotation target not found.'], 404);
       $meta = new CacheableMetadata();
-      // Cache the 404 against this tag so it invalidates if the target is later created.
+      // Cache 404 against tag so it invalidates if target is later created.
       $meta->addCacheTags(['annotation_target_list']);
       $response->addCacheableDependency($meta);
       return $response;
@@ -74,7 +74,7 @@ class ContextApiController extends ControllerBase {
       ['languages:language_interface', 'url.query_args', 'user.permissions'],
       $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
     ));
-    // Fold in cache metadata contributed by hook_annotations_context_alter() implementations.
+    // Fold in cache metadata contributed by hook_annotations_context_alter().
     $meta->merge($this->assembler->getLastCacheableMetadata());
 
     $response = new CacheableJsonResponse($payload);

@@ -33,6 +33,11 @@ class ContextHtmlRenderer {
    */
   private bool $showTypeLabel = TRUE;
 
+  /**
+   * Whether open accordion panels should close siblings (exclusive mode).
+   *
+   * Set from the annotations.settings 'use_accordion_single' config key.
+   */
   private bool $exclusiveAccordions = FALSE;
 
   public function __construct(
@@ -235,7 +240,10 @@ class ContextHtmlRenderer {
         ];
 
         if (!empty($ref_data['annotations'])) {
-          $ref_card['overview'] = ['#type' => 'container', '#attributes' => ['class' => ['annotations-context__overview']]];
+          $ref_card['overview'] = [
+            '#type'       => 'container',
+            '#attributes' => ['class' => ['annotations-context__overview']],
+          ];
           foreach ($ref_data['annotations'] as $type_id => $annotation) {
             $ref_card['overview'][$type_id] = $this->annotationBlock($annotation['label'], $annotation['value'], $annotation['extra_fields'] ?? []);
           }

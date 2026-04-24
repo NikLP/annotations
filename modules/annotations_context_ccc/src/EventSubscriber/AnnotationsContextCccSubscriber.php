@@ -100,14 +100,9 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
 
     $target_id = $entity->getEntityTypeId() . '__' . $entity->bundle();
 
-    try {
-      return $this->entityTypeManager->getStorage('annotation_target')->load($target_id) !== NULL
-        ? $target_id
-        : NULL;
-    }
-    catch (\Throwable) {
-      return NULL;
-    }
+    return $this->entityTypeManager->getStorage('annotation_target')->load($target_id) !== NULL
+      ? $target_id
+      : NULL;
   }
 
   /**
@@ -136,16 +131,12 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
     }
 
     if (!empty($tokens['entity_type']) && !empty($tokens['entity_id'])
-        && is_string($tokens['entity_type']) && is_numeric($tokens['entity_id'])) {
-      try {
-        $entity = $this->entityTypeManager
-          ->getStorage($tokens['entity_type'])
-          ->load($tokens['entity_id']);
-        if ($entity instanceof EntityInterface) {
-          return $entity;
-        }
-      }
-      catch (\Throwable) {
+        && is_string($tokens['entity_type']) && is_numeric($tokens['entity_id'])
+        && $this->entityTypeManager->hasDefinition($tokens['entity_type'])) {
+
+      $entity = $this->entityTypeManager->getStorage($tokens['entity_type'])->load($tokens['entity_id']);
+      if ($entity instanceof EntityInterface) {
+        return $entity;
       }
     }
 

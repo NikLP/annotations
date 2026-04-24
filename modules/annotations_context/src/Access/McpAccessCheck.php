@@ -16,8 +16,8 @@ use Symfony\Component\Routing\Route;
  * Access checker for the MCP endpoint.
  *
  * Grants access when either:
- *   - the current user has 'view annotations context' or 'administer annotations'
- *     (standard Drupal session auth), or
+ *   - the current user has 'view annotations context' or
+ *     'administer annotations' (standard Drupal session auth), or
  *   - the request carries a valid 'Authorization: Bearer <key>' header matching
  *     the key stored in annotations_context.settings.
  *
@@ -54,7 +54,7 @@ class McpAccessCheck implements AccessInterface {
       $stored_key = $this->configFactory->get('annotations_context.settings')->get('mcp_api_key');
 
       if ($stored_key !== '' && $stored_key !== NULL && hash_equals($stored_key, $token)) {
-        // Signal to the controller that account-based type filtering should be skipped.
+        // Signal controller to skip account-based type filtering.
         $request->attributes->set('_mcp_bearer_auth', TRUE);
         return AccessResult::allowed()->setCacheMaxAge(0);
       }

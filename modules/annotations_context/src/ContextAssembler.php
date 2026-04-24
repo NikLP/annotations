@@ -20,18 +20,18 @@ use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\field\FieldConfigInterface;
 
 /**
- * Assembles annotation_target annotation data into a structured context payload.
+ * Assembles annotation_target annotation data into structured context payload.
  *
  * The payload is format-agnostic. Pass it to ContextRenderer for markdown,
  * or use it directly in AI consumers for prompt construction.
  *
  * Usage:
  * @code
- * $payload = $assembler->assemble();                         // all targets
- * $payload = $assembler->assemble(['entity_type' => 'node']); // one type
- * $payload = $assembler->assemble(['target_id' => 'node__article']); // one target
- * $payload = $assembler->assemble(['types' => ['editorial']]); // one type only
- * $payload = $assembler->assemble(['ref_depth' => 1]);        // follow ER links one hop
+ * $payload = $assembler->assemble(); // all targets
+ * $payload = $assembler->assemble(['entity_type' => 'node']); // 1 type
+ * $payload = $assembler->assemble(['target_id' => 'node__article']); // 1 targ.
+ * $payload = $assembler->assemble(['types' => ['editorial']]); // 1 type only
+ * $payload = $assembler->assemble(['ref_depth' => 1]); // follow ER links 1 hop
  * @endcode
  *
  * Payload structure:
@@ -97,16 +97,17 @@ class ContextAssembler {
   private bool $includeIncomingRefs = FALSE;
 
   /**
-   * Reverse lookup index built once per assemble() call when include_incoming_refs is TRUE.
+   * Reverse lookup idx built 1x per assemble() when include_incoming_refs=TRUE.
    *
-   * Structure: [target_id => [source_target_id => ['label' => ..., 'via_fields' => [...]]]]
+   * Structure: [target_id =>
+   * [source_target_id => ['label' => ..., 'via_fields' => [...]]]]
    *
    * @var array<string, array<string, array{label: string, via_fields: string[]}>>
    */
   private array $reverseIndex = [];
 
   /**
-   * Cache metadata contributed by hook_annotations_context_alter() implementations.
+   * Cache metadata contrib by hook_annotations_context_alter() implementations.
    *
    * Populated on each assemble() call. Callers that produce cacheable output
    * (e.g. ContextPreviewController) must merge this into their build cache so
@@ -125,7 +126,7 @@ class ContextAssembler {
   }
 
   /**
-   * Returns cache metadata contributed by the last assemble() call's alter implementations.
+   * Returns cache metadata contributed by the last assemble() call's alters.
    *
    * Merge this into any cacheable output produced from the payload:
    * @code
@@ -144,7 +145,8 @@ class ContextAssembler {
    *   Supported keys:
    *   - 'entity_type' (string|null): Limit to targets of this entity type.
    *   - 'target_id' (string|null): Limit to a single target by ID.
-   *   - 'types' (string[]|null): Explicit list of annotation type IDs to include.
+   *   - 'types' (string[]|null): Explicit list of annotation type IDs
+   *     to include.
    *   - 'ref_depth' (int): Entity-reference traversal depth.
    *     Default: self::DEFAULT_REF_DEPTH.
    *   - 'role' (string|null): Simulate context as this user role ID. When
@@ -153,8 +155,8 @@ class ContextAssembler {
    *   - 'account' (\Drupal\Core\Session\AccountInterface|null): Filter to
    *     types the given account can view, using its actual combined permissions
    *     (i.e. the union of all its roles). Ignored if 'role' is also set.
-   *     Accounts with 'administer annotations' bypass filtering. Use this for real
-   *     current-user context; use 'role' for role-simulation previews.
+   *     Accounts with 'administer annotations' bypass filtering.
+   *     Use this for real current-user context; use 'role' for previews.
    *   - 'include_field_meta' (bool): If TRUE, each field entry in the payload
    *     gains a 'meta' key containing 'type', 'cardinality', and optionally
    *     'description' (the field's configured help text). Default FALSE.
@@ -211,7 +213,10 @@ class ContextAssembler {
     //
     // Example implementation:
     // @code
-    // function mymodule_annotations_context_alter(array &$payload, array $options, CacheableMetadata &$cacheableMetadata): void {
+    // function mymodule_annotations_context_alter(
+    //   array &$payload, array $options,
+    //   CacheableMetadata &$cacheableMetadata,
+    // ): void {
     //   $payload['my_section'] = ['key' => 'value'];
     //   $cacheableMetadata->addCacheTags(['mymodule_data_list']);
     // }
@@ -233,9 +238,11 @@ class ContextAssembler {
    *   $account when both are provided.
    * @param \Drupal\Core\Session\AccountInterface|null $account
    *   If provided (and $role is not), restrict to types the account can view
-   *   using its combined permissions. Accounts with 'administer annotations' bypass.
+   *   using its combined permissions. Accounts with 'administer annotations'
+   *   bypass filtering entirely.
    *
    * @return array<string, \Drupal\annotations\Entity\AnnotationTypeInterface>
+   *   Annotation types keyed by type ID, sorted by weight.
    */
   private function loadAnnotationTypes(?array $explicit_types, ?string $role, ?AccountInterface $account = NULL): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all */
@@ -264,9 +271,10 @@ class ContextAssembler {
   }
 
   /**
-   * Loads annotation_target entities, applying entity type and/or target ID filters.
+   * Loads annotation_target entities, filtered by entity type or target ID.
    *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   *   Loaded targets sorted by entity type then label.
    */
   private function loadTargets(?string $entity_type_filter, ?string $target_id_filter): array {
     $storage = $this->entityTypeManager->getStorage('annotation_target');
@@ -298,13 +306,18 @@ class ContextAssembler {
    * Groups assembled targets by entity type.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
+   *   Loaded targets to group.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Types to include, already filtered and sorted by weight.
+   * @param int $ref_depth
+   *   Entity-reference traversal depth passed through to assembleTarget().
    * @param bool $skip_empty
    *   When TRUE, targets with no matching annotations are omitted. Use when
    *   the caller has filtered to specific types — showing empty targets in a
    *   type-filtered view is noise.
    *
    * @return array<string, array{entity_type: string, label: string, targets: array}>
+   *   Groups keyed by entity type ID.
    */
   private function assembleGroups(array $targets, array $types, int $ref_depth, bool $skip_empty = FALSE): array {
     $plugins = $this->discoveryService->getPlugins();
@@ -338,13 +351,18 @@ class ContextAssembler {
    * Assembles a single target into the payload structure.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface $target
+   *   The annotation target to assemble.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Types to include, already filtered and sorted by weight.
    * @param int $max_depth
+   *   Maximum entity-reference traversal depth.
    * @param int $current_depth
+   *   Current traversal depth (0 at the top-level call).
    * @param string[] $visited
    *   Target IDs already assembled in this branch — prevents cycles.
    *
    * @return array
+   *   The assembled target data.
    */
   private function assembleTarget(
     AnnotationTargetInterface $target,
@@ -409,11 +427,11 @@ class ContextAssembler {
   }
 
   /**
-   * Follows entity-reference fields on a target and assembles referenced targets.
+   * Assembles referenced targets by following entity-reference fields.
    *
    * Only follows fields that are in scope (listed in getFields()). Only
-   * assembles referenced targets that have a annotation_target entry. Skips targets
-   * already visited in this branch to prevent cycles.
+   * assembles referenced targets that have an annotation_target entry.
+   * Skips targets already visited in this branch to prevent cycles.
    *
    * @return array<string, array>
    *   Keyed by field_name → target_id → assembled target.
@@ -480,6 +498,7 @@ class ContextAssembler {
    * Matches at bundle level — media__image and media__document are distinct.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $all_targets
+   *   All loaded annotation target entities.
    */
   private function buildReverseIndex(array $all_targets): void {
     $this->reverseIndex = [];
@@ -518,9 +537,10 @@ class ContextAssembler {
   }
 
   /**
-   * Returns incoming reference entries for a target from the pre-built reverse index.
+   * Returns incoming reference entries for a target from the reverse index.
    *
    * @return array<string, array{label: string, via_fields: string[]}>
+   *   Entries from the reverse index keyed by source target ID.
    */
   private function resolveIncomingRefs(AnnotationTargetInterface $target): array {
     return $this->reverseIndex[$target->id()] ?? [];
@@ -530,6 +550,7 @@ class ContextAssembler {
    * Builds the field metadata block for a single field definition.
    *
    * @return array{type: string, cardinality: string, description?: string}
+   *   Field metadata suitable for inclusion in the payload.
    */
   private function buildFieldMeta(FieldDefinitionInterface $def): array {
     $cardinality = $def->getFieldStorageDefinition()->getCardinality();
@@ -677,9 +698,10 @@ class ContextAssembler {
   }
 
   /**
-   * Returns field definitions for an entity type + bundle, with per-request caching.
+   * Returns cached field definitions for an entity type and bundle.
    *
    * @return array<string, \Drupal\Core\Field\FieldDefinitionInterface>
+   *   Field definitions keyed by field name.
    */
   private function getFieldDefinitions(string $entity_type_id, string $bundle): array {
     $cache_key = $entity_type_id . '__' . $bundle;

@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
  *   initialize           — capability handshake; negotiates protocol version
  *   notifications/*      — notifications acknowledged, no response body
  *   resources/list       — enumerate all annotation targets as MCP resources
- *   resources/read       — assembled context for one target, rendered as markdown
+ *   resources/read       — assembled context for 1 target, rendered as markdown
  *   ping                 — keep-alive; returns empty result object
  */
 class ContextMcpController extends ControllerBase {

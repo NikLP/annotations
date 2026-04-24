@@ -48,6 +48,7 @@ class ContextRenderer {
    * Renders a single entity-type group.
    *
    * @param array{entity_type: string, label: string, targets: array} $group
+   *   An entity type group from the payload.
    */
   private function renderGroup(array $group): string {
     $parts = ['# ' . $group['label']];
@@ -83,8 +84,8 @@ class ContextRenderer {
     // Field annotations.
     if (!empty($target_data['fields'])) {
       $fields_heading = str_repeat('#', min($heading_level + 1, 6));
-      $field_lines = [$fields_heading . ' ' . 'Fields'];
-      foreach ($target_data['fields'] as $field_name => $field_data) {
+      $field_lines = [$fields_heading . ' Fields'];
+      foreach ($target_data['fields'] as $field_data) {
         $field_lines[] = $this->renderField($field_data, $heading_level + 2);
       }
       $parts[] = implode("\n\n", $field_lines);
@@ -107,6 +108,7 @@ class ContextRenderer {
    * Renders a single field's annotations as a markdown block.
    *
    * @param array{label: string, annotations: array} $field_data
+   *   An assembled field entry from the payload.
    * @param int $heading_level
    *   The markdown heading level for the field name.
    */
@@ -137,8 +139,10 @@ class ContextRenderer {
    * a blank paragraph.
    *
    * @param array{label: string, value: string, extra_fields?: array} $annotation
+   *   A single annotation entry from the payload.
    *
    * @return string[]
+   *   Markdown lines for the annotation value and any extra fields.
    */
   private function annotationLines(array $annotation): array {
     $lines = [];

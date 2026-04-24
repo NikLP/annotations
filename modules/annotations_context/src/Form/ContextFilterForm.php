@@ -23,7 +23,7 @@ class ContextFilterForm extends FormBase {
   ) {}
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container): static {
     return new static(
@@ -33,14 +33,14 @@ class ContextFilterForm extends FormBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getFormId(): string {
     return 'annotations_context_filter';
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, array $options = []): array {
     $form['#method'] = 'get';
@@ -102,12 +102,12 @@ class ContextFilterForm extends FormBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {}
 
   /**
-   *
+   * After-build callback that strips Drupal system fields from GET form URLs.
    */
   public static function removeFormSystemFields(array $form, FormStateInterface $form_state): array {
     unset($form['form_build_id'], $form['form_token'], $form['form_id']);
@@ -115,7 +115,7 @@ class ContextFilterForm extends FormBase {
   }
 
   /**
-   *
+   * Builds role select options, excluding the administrator role.
    */
   private function buildRoleOptions(): array {
     $options = ['' => $this->t('All roles (no filter)')];
@@ -128,7 +128,7 @@ class ContextFilterForm extends FormBase {
   }
 
   /**
-   *
+   * Builds target select options grouped by entity type.
    */
   private function buildTargetOptions(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $all_targets */
