@@ -368,7 +368,7 @@ class AnnotationController extends ControllerBase {
         '#tag' => 'p',
         'link' => [
           '#type' => 'link',
-          '#title' => $this->t('Configure scope for this target'),
+          '#title' => $this->t('Configure field scope for this target'),
           '#url' => Url::fromRoute('annotations.target.fields', ['annotation_target' => $annotation_target->id()], $destination ? ['query' => ['destination' => $destination]] : []),
         ],
       ],
