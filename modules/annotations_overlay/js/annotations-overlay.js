@@ -13,7 +13,7 @@
   'use strict';
 
   // Track the trigger that opened a dialog so focus can be returned on close.
-  let lastTrigger = NULL;
+  let lastTrigger = null;
 
   // Open the dialog that matches the given field key.
   function openDialog(fieldKey, trigger) {
@@ -84,7 +84,7 @@
   document.addEventListener('close', function (e) {
     if (e.target.classList?.contains('annotations-overlay-dialog')) {
       const trigger = lastTrigger;
-      lastTrigger = NULL;
+      lastTrigger = null;
       if (trigger) {
         setTimeout(function () {
           trigger.focus({ preventScroll: TRUE }); }, 0);
