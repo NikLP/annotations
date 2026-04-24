@@ -12,10 +12,10 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 /**
  * Catch-all Target plugin for custom or unclaimed fieldable entity types.
  *
- * Created dynamically by DiscoveryService for any fieldable entity type that
- * does not have a dedicated plugin. Agencies using custom entity types (e.g.
- * via ECK or hand-rolled entities) will see them in the scope UI without
- * needing to write a plugin.
+ * Created dynamically by AnnotationDiscoveryService for any fieldable entity
+ * type that * does not have a dedicated plugin. Agencies using custom entity
+ * types (e.g. * via ECK or hand-rolled entities) will see them in the scope
+ * UI without needing to write a plugin.
  *
  * The label and entity type ID are derived from the entity type definition
  * rather than a hardcoded property, since this class is instantiated at

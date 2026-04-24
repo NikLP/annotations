@@ -6,13 +6,13 @@ namespace Drupal\annotations_scan;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Psr\Log\LoggerInterface;
 
 /**
  * Executes site structure scans and manages scan snapshots.
  *
- * Uses DiscoveryService (from annotations) to get available plugins, loads
+ * Uses AnnotationDiscoveryService (from annotations) to get available plugins, loads
  * opted-in annotation_target entities as scope, then calls each plugin's
  * discover() to produce * a structured snapshot of the site's content model.
  *
@@ -29,7 +29,7 @@ class ScanService {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
-    protected DiscoveryService $discovery,
+    protected AnnotationDiscoveryService $discovery,
     protected Connection $database,
   ) {}
 

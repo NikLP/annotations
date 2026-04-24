@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations_context\ContextAssembler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,7 +19,7 @@ class ContextFilterForm extends FormBase {
 
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly DiscoveryService $discoveryService,
+    private readonly AnnotationDiscoveryService $discoveryService,
   ) {}
 
   /**

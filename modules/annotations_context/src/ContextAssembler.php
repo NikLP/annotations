@@ -14,7 +14,7 @@ use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\annotations\AnnotationStorageService;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations\Entity\Annotation;
 use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\field\FieldConfigInterface;
@@ -119,7 +119,7 @@ class ContextAssembler {
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly AnnotationStorageService $annotationStorage,
     private readonly EntityFieldManagerInterface $fieldManager,
-    private readonly DiscoveryService $discoveryService,
+    private readonly AnnotationDiscoveryService $discoveryService,
     private readonly ModuleHandlerInterface $moduleHandler,
   ) {
     $this->lastCacheableMetadata = new CacheableMetadata();

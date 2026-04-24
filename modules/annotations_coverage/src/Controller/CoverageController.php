@@ -11,7 +11,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\annotations\AnnotationsGlyph;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\annotations_coverage\CoverageService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -25,7 +25,7 @@ class CoverageController extends ControllerBase {
   public function __construct(
     protected CoverageService $coverageService,
     protected EntityFieldManagerInterface $fieldManager,
-    protected DiscoveryService $discoveryService,
+    protected AnnotationDiscoveryService $discoveryService,
   ) {}
 
   /**
