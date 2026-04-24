@@ -1,3 +1,7 @@
+views.filter.annotation_field_filter:
+  type: views.filter.in_operator
+  label: 'Annotation field (label)'
+
 views.filter.annotation_type_filter:
   type: views.filter.in_operator
   label: 'Annotation type (label)'
