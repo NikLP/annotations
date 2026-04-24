@@ -12,7 +12,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\annotations\AnnotationStorageService;
-use Drupal\annotations\DiscoveryService;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations\Plugin\Target\TargetBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TargetOverviewForm extends FormBase {
 
   public function __construct(
-    private readonly DiscoveryService $discoveryService,
+    private readonly AnnotationDiscoveryService $discoveryService,
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly EntityFieldManagerInterface $fieldManager,
     private readonly AnnotationStorageService $annotationStorage,
