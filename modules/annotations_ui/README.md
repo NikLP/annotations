@@ -35,6 +35,8 @@ Lists all opted-in `annotation_target` entities grouped by entity type. Each tar
 
 Embeds the `annotations_target` view, listing all existing `annotation` entities for the target with Edit and Delete operation links per row.
 
+The **Field** exposed filter (`AnnotationFieldFilter`) scopes its options to the current target by reading `$this->view->argument['target_id']`. If the view is altered and that argument is renamed or removed, the filter falls back to showing fields from all targets.
+
 ### Add-new page — `/admin/content/annotations/{target}/add`
 
 Shows a table of annotation slots that are not yet filled. Each row is a field (or the target overview) with Add buttons for each missing annotation type. When all slots are filled, a link to the edit view is shown instead.
