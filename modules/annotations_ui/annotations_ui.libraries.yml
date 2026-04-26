@@ -1,3 +1,0 @@
-annotations_ui.admin:
-  dependencies:
-    - annotations/annotations.admin

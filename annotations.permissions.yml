@@ -1,5 +1,5 @@
 administer annotations:
-  title: 'Administer Annotations'
+  title: 'Administer annotations'
   restrict access: true
 
 access annotation overview:
