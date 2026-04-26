@@ -299,7 +299,7 @@ class AnnotationController extends ControllerBase {
       }
     }
 
-    return $this->t('Add %type annotation: %target &rsaquo; %field</em>', [
+    return $this->t('Add %type annotation to %target &rsaquo; %field</em>', [
       '%type' => $type_label,
       '%target' => $annotation_target->label(),
       '%field' => $field_label,
