@@ -72,6 +72,7 @@ class AnnotationTypeForm extends EntityForm {
     if (empty(Element::children($element))) {
       $element['#access'] = FALSE;
     }
+
     return $element;
   }
 
@@ -86,6 +87,7 @@ class AnnotationTypeForm extends EntityForm {
       '#url' => Url::fromRoute('entity.annotation_type.collection'),
       '#attributes' => ['class' => ['button']],
     ];
+
     return $actions;
   }
 
@@ -101,6 +103,7 @@ class AnnotationTypeForm extends EntityForm {
       '@op' => $op,
     ]));
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
+    
     return $result;
   }
 

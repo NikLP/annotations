@@ -209,12 +209,14 @@ class AnnotationEditForm extends ContentEntityForm {
         ['data' => ['#plain_text' => (string) ($definition->isRequired() ? $this->t('Yes') : $this->t('No'))]],
       ],
     ];
+
     if ($description = (string) $definition->getDescription()) {
       $rows[] = [
         ['data' => ['#plain_text' => (string) $this->t('Description')]],
         ['data' => ['#plain_text' => $description]],
       ];
     }
+
     return [
       '#type' => 'details',
       '#title' => $this->t('Metadata'),
@@ -259,6 +261,7 @@ class AnnotationEditForm extends ContentEntityForm {
       $published = (bool) $form_state->getValue(['meta', 'status']);
       $published ? $annotation->setPublished() : $annotation->setUnpublished();
     }
+
     $annotation->set('uid', $this->currentUser()->id());
     $annotation->setRevisionUserId($this->currentUser()->id());
     $annotation->setRevisionCreationTime($this->time->getRequestTime());
@@ -266,6 +269,7 @@ class AnnotationEditForm extends ContentEntityForm {
 
     $target_id = (string) $annotation->get('target_id')->value;
     $destination = (string) $this->getRequest()->query->get('destination', '');
+
     if ($destination !== '' && str_starts_with($destination, '/')) {
       $form_state->setRedirectUrl(Url::fromUserInput($destination));
     }

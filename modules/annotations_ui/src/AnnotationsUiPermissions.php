@@ -30,6 +30,7 @@ class AnnotationsUiPermissions {
     if (!$entity_type_manager->hasDefinition('annotation_type')) {
       return $permissions;
     }
+
     $storage = $entity_type_manager->getStorage('annotation_type');
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface $type */
     foreach ($storage->loadMultiple() as $type) {
@@ -38,6 +39,7 @@ class AnnotationsUiPermissions {
         'restrict access' => TRUE,
       ];
     }
+    
     return $permissions;
   }
 

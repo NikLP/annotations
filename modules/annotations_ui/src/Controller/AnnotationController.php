@@ -247,7 +247,7 @@ class AnnotationController extends ControllerBase {
    * Title callback for the add-new-annotations page.
    */
   public function addTitle(AnnotationTarget $annotation_target): TranslatableMarkup {
-    return $this->t('Add annotations: %label', ['%label' => $annotation_target->label()]);
+    return $this->t('Add annotations for %label', ['%label' => $annotation_target->label()]);
   }
 
   /**
@@ -284,7 +284,7 @@ class AnnotationController extends ControllerBase {
     $type_label = $type ? (string) $type->label() : $type_id;
 
     if ($field_name === '_overview') {
-      return $this->t('Add %type annotation: %target overview', [
+      return $this->t('Add %type annotation for %target overview', [
         '%type' => $type_label,
         '%target' => $annotation_target->label(),
       ]);
@@ -299,7 +299,7 @@ class AnnotationController extends ControllerBase {
       }
     }
 
-    return $this->t('Add %type annotation to %target &rsaquo; %field</em>', [
+    return $this->t('Add %type annotation for %target &rsaquo; %field</em>', [
       '%type' => $type_label,
       '%target' => $annotation_target->label(),
       '%field' => $field_label,
@@ -341,6 +341,7 @@ class AnnotationController extends ControllerBase {
             '#modifier' => 'no',
           ],
         ];
+
       $rows[] = [
         ['data' => ['#plain_text' => $info['label']]],
         ['data' => ['#markup' => '<code>' . Html::escape($field_name) . '</code>']],
@@ -442,6 +443,7 @@ class AnnotationController extends ControllerBase {
       fn($type) => $account->hasPermission($type->getEditPermission()),
     );
     uasort($types, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
+
     return $types;
   }
 
@@ -470,6 +472,7 @@ class AnnotationController extends ControllerBase {
         'type' => $definition->getType(),
       ];
     }
+    
     return $info;
   }
 

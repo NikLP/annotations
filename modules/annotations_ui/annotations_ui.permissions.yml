@@ -4,7 +4,7 @@ edit any annotation:
 
 view annotation revisions:
   title: 'View annotation revision history'
-  description: 'View the revision history and individual revisions for annotation values.'
+  description: 'View the revision history and individual revisions for annotations.'
 
 permission_callbacks:
   - \Drupal\annotations_ui\AnnotationsUiPermissions::permissions

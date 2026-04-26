@@ -30,7 +30,7 @@ class AnnotationViewController extends ControllerBase {
    */
   public static function title(Annotation $annotation): TranslatableMarkup {
     $parts = static::resolveAnnotationTitleParts($annotation);
-    return t('Annotation: %target &rsaquo; %field &rsaquo; %type</em>', $parts);
+    return t('Annotation for %target &rsaquo; %field &rsaquo; %type</em>', $parts);
   }
 
 }

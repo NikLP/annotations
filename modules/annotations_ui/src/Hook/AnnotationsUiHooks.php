@@ -97,6 +97,7 @@ class AnnotationsUiHooks {
         'title' => $this->t('Status'),
       ];
     }
+
     $data['annotation_field_data']['moderation_state']['field'] = [
       'id' => 'annotation_moderation_state',
       'field_name' => 'moderation_state',
@@ -177,16 +178,19 @@ class AnnotationsUiHooks {
     if ($entity->getEntityTypeId() !== 'annotation') {
       return;
     }
+
     $etm = $this->entityTypeManager;
     if (!$etm->hasDefinition('content_moderation_state')) {
       return;
     }
+
     $storage = $etm->getStorage('content_moderation_state');
     $ids = $storage->getQuery()
       ->accessCheck(FALSE)
       ->condition('content_entity_type_id', 'annotation')
       ->condition('content_entity_id', $entity->id())
       ->execute();
+
     if ($ids) {
       $storage->delete($storage->loadMultiple($ids));
     }
@@ -205,15 +209,18 @@ class AnnotationsUiHooks {
     if ($entity->getEntityTypeId() !== 'annotation') {
       return AccessResult::neutral();
     }
+
     if (in_array($operation, ['view', 'update', 'delete', 'revert', 'delete revision'], TRUE)) {
       return AccessResult::allowedIfHasPermission($account, 'edit any annotation')
         ->cachePerPermissions();
     }
+
     if (in_array($operation, ['view all revisions', 'view revision'], TRUE)) {
       return AccessResult::allowedIfHasPermission($account, 'view annotation revisions')
         ->orIf(AccessResult::allowedIfHasPermission($account, 'edit any annotation'))
         ->cachePerPermissions();
     }
+    
     return AccessResult::neutral();
   }
 

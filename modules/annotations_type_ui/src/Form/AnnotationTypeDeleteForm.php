@@ -49,6 +49,7 @@ class AnnotationTypeDeleteForm extends EntityDeleteForm {
         ['%id' => $this->entity->id()],
       );
     }
+    
     return $this->formatPlural(
       $count,
       '1 annotation stored under this type will be permanently deleted. The permissions <em>edit %id annotations</em> and <em>consume %id annotations</em> will also be removed.',
