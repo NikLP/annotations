@@ -130,7 +130,7 @@ class CoverageController extends ControllerBase {
       $type_label = $entity_types[$target->getTargetEntityTypeId()]
         ?? $target->getTargetEntityTypeId();
 
-      $status_cell = ['data' => $this->buildStatusCell($status), 'class' => ['annotations-center']];
+      $status_cell = ['data' => $this->buildStatusCell($status)];
 
       $gaps_cell = $status !== 'complete'
         ? ['data' => $this->buildGapCell($target, $row, $all_types)]
@@ -155,7 +155,7 @@ class CoverageController extends ControllerBase {
     }
 
     return [
-      '#attached' => ['library' => ['annotations/annotations.admin']],
+      '#attached' => ['library' => ['annotations_coverage/annotations_coverage.report']],
       '#cache' => [
         'tags'     => ['annotation_list', 'annotation_target_list', 'annotation_type_list'],
         'contexts' => array_merge(
@@ -178,7 +178,7 @@ class CoverageController extends ControllerBase {
         '#header' => [
           $this->t('Target'),
           $this->t('Type'),
-          ['data' => $this->t('Status'), 'class' => ['annotations-center']],
+          $this->t('Status'),
           $this->t('Gaps'),
           $this->t('Operations'),
         ],

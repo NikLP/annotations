@@ -72,7 +72,7 @@ class ContextPreviewController extends ControllerBase {
       ),
     ];
     $this->assembler->getLastCacheableMetadata()->applyTo($build);
-    $build['#attached']['library'][] = 'annotations/annotations.admin';
+    $build['#attached']['library'][] = 'annotations_context/annotations_context.preview';
 
     $export_query = [];
     if (!empty($options['entity_type'])) {

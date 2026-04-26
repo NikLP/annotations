@@ -121,7 +121,7 @@ class TargetOverviewForm extends FormBase {
           'selected' => '',
           'label' => $this->t('Target'),
           'coverage' => $this->t('Fields'),
-          'operations' => ['data' => $this->t('Operations'), 'class' => ['annotations-center']],
+          'operations' => $this->t('Operations'),
         ],
         '#empty' => $this->t('No targets found.'),
       ];

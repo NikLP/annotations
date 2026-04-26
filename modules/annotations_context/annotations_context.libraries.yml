@@ -1,0 +1,4 @@
+annotations_context.preview:
+  css:
+    theme:
+      css/annotations-context.css: {}

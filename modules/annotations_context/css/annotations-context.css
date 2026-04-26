@@ -1,0 +1,121 @@
+/* Context preview */
+
+.annotations-context__toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.annotations-context__filters.form--inline {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+  flex: 1;
+}
+
+.annotations-context__filters.form--inline .form-item {
+  margin-bottom: 0;
+}
+
+/* Claro select inputs have padding-bottom that checkboxes lack; add equivalent
+   bottom spacing so the checkbox baseline sits level with select inputs. */
+.annotations-context__filters.form--inline .form-type--checkbox {
+  padding-bottom: 0.4375rem;
+}
+
+.annotations-context__filter-actions {
+  margin: 0;
+  padding: 0;
+}
+
+/* Entity type group */
+.annotations-context__group {
+  margin-bottom: 2.5rem;
+}
+
+/* Target card — details/summary */
+.annotations-context__target {
+  margin-bottom: 0.4rem;
+}
+
+/* Site-wide card */
+.annotations-context__site {
+  margin-bottom: 1.5rem;
+}
+
+/* Section labels: Overview, Fields, References (rendered as h3) */
+.annotations-context__section-label {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0 0 0.6rem;
+}
+
+/* Annotation type label: Editorial, Technical, Rules */
+.annotations-context__type-label {
+  font-weight: bold;
+  margin: 0 0 0.2rem;
+}
+
+/* Annotation text — preserve line breaks from the textarea */
+.annotations-context__annotation-text {
+  margin: 0 0 0.75rem;
+  white-space: pre-wrap;
+}
+
+.annotations-context__annotation:last-child .annotations-context__annotation-text {
+  margin-bottom: 0;
+}
+
+/* Fields block — border-top separates it from the overview */
+.annotations-context__fields {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid currentColor;
+}
+
+/* Individual field */
+.annotations-context__field {
+  margin-bottom: 1.25rem;
+}
+
+.annotations-context__field:last-child {
+  margin-bottom: 0;
+}
+
+.annotations-context__field-name {
+  font-weight: bold;
+  margin: 0 0 0.25rem;
+}
+
+.annotations-context__field-meta {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  margin: 0 0 0.25rem;
+  font-family: monospace;
+}
+
+.annotations-context__field-meta-desc {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  margin: 0 0 0.5rem;
+  font-style: italic;
+}
+
+/* References block — same visual treatment as fields */
+.annotations-context__references {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid currentColor;
+}
+
+.annotations-context__target--ref {
+  margin-left: 1.5rem;
+}
+
+/* Empty target state */
+.annotations-context__empty {
+  margin: 0 0 0.5rem;
+}
