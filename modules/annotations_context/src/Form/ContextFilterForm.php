@@ -111,6 +111,7 @@ class ContextFilterForm extends FormBase {
    */
   public static function removeFormSystemFields(array $form, FormStateInterface $form_state): array {
     unset($form['form_build_id'], $form['form_token'], $form['form_id']);
+
     return $form;
   }
 
@@ -124,6 +125,7 @@ class ContextFilterForm extends FormBase {
         $options[$role->id()] = $role->label();
       }
     }
+
     return $options;
   }
 
@@ -155,6 +157,7 @@ class ContextFilterForm extends FormBase {
         $options[$group_label][$target->id()] = (string) $target->label();
       }
     }
+    
     return $options;
   }
 

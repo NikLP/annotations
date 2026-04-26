@@ -265,8 +265,8 @@ class ContextAssembler {
     elseif ($account !== NULL && !$account->hasPermission('administer annotations')) {
       $all = array_filter($all, fn($t) => $account->hasPermission($t->getConsumePermission()));
     }
-
     uasort($all, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
+
     return $all;
   }
 
@@ -605,6 +605,7 @@ class ContextAssembler {
       }
       $result[$type_id] = $entry;
     }
+
     return $result;
   }
 
@@ -629,6 +630,7 @@ class ContextAssembler {
       if ($item_list->isEmpty()) {
         continue;
       }
+
       $values = [];
       foreach ($item_list as $item) {
         $str = $this->flattenHtml($this->fieldItemToString($item, $def));
@@ -636,6 +638,7 @@ class ContextAssembler {
           $values[] = $str;
         }
       }
+
       if (!empty($values)) {
         $result[$field_name] = [
           'label'  => (string) $def->getLabel(),
@@ -643,6 +646,7 @@ class ContextAssembler {
         ];
       }
     }
+
     return $result;
   }
 
@@ -686,6 +690,7 @@ class ContextAssembler {
     }
     $value = preg_replace('/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', '$2 ($1)', $value);
     $decoded = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
     return preg_replace('/\s+/', ' ', trim($decoded));
   }
 
@@ -694,6 +699,7 @@ class ContextAssembler {
    */
   private function entityTypeLabel(string $entity_type_id): string {
     $def = $this->entityTypeManager->getDefinition($entity_type_id, FALSE);
+
     return $def ? (string) $def->getLabel() : $entity_type_id;
   }
 
@@ -719,6 +725,7 @@ class ContextAssembler {
         }
       }
     }
+
     return $this->fieldDefinitionCache[$cache_key];
   }
 

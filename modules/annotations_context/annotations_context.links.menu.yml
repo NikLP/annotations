@@ -6,8 +6,8 @@ annotations_context.preview:
   weight: 15
 
 annotations_context.mcp_settings:
-  title: 'MCP API key'
+  title: 'Context MCP API key'
   parent: annotations.admin
   description: 'Generate or regenerate the API key for the MCP endpoint.'
   route_name: annotations_context.mcp_settings
-  weight: 16
+  weight: 20

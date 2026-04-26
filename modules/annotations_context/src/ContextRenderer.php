@@ -58,9 +58,11 @@ class ContextRenderer {
         $parts[] = $rendered;
       }
     }
+
     if (count($parts) === 1) {
       return '';
     }
+
     return implode("\n\n", $parts);
   }
 

@@ -49,6 +49,7 @@ class ContextApiController extends ControllerBase {
       // Cache 404 against tag so it invalidates if target is later created.
       $meta->addCacheTags(['annotation_target_list']);
       $response->addCacheableDependency($meta);
+      
       return $response;
     }
 

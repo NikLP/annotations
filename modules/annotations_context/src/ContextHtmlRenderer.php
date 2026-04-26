@@ -248,6 +248,7 @@ class ContextHtmlRenderer {
             $ref_card['overview'][$type_id] = $this->annotationBlock($annotation['label'], $annotation['value'], $annotation['extra_fields'] ?? []);
           }
         }
+
         if (!empty($ref_data['fields'])) {
           $ref_card['fields'] = $this->buildFieldsBlock($ref_data['fields']);
         }
@@ -330,6 +331,7 @@ class ContextHtmlRenderer {
         }
       }
     }
+    
     return count($ids);
   }
 
