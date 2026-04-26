@@ -83,6 +83,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
         $types[] = $id;
       }
     }
+
     return $types;
   }
 
@@ -114,6 +115,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
         return $value;
       }
     }
+    
     return NULL;
   }
 
