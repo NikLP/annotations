@@ -65,7 +65,9 @@ Caching: tags `annotation_list`, `annotation_target_list`, `annotation_type_list
 
 Themes: `annotations_overlay_chooser` (description + items) and `annotations_overlay_chooser_item` (type label + rendered entity). Separate hooks from dialog hooks because variable signatures differ.
 
-**Claro quirk:** Claro's `claro_preprocess_node_add_list` rebuilds `bundles` from `$type->getDescription()` after all module preprocesses, overwriting `$variables['types']`. Fix: mutate the entity description in memory (`$type->set('description', ...)`) before Claro runs; Claro then reads the modified value. Render via `renderInIsolation()`. Request-scoped only — no entity save.
+**Claro quirk:** Claro's `claro_preprocess_node_add_list` rebuilds `bundles` from `$type->getDescription()` after all module preprocesses, overwriting `$variables['types']`. Fix: mutate the entity description in memory (`$type->set('description', ...)`) before Claro runs; Claro then reads the modified value. Request-scoped only — no entity save.
+
+**Chooser rendering limitation:** The description HTML is built by `buildBundleAnnotationHtml()` — direct string construction from the `value` base field, not via the render pipeline or a view mode. This is because `renderInIsolation()` inside `preprocessNodeAddList` spawns a PHP Fiber nested inside Drupal's existing render Fiber, which overflows the Fiber stack on cold Twig cache. `buildBundleAnnotationRenderItems()` exists as the view-mode-capable alternative but cannot be called from a preprocess. Consequence: if `value` is not the active content field (e.g. annotation type uses a separate wysiwyg field), the chooser shows nothing. The proper fix (pre-render via `KernelEvents::VIEW` subscriber before the render pipeline starts) is parked pending consultation with admin theme maintainers (Gin) about the description mutation approach.
 
 ## Parked work
 
@@ -73,4 +75,4 @@ Themes: `annotations_overlay_chooser` (description + items) and `annotations_ove
 - **Module split:** base (library, `buildDialog()`, computed field) / `annotations_overlay_edit` (form alter) / `annotations_overlay_view` (view alter + Manage Display). The two attachment contexts have opposite caching concerns and independent opt-in mechanisms.
 - **Per-type view-page suppression:** `show_on_view_pages` third-party setting on `AnnotationType`, owned here. (1) Schema entry in `annotations_overlay.schema.yml`. (2) Checkbox via `hook_form_alter` on `annotation_type_edit_form`. (3) Skip types in `entityViewAlter` where setting is `FALSE`. Needed when a role legitimately has `consume {type}` for edit forms but should not see that type on view pages.
 - **Gin description toggle:** inject annotation text into `#description` + `#description_toggle: TRUE` to reuse Gin's reveal UX. Parked — ties module to Gin dependency.
-- **Chooser view mode:** dedicated `chooser` annotation view mode separate from `overlay`.
+- **Chooser view mode:** dedicated `chooser` annotation view mode separate from `overlay`. Blocked on the Claro rendering limitation above — pointless to add the view mode until the render pipeline issue is resolved.

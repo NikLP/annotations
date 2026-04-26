@@ -10,5 +10,4 @@ services:
       - '@current_user'
       - '@current_route_match'
       - '@language_manager'
-      - '@renderer'
       - '@config.factory'

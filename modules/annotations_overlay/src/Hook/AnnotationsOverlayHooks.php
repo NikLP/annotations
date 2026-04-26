@@ -17,12 +17,12 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\Markup;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Template\Attribute;
+use Drupal\Component\Utility\Html;
 use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\AnnotationsGlyph;
 use Drupal\annotations\Entity\Annotation;
@@ -40,7 +40,6 @@ class AnnotationsOverlayHooks {
     private readonly AccountProxyInterface $currentUser,
     private readonly RouteMatchInterface $routeMatch,
     private readonly LanguageManagerInterface $languageManager,
-    private readonly RendererInterface $renderer,
     private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
@@ -122,6 +121,7 @@ class AnnotationsOverlayHooks {
           'type_id' => NULL,
           'type_label' => NULL,
           'content' => NULL,
+          'single_type' => FALSE,
         ],
       ],
     ];
@@ -156,6 +156,7 @@ class AnnotationsOverlayHooks {
     if ($entity === NULL) {
       return;
     }
+    
     $entity_type_id = $entity->getEntityTypeId();
     $bundle = $entity->bundle();
     $target_id = $entity_type_id . '__' . $bundle;
@@ -459,27 +460,29 @@ class AnnotationsOverlayHooks {
     // ignores $variables['types'] entirely. Modifying the entity description
     // in memory here ensures Claro/Gin reads our annotation text.
     // No save is triggered.
+    //
+    // We build the HTML string directly here instead of using renderInIsolation
+    // because this preprocess runs deep inside Drupal's render pipeline. Calling
+    // renderInIsolation at that depth exhausts the PHP call stack when Twig
+    // compiles templates for the first time (e.g. after drush cr).
     foreach ($variables['content'] ?? [] as $type) {
-      $chooser = $this->buildBundleAnnotationRenderItems('node__' . $type->id(), $visible_types);
-      if ($chooser === NULL) {
+      $html = $this->buildBundleAnnotationHtml('node__' . $type->id(), $visible_types, $type->getDescription() ?? '');
+      if ($html === NULL) {
         continue;
       }
-      $chooser['#description'] = $type->getDescription() ?? '';
-      $type->set('description', Markup::create(
-        (string) $this->renderer->renderInIsolation($chooser)
-      ));
+      $type->set('description', Markup::create($html));
       $modified = TRUE;
     }
 
     // Also update $variables['types'] for themes (non-Claro/Gin) that read the
     // 'types' key directly from the core node_add_list preprocess output.
     foreach (array_keys($variables['types'] ?? []) as $type_id) {
-      $chooser = $this->buildBundleAnnotationRenderItems('node__' . $type_id, $visible_types);
-      if ($chooser === NULL) {
+      $existing_description = $variables['types'][$type_id]['description'] ?? '';
+      $html = $this->buildBundleAnnotationHtml('node__' . $type_id, $visible_types, is_string($existing_description) ? $existing_description : '');
+      if ($html === NULL) {
         continue;
       }
-      $chooser['#description'] = $variables['types'][$type_id]['description'] ?? [];
-      $variables['types'][$type_id]['description'] = $chooser;
+      $variables['types'][$type_id]['description'] = Markup::create($html);
       $modified = TRUE;
     }
 
@@ -523,12 +526,12 @@ class AnnotationsOverlayHooks {
 
     $modified = FALSE;
     foreach (array_keys($variables['bundles'] ?? []) as $bundle_id) {
-      $chooser = $this->buildBundleAnnotationRenderItems($entity_type_id . '__' . $bundle_id, $visible_types);
-      if ($chooser === NULL) {
+      $existing = $variables['bundles'][$bundle_id]['description'] ?? '';
+      $html = $this->buildBundleAnnotationHtml($entity_type_id . '__' . $bundle_id, $visible_types, is_string($existing) ? $existing : '');
+      if ($html === NULL) {
         continue;
       }
-      $chooser['#description'] = $variables['bundles'][$bundle_id]['description'] ?? [];
-      $variables['bundles'][$bundle_id]['description'] = $chooser;
+      $variables['bundles'][$bundle_id]['description'] = Markup::create($html);
       $modified = TRUE;
     }
 
@@ -604,6 +607,7 @@ class AnnotationsOverlayHooks {
     }
 
     $view_builder = $this->entityTypeManager->getViewBuilder('annotation');
+    $single_type = count($bundle_annotations) === 1;
     $items = [];
     foreach ($bundle_annotations as $type_id => $entity) {
       $type = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);
@@ -612,6 +616,7 @@ class AnnotationsOverlayHooks {
         '#type_id' => $type_id,
         '#type_label' => $type ? (string) $type->label() : $type_id,
         '#content' => $view_builder->view($entity, 'overlay'),
+        '#single_type' => $single_type,
       ];
     }
 
@@ -620,6 +625,61 @@ class AnnotationsOverlayHooks {
       '#description' => NULL,
       '#items' => $items,
     ];
+  }
+
+  /**
+   * Builds an HTML string for bundle-level annotation content on chooser pages.
+   *
+   * Bypasses the Drupal render/Twig pipeline entirely to avoid PHP call-stack
+   * overflow: preprocess hooks run deep inside Drupal's own render stack, so
+   * nesting renderInIsolation() there exhausts the stack during Twig template
+   * compilation.
+   *
+   * @param string $target_id
+   *   The annotation target ID, e.g. 'node__article'.
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $visible_types
+   *   Pre-loaded visible annotation types.
+   * @param string $existing_description
+   *   The bundle's existing description string (already safe to output).
+   *
+   * @return string|null
+   *   HTML string, or NULL when no target or no visible bundle annotations.
+   */
+  private function buildBundleAnnotationHtml(string $target_id, array $visible_types, string $existing_description): ?string {
+    $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
+    if ($target === NULL) {
+      return NULL;
+    }
+
+    $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
+    $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
+    if (empty($bundle_annotations)) {
+      return NULL;
+    }
+
+    $single_type = count($bundle_annotations) === 1;
+    $items_html = '';
+    foreach ($bundle_annotations as $type_id => $entity) {
+      $type = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);
+      $type_label = Html::escape($type ? (string) $type->label() : $type_id);
+      $css_class = Html::cleanCssIdentifier($type_id);
+      $value = nl2br(Html::escape($entity->get('value')->value ?? ''));
+      $items_html .= '<div class="annotations-chooser-item annotations-chooser-item--' . $css_class . '">';
+      if (!$single_type) {
+        $items_html .= '<div class="annotations-chooser-item__type">' . $type_label . '</div>';
+      }
+      $items_html .= '<div class="annotations-chooser-item__content">' . $value . '</div>';
+      $items_html .= '</div>';
+    }
+
+    $html = '<div class="annotations-chooser">';
+    if ($existing_description !== '') {
+      $html .= '<div class="annotations-chooser__description">' . $existing_description . '</div>';
+    }
+    $html .= '<div class="annotations-chooser__annotations">' . $items_html . '</div>';
+    $html .= '</div>';
+
+    return $html;
   }
 
   /**
