@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
@@ -37,8 +38,10 @@ class AnnotationEditForm extends ContentEntityForm {
     TimeInterface $time,
     private readonly DateFormatterInterface $dateFormatter,
     private readonly EntityFieldManagerInterface $fieldManager,
+    ModuleHandlerInterface $moduleHandler,
   ) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -51,6 +54,7 @@ class AnnotationEditForm extends ContentEntityForm {
       $container->get('datetime.time'),
       $container->get('date.formatter'),
       $container->get('entity_field.manager'),
+      $container->get('module_handler'),
     );
   }
 
@@ -130,6 +134,16 @@ class AnnotationEditForm extends ContentEntityForm {
       '#markup' => $owner?->getDisplayName() ?? $this->t('Unknown'),
       '#wrapper_attributes' => ['class' => ['entity-meta__author']],
     ];
+
+    // When content_moderation is not installed it does not manage the status
+    // field, so we surface a toggle here instead.
+    if (!$this->moduleHandler->moduleExists('content_moderation')) {
+      $form['meta']['status'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Published'),
+        '#default_value' => (int) $annotation->isPublished(),
+      ];
+    }
 
     if ($this->config('annotations_ui.settings')->get('show_field_metadata')) {
       $field_name = (string) $annotation->get('field_name')->value;
@@ -241,6 +255,10 @@ class AnnotationEditForm extends ContentEntityForm {
   public function save(array $form, FormStateInterface $form_state): int {
     /** @var \Drupal\annotations\Entity\Annotation $annotation */
     $annotation = $this->entity;
+    if (!$this->moduleHandler->moduleExists('content_moderation')) {
+      $published = (bool) $form_state->getValue(['meta', 'status']);
+      $published ? $annotation->setPublished() : $annotation->setUnpublished();
+    }
     $annotation->set('uid', $this->currentUser()->id());
     $annotation->setRevisionUserId($this->currentUser()->id());
     $annotation->setRevisionCreationTime($this->time->getRequestTime());

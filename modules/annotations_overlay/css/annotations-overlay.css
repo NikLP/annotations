@@ -90,28 +90,22 @@
   font-size: 0.85em;
 }
 
-/* .annotations-overlay-edit-link {
+.annotations-overlay-edit-link,
+.annotations-overlay-edit-link:hover,
+.annotations-overlay-edit-link:focus,
+.annotations-overlay-edit-link:active,
+.annotations-overlay-edit-link:visited {
   text-decoration: none;
-  text-transform: none;
-  font-size: 1rem;
-  letter-spacing: 0;
-  opacity: 1;
-  flex-shrink: 0;
-} */
+  border-bottom: 0;
+}
 
 /* Bundle annotation on entity/node add chooser pages. */
 
-.annotations-bundle-annotation {
-  padding-top: 0.4rem;
+.annotations-chooser__annotations {
+  margin-top: 1rem;
   border-top: 1px solid;
-  opacity: 0.75;
-  font-size: 0.9em;
 }
 
-.annotations-bundle-annotation__item {
-  margin: 0;
-}
-
-.annotations-bundle-annotation__item+.annotations-bundle-annotation__item {
-  margin-top: 0.25rem;
+.annotations-chooser-item {
+  margin-top: 1rem;
 }

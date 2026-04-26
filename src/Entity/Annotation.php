@@ -71,7 +71,8 @@ class Annotation extends EditorialContentEntityBase {
     // storage (StringItem::isEmpty() treats '' as empty). All entity queries
     // for these sentinel values must use IS NULL, not = ''. See
     // AnnotationStorageService for the correct query pattern.
-    // status: managed by workflow or defaults to 1. Never show on the form.
+    // status: managed by content_moderation when installed; otherwise
+    // AnnotationEditForm shows a Published checkbox.
     $fields['status']
       ->setDisplayOptions('form', ['region' => 'hidden'])
       ->setDisplayConfigurable('form', FALSE)

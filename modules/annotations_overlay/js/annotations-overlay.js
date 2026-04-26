@@ -87,7 +87,7 @@
       lastTrigger = null;
       if (trigger) {
         setTimeout(function () {
-          trigger.focus({ preventScroll: TRUE }); }, 0);
+          trigger.focus({ preventScroll: true }); }, 0);
       }
     }
   }, TRUE);

@@ -975,9 +975,13 @@ class AnnotationsOverlayHooks {
     if ($entity->getEntityTypeId() !== 'annotation') {
       return;
     }
-    // The canonical view page uses the 'default' display (no explicit 'full'
-    // display is configured). Skip the overlay view mode to avoid recursion.
-    if (!in_array($display->getMode(), ['full', 'default'], TRUE)) {
+    // Only fire on the canonical view page. Use #view_mode (the originally
+    // requested mode) rather than $display->getMode() — when no dedicated
+    // display exists for a mode (e.g. 'overlay'), Drupal falls back to the
+    // 'default' display and getMode() returns 'default', which would cause
+    // this method to fire during dialog renders and loop infinitely.
+    $requested_mode = $build['#view_mode'] ?? $display->getMode();
+    if (!in_array($requested_mode, ['full', 'default'], TRUE)) {
       return;
     }
 
