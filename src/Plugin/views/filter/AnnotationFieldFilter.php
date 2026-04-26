@@ -51,7 +51,12 @@ class AnnotationFieldFilter extends InOperator {
       return $this->valueOptions;
     }
 
-    $targets = $this->entityTypeManager->getStorage('annotation_target')->loadMultiple();
+    $target_id = ($this->view->argument['target_id'] ?? NULL)?->getValue();
+    $storage = $this->entityTypeManager->getStorage('annotation_target');
+    $targets = $target_id
+      ? array_filter([$storage->load($target_id)])
+      : $storage->loadMultiple();
+
     $options = [];
 
     foreach ($targets as $target) {
