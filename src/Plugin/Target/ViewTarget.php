@@ -37,6 +37,7 @@ class ViewTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
+    
     $result = [];
     foreach ($this->entityTypeManager->getStorage('view')->loadMultiple() as $id => $view) {
       $result[$id] = (string) $view->label();

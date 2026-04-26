@@ -63,6 +63,7 @@ abstract class TargetBase implements TargetInterface {
     if (!$this->isAvailable()) {
       return [];
     }
+    
     return array_map(
       fn($info) => (string) $info['label'],
       $this->bundleInfo->getBundleInfo($this->entityTypeId)

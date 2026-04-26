@@ -44,6 +44,7 @@ class RoleTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
+    
     $result = [];
     /** @var \Drupal\user\RoleInterface[] $roles */
     $roles = $this->entityTypeManager->getStorage('user_role')->loadMultiple();

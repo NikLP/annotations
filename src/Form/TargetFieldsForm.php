@@ -145,6 +145,7 @@ class TargetFieldsForm extends EntityForm {
       'Saved target configuration for %label field(s).',
       ['%label' => $this->entity->label()]
     ));
+
     $destination = $this->getRequest()->query->get('destination', '');
     if ($destination) {
       $form_state->setRedirectUrl(Url::fromUserInput($destination));
@@ -166,9 +167,11 @@ class TargetFieldsForm extends EntityForm {
     if (!$def) {
       return $entity_type_id;
     }
+
     if ($def->getBundleEntityType()) {
       return (string) $def->getBundleLabel();
     }
+
     return (string) ($def->getSingularLabel() ?: $def->getLabel());
   }
 
@@ -199,6 +202,7 @@ class TargetFieldsForm extends EntityForm {
       ) {
         continue;
       }
+      
       $options[$field_name] = sprintf(
         '%s (%s)',
         $definition->getLabel(),

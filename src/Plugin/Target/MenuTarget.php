@@ -46,6 +46,7 @@ class MenuTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
+    
     $result = [];
     foreach ($this->entityTypeManager->getStorage('menu')->loadMultiple() as $id => $menu) {
       $result[$id] = (string) $menu->label();

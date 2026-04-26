@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Validates an annotation_target machine name and resolves it to a title.
  *
  * Attach this validator to a contextual filter on an annotation view.
- * The validated title is used by Views title tokens ({{ arguments.arg_0 }}).
+ * The validated title is used by Views title tokens as {{ arguments.arg_0 }}.
  */
 #[ViewsArgumentValidator(
   id: 'annotation_target',

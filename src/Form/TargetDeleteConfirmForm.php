@@ -55,8 +55,7 @@ class TargetDeleteConfirmForm extends ConfirmFormBase {
    */
   public function getDescription(): TranslatableMarkup {
     return $this->t(
-      'The following targets have annotation data that will be permanently deleted. '
-      . 'This action cannot be undone.'
+      'The following targets have annotation data that will be permanently deleted. This action cannot be undone.'
     );
   }
 
@@ -145,6 +144,7 @@ class TargetDeleteConfirmForm extends ConfirmFormBase {
     if (empty($ids)) {
       return [];
     }
+    
     return $this->entityTypeManager->getStorage('annotation_target')->loadMultiple($ids) ?: [];
   }
 

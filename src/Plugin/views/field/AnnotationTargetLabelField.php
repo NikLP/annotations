@@ -40,7 +40,7 @@ class AnnotationTargetLabelField extends FieldPluginBase {
   public function render(ResultRow $values): mixed {
     $target_id = (string) ($this->getValue($values) ?? '');
     if ($target_id === '') {
-      return $this->t('Site-wide');
+      return $this->t('(none)');
     }
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
     return $target ? $target->label() : $target_id;

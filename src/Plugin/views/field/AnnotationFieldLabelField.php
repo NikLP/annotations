@@ -58,6 +58,7 @@ class AnnotationFieldLabelField extends FieldPluginBase {
     if ($target_id === '') {
       return $this->t('N/A');
     }
+    
     if ($field_name === '') {
       return $this->t('Overview');
     }
