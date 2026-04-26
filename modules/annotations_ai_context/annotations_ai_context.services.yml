@@ -1,5 +1,0 @@
-services:
-  annotations_ai_context.hooks:
-    class: Drupal\annotations_ai_context\Hook\AnnotationsAiContextHooks
-    arguments:
-      - '@entity_type.manager'

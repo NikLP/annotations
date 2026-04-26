@@ -115,7 +115,7 @@ class GetSiteContext extends FunctionCallBase implements ExecutableFunctionCallI
     $allTypes = $this->entityTypeManager->getStorage('annotation_type')->loadMultiple();
     $aiTypes = array_keys(array_filter(
       $allTypes,
-      fn($t) => $t->getThirdPartySetting('annotations_ai_context', 'in_ai_context', TRUE),
+      fn($t) => $t->getThirdPartySetting('annotations_context', 'in_ai_context', FALSE),
     ));
 
     $options = ['types' => $aiTypes, 'account' => $this->currentUser];
