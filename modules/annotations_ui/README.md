@@ -81,9 +81,11 @@ To enable annotation translation on a multilingual site, go to `/admin/config/re
 
 | Permission | Notes |
 | --- | --- |
-| `edit any annotation` | Supersedes per-type edit permissions; gates the annotation forms. `restrict access: true`. |
-| `access annotation overview` | Grants read access to `/admin/content/annotations` without granting write access. |
-| `edit {type} annotations` | Per annotation type (e.g. `edit editorial annotations`). Generated dynamically from installed `AnnotationType` entities. |
+| `edit any annotation` | Supersedes all per-type edit permissions. `restrict access: true`. |
+| `delete any annotation` | Supersedes all per-type delete permissions. Gates bulk-delete routes. `restrict access: true`. |
+| `access annotation collection` | Read access to `/admin/content/annotations` and the add-type picker. |
+| `edit {type} annotations` | Per annotation type (e.g. `edit editorial annotations`). Covers write and create. Generated dynamically. |
+| `delete {type} annotations` | Per annotation type (e.g. `delete editorial annotations`). Generated dynamically. |
 | `consume {type} annotations` | Controls which annotation types appear in context output. Used by `ContextAssembler` in `annotations_context`. |
 | `view annotation revisions` | View the revision history and individual revision pages. Does not grant revert or delete. |
 
@@ -96,6 +98,6 @@ The annotation add/create/edit forms filter the available annotation types to th
 | Role | Permissions |
 | --- | --- |
 | Drupal admin | `administer annotations` covers everything |
-| Content editor | `access annotation overview` + `edit editorial annotations` |
-| Developer | `access annotation overview` + `edit technical annotations` |
-| Project manager | `access annotation overview` only (read-only listing) |
+| Content editor | `access annotation collection` + `edit editorial annotations` |
+| Developer | `access annotation collection` + `edit technical annotations` |
+| Project manager | `access annotation collection` only (read-only listing) |

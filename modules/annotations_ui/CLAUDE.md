@@ -12,7 +12,7 @@ Provides the annotation editing UI. Editors write overview text and per-field an
 - `AnnotationController` — landing page, per-target records page (embeds the `annotations_target` view), add-new-annotations table, and the create-annotation form (renders `AnnotationEditForm` for new entities).
 - Revision history and per-revision view via core's `VersionHistoryController` / `EntityRevisionViewController` / `RevisionRevertForm` / `RevisionDeleteForm` — registered automatically by `RevisionHtmlRouteProvider`.
 - `AnnotationDeleteForm`, `AnnotationViewController`.
-- `AnnotationsUiHooks` — registers form classes, link templates, and route providers (`AdminHtmlRouteProvider`, `RevisionHtmlRouteProvider`) on `annotation`; registers Gin content-form routes; grants entity and revision access via `hook_entity_access`.
+- `AnnotationsUiHooks` — registers form classes, link templates, and route providers (`AdminHtmlRouteProvider`, `RevisionHtmlRouteProvider`) on `annotation`; registers Gin content-form routes; grants revision-only access via `hook_entity_access` (standard CRUD is handled by `AnnotationAccessControlHandler` in the root module).
 - `AnnotationsUiPermissions::permissions()` — dynamic per-type permissions from installed `AnnotationType` entities.
 - Local task tabs: Edit / Revisions on `AnnotationEditForm`; Targets / Site-wide / Overview on the annotation landing page.
 
@@ -20,10 +20,12 @@ Provides the annotation editing UI. Editors write overview text and per-field an
 
 | Permission | What it gates |
 | --- | --- |
-| `edit {type} annotations` | Write access for one annotation type. Generated dynamically. |
+| `edit {type} annotations` | Write and create access for one annotation type. Generated dynamically. |
+| `delete {type} annotations` | Delete access for one annotation type. Generated dynamically. |
 | `consume {type} annotations` | Which annotation types a role sees in context output. |
 | `edit any annotation` | Supersedes all per-type edit permissions. `restrict access: true`. |
-| `access annotation overview` | Gates `/admin/content/annotations`. |
+| `delete any annotation` | Supersedes all per-type delete permissions. Gates bulk-delete routes. `restrict access: true`. |
+| `access annotation collection` | Gates `/admin/content/annotations` and the add-type picker page. |
 | `view annotation revisions` | View revision history and individual revision pages. Does not grant revert or delete. |
 
 ## content_moderation state cleanup
@@ -48,10 +50,15 @@ If core ever fixes `EntityOperations::entityDelete()` to query by `content_entit
 
 `EntityModerationRouteProvider` is registered automatically by `content_moderation` for all revisionable entities. Do not register it manually or set the `latest-version` link template in `AnnotationsUiHooks` — content_moderation owns both.
 
-All entity routes use `_entity_access` checks. `hook_entity_access` in `AnnotationsUiHooks` grants access as follows:
+All entity routes use `_entity_access` checks, resolved by `AnnotationAccessControlHandler` (root module) for standard CRUD and by `hook_entity_access` in `AnnotationsUiHooks` for revision-specific operations:
 
-- `view`, `update`, `delete`, `revert`, `delete revision` — requires `edit any annotation`
+- `view` — any edit or delete permission, or `access annotation collection`
+- `update` — `edit any annotation` or `edit {bundle} annotations`
+- `delete` — `delete any annotation` or `delete {bundle} annotations`
+- `revert`, `delete revision` — requires `edit any annotation`
 - `view all revisions`, `view revision` — requires `view annotation revisions` OR `edit any annotation`
+
+Create access (`annotations_ui.target.create`) uses `AnnotationController::createAccess()`: `edit any annotation` or `edit {type_id} annotations`.
 
 ## Revision history
 

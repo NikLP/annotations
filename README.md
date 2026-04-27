@@ -203,20 +203,29 @@ ddev php web/core/scripts/drupal content:export annotation --dir=recipes/myrecip
 
 ## Permissions
 
+The permission model maps to a non-standard CRUD because annotations are editorial content, not access-controlled content:
+
+- **edit = create + update.** There is no separate "create" permission — if you can write a type you can also create it. "View" in the Drupal sense is moot: anyone who can reach the annotation UI can read annotation values; the access question is whether you can write them.
+- **delete = delete.** Kept separate from edit so destructive bulk operations can be restricted independently.
+- **consume = "read" for end-users.** Controls which annotation types appear in context output, overlays, and AI payloads for a given role. Entirely separate from the editorial write layer.
+
 | Permission | Defined in | Notes |
 | --- | --- | --- |
 | `administer annotations` | `annotations` | Full admin. `restrict access: true`. |
-| `edit {type} annotations` | `annotations` | Per annotation type; generated dynamically from installed types. |
+| `administer annotation targets` | `annotations` | Manage opted-in targets and field scope. `restrict access: true`. |
+| `edit {type} annotations` | `annotations_ui` | Per annotation type; write and create access. Generated dynamically. |
+| `delete {type} annotations` | `annotations_ui` | Per annotation type; delete access. Generated dynamically. |
 | `consume {type} annotations` | `annotations` | Per annotation type; controls which types appear in context output and overlays for a given role. |
 | `administer annotation types` | `annotations_type_ui` | CRUD access for annotation type config entities. Site-building tool; `restrict access: true`. |
 | `edit any annotation` | `annotations_ui` | Supersedes all per-type edit permissions. `restrict access: true`. |
-| `access annotation overview` | `annotations_ui` | Read-only access to the annotation listing at `/admin/content/annotations`. |
+| `delete any annotation` | `annotations_ui` | Supersedes all per-type delete permissions. Gates bulk-delete routes. `restrict access: true`. |
+| `access annotation collection` | `annotations_ui` | Read access to `/admin/content/annotations` and the add-type picker. |
 | `view annotation revisions` | `annotations_ui` | View revision history and individual revision pages. Does not grant revert or delete. |
 | `view annotations overlay` | `annotations_overlay` | See field-level "?" triggers, dialog panels, and bundle chooser descriptions. Grant to editor roles. |
 | `view annotations context` | `annotations_context` | Access the context preview, markdown export, and JSON API endpoint. Not `restrict access` — can be granted to non-admin roles. |
 | `administer annotations scanner` | `annotations_scan` | Run scans and view scan results. `restrict access: true`. |
 
-Dynamic permissions (`edit {type} annotations`, `consume {type} annotations`) require a cache rebuild after new annotation types are created.
+Dynamic permissions (`edit {type} annotations`, `delete {type} annotations`, `consume {type} annotations`) require a cache rebuild after new annotation types are created.
 
 ### Workflow transition permissions (annotations_workflows)
 

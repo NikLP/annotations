@@ -110,7 +110,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - **Plugin system in `annotations`:** Target plugins live in root module, not `annotations_scan`. `GenericTarget` only covers fieldable types — non-fieldable always need a dedicated plugin.
 - **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the consuming submodule.
 - **`annotations_context` is the payload API:** `annotations_context_ccc` is the CCC consumer; `annotations_ai_context` is a deprecated prototype.
-- **Permissions:** `edit {type} annotations` (write per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `edit any annotation`, `access annotation overview`, `view annotations context`, `view annotation revisions`, `administer annotation types`.
+- **Permissions:** `edit {type} annotations` (write + create per type), `delete {type} annotations` (delete per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `administer annotation targets`, `edit any annotation`, `delete any annotation`, `access annotation collection`, `view annotation revisions`, `view annotations context`, `administer annotation types`. Entity-level access is enforced by `AnnotationAccessControlHandler`; `hook_entity_access` in `annotations_ui` handles revision-only operations.
 - **No multivalue types:** All values are plain strings; `rules` type uses markdown in a textarea.
 
 ---

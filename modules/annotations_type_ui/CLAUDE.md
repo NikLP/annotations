@@ -17,7 +17,7 @@ Browser CRUD UI for managing `AnnotationType` config entities. **Site-building t
 
 ## Important: permissions cache rebuild
 
-`AnnotationsPermissions::permissions()` generates `consume {type} annotations` and `view {type} annotations` dynamically via `permission_callbacks`. Drupal caches the permission list. When a new `AnnotationType` is created via this UI, its permissions **will not appear in People → Permissions until caches are rebuilt** (`ddev drush cr` or `/admin/config/development/performance`). The type itself is immediately usable in annotation forms — only permission assignment is blocked until the cache is cleared.
+`AnnotationsUiPermissions::permissions()` generates `edit {type} annotations` and `delete {type} annotations` dynamically; `AnnotationsPermissions::permissions()` generates `consume {type} annotations`. All use `permission_callbacks`. Drupal caches the permission list. When a new `AnnotationType` is created via this UI, its permissions **will not appear in People → Permissions until caches are rebuilt** (`ddev drush cr` or `/admin/config/development/performance`). The type itself is immediately usable in annotation forms — only permission assignment is blocked until the cache is cleared.
 
 ## Important: config-as-code
 
