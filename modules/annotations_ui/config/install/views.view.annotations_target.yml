@@ -382,7 +382,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'access annotation overview'
+          perm: 'access annotation collection'
       cache:
         type: tag
         options: {  }

@@ -46,6 +46,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   },
  *   admin_permission = "administer annotations",
  *   handlers = {
+ *     "access" = "Drupal\annotations\Access\AnnotationAccessControlHandler",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "list_builder" = "Drupal\Core\Entity\EntityListBuilder",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",

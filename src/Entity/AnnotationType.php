@@ -92,6 +92,13 @@ class AnnotationType extends ConfigEntityBundleBase implements AnnotationTypeInt
   /**
    * {@inheritdoc}
    */
+  public function getDeletePermission(): string {
+    return 'delete ' . $this->id() . ' annotations';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getWeight(): int {
     return $this->weight;
   }

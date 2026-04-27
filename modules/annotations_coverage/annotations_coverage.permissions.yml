@@ -1,0 +1,4 @@
+view annotation coverage:
+  title: 'View annotation coverage'
+  description: 'View the annotation coverage report.'
+  restrict access: false

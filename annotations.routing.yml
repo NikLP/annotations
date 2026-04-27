@@ -14,7 +14,7 @@ annotations.configure:
     _form: '\Drupal\annotations\Form\TargetTypesForm'
     _title: 'Manage target types for annotation'
   requirements:
-    _permission: 'administer annotations'
+    _permission: 'administer annotation targets'
 
 # Annotations admin overview — lists child menu items (Configure, Scanner, etc.).
 annotations.admin:
@@ -32,7 +32,7 @@ entity.annotation_target.collection:
     _form: '\Drupal\annotations\Form\TargetOverviewForm'
     _title: 'Manage targets for annotation'
   requirements:
-    _permission: 'administer annotations'
+    _permission: 'administer annotation targets'
 
 # Field inclusion sub-page for a single opted-in target.
 annotations.target.fields:
@@ -41,7 +41,7 @@ annotations.target.fields:
     _entity_form: 'annotation_target.fields'
     _title: 'Configure target fields'
   requirements:
-    _permission: 'administer annotations'
+    _permission: 'administer annotation targets'
 
 # Confirmation form when deleting a target that has annotation data.
 annotations.target.delete_confirm:
@@ -50,4 +50,4 @@ annotations.target.delete_confirm:
     _form: '\Drupal\annotations\Form\TargetDeleteConfirmForm'
     _title: 'Confirm target deletion'
   requirements:
-    _permission: 'administer annotations'
+    _permission: 'administer annotation targets'

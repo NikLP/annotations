@@ -199,10 +199,12 @@ class AnnotationsUiHooks {
   /**
    * Implements hook_entity_access().
    *
-   * - view / update / delete / revert / delete revision: requires
-   *   'edit any annotation'.
+   * Handles revision-specific operations not covered by
+   * AnnotationAccessControlHandler (which only receives view/update/delete):
+   *
+   * - revert / delete revision: requires 'edit any annotation'.
    * - view all revisions / view revision: requires 'view annotation revisions'
-   *   OR 'edit any annotation' (the latter already implies full access).
+   *   OR 'edit any annotation'.
    */
   #[Hook('entity_access')]
   public function entityAccess(EntityInterface $entity, string $operation, AccountInterface $account): AccessResult {
@@ -210,7 +212,7 @@ class AnnotationsUiHooks {
       return AccessResult::neutral();
     }
 
-    if (in_array($operation, ['view', 'update', 'delete', 'revert', 'delete revision'], TRUE)) {
+    if (in_array($operation, ['revert', 'delete revision'], TRUE)) {
       return AccessResult::allowedIfHasPermission($account, 'edit any annotation')
         ->cachePerPermissions();
     }
@@ -220,7 +222,7 @@ class AnnotationsUiHooks {
         ->orIf(AccessResult::allowedIfHasPermission($account, 'edit any annotation'))
         ->cachePerPermissions();
     }
-    
+
     return AccessResult::neutral();
   }
 

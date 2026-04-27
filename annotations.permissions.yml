@@ -2,8 +2,12 @@ administer annotations:
   title: 'Administer annotations'
   restrict access: true
 
-access annotation overview:
-  title: 'Access annotation overview'
+administer annotation targets:
+  title: 'Administer annotation targets'
+  restrict access: true
+
+access annotation collection:
+  title: 'Access annotation collection'
   restrict access: true
 
 permission_callbacks:

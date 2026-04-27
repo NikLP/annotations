@@ -33,7 +33,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "list_builder" = "Drupal\Core\Config\Entity\ConfigEntityListBuilder",
  *   },
  *   config_prefix = "target",
- *   admin_permission = "administer annotations",
+ *   admin_permission = "administer annotation targets",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",

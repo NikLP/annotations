@@ -37,6 +37,13 @@ interface AnnotationTypeInterface extends ConfigEntityInterface {
   public function getConsumePermission(): string;
 
   /**
+   * Returns the Drupal permission machine name required to delete this type.
+   *
+   * E.g. "delete editorial annotations"
+   */
+  public function getDeletePermission(): string;
+
+  /**
    * Returns the ordering weight (lower = shown first in UI and output).
    *
    * Controls the order annotation type sections appear in the annotation form,

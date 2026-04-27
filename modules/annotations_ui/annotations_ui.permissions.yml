@@ -2,6 +2,10 @@ edit any annotation:
   title: 'Edit any annotation'
   restrict access: true
 
+delete any annotation:
+  title: 'Delete any annotation'
+  restrict access: true
+
 view annotation revisions:
   title: 'View annotation revision history'
   description: 'View the revision history and individual revisions for annotations.'

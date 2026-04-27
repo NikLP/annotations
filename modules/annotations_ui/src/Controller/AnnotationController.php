@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\annotations_ui\Controller;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\annotations\AnnotationsGlyph;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
@@ -26,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * Landing page: lists all opted-in annotation_target entities grouped by
  * entity type, each with a dropbutton for Add / Edit / Delete. Accessible
- * to users with 'access annotation overview' without requiring
+ * to users with 'access annotation collection' without requiring
  * 'administer annotations'.
  *
  * Add page: shows a table of annotation slots that have no content yet for a
@@ -248,6 +250,18 @@ class AnnotationController extends ControllerBase {
    */
   public function addTitle(AnnotationTarget $annotation_target): TranslatableMarkup {
     return $this->t('Add annotations for %label', ['%label' => $annotation_target->label()]);
+  }
+
+  /**
+   * Access callback for the annotation create form route.
+   *
+   * Allows 'edit any annotation' or the per-type 'edit {type_id} annotations'.
+   */
+  public function createAccess(string $type_id): AccessResultInterface {
+    $account = $this->currentUser();
+    return AccessResult::allowedIfHasPermission($account, 'edit any annotation')
+      ->orIf(AccessResult::allowedIfHasPermission($account, 'edit ' . $type_id . ' annotations'))
+      ->cachePerPermissions();
   }
 
   /**

@@ -38,8 +38,12 @@ class AnnotationsUiPermissions {
         'title' => t('%label: edit annotations', ['%label' => $type->label()]),
         'restrict access' => TRUE,
       ];
+      $permissions[$type->getDeletePermission()] = [
+        'title' => t('%label: delete annotations', ['%label' => $type->label()]),
+        'restrict access' => TRUE,
+      ];
     }
-    
+
     return $permissions;
   }
 

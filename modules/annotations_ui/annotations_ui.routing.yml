@@ -6,7 +6,7 @@ annotations_ui.annotate.collection:
     _controller: '\Drupal\annotations_ui\Controller\AnnotationController::page'
     _title: 'Annotations'
   requirements:
-    _permission: 'access annotation overview'
+    _permission: 'access annotation collection'
 
 annotations_ui.target.delete_all:
   path: '/admin/content/annotations/{annotation_target}/delete-all'
@@ -14,7 +14,7 @@ annotations_ui.target.delete_all:
     _form: '\Drupal\annotations_ui\Form\AnnotationDeleteAllForm'
     _title: 'Delete annotations'
   requirements:
-    _permission: 'edit any annotation'
+    _permission: 'delete any annotation'
   options:
     _admin_route: TRUE
     parameters:
@@ -28,7 +28,7 @@ entity.annotation.delete_multiple_form:
     _title: 'Delete annotations'
     entity_type_id: annotation
   requirements:
-    _permission: 'edit any annotation'
+    _permission: 'delete any annotation'
   options:
     _admin_route: TRUE
 
@@ -38,7 +38,7 @@ annotations_ui.target.collection:
     _controller: '\Drupal\annotations_ui\Controller\AnnotationController::collectionPage'
     _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::collectionTitle'
   requirements:
-    _permission: 'access annotation overview'
+    _permission: 'access annotation collection'
   options:
     _admin_route: TRUE
     parameters:
@@ -51,7 +51,7 @@ annotations_ui.target.add:
     _controller: '\Drupal\annotations_ui\Controller\AnnotationController::addPage'
     _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::addTitle'
   requirements:
-    _permission: 'edit any annotation'
+    _permission: 'access annotation collection'
   options:
     _admin_route: TRUE
     parameters:
@@ -65,7 +65,7 @@ annotations_ui.target.create:
     _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::createAnnotationTitle'
     field_name: '_overview'
   requirements:
-    _permission: 'edit any annotation'
+    _custom_access: '\Drupal\annotations_ui\Controller\AnnotationController::createAccess'
   options:
     _admin_route: TRUE
     parameters:
