@@ -42,7 +42,7 @@ function annotations_ui_uninstall(bool $is_syncing): void {
   // Delete all annotation rows directly — the entity API cannot be used
   // because the bundle config entities are already gone at this point.
   $database = \Drupal::database();
-  $tables[] = ['annotation', 'annotation_field_data', 'annotation_field_revision', 'annotation_revision'];
+  $tables = ['annotation', 'annotation_field_data', 'annotation_field_revision', 'annotation_revision'];
 
   foreach ($tables as $table) {
     if ($database->schema()->tableExists($table)) {
