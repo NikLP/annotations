@@ -32,9 +32,19 @@ Plain IIFE, no jQuery, no Drupal.behaviors. All content is server-rendered insid
 
 ## Annotation visibility
 
-Overlays are injected when: (1) user has `view annotations overlay`, (2) form implements `EntityFormInterface` or has `getParagraph()`, (3) an `annotation_target` exists for the entity type + bundle, (4) at least one annotation is non-empty for a type the user can `consume`.
+Overlays are injected when: (1) user has `view annotations overlay`, (2) form implements `EntityFormInterface` or has `getParagraph()`, (3) an `annotation_target` exists for the entity type + bundle, (4) at least one annotation or ER overview is non-empty for a type the user can `consume`.
 
-**`single_type`:** `isSingleType()` checks the full visible annotation set across the page. When only one type appears, `single_type = TRUE` suppresses per-item type headings.
+**`single_type`:** `isSingleType()` checks the full visible annotation set across the page — bundle annotations, field annotations, and ER overviews. When only one type appears, `single_type = TRUE` suppresses per-item type headings.
+
+## ER field overview injection
+
+`resolveErOverviews()` walks the entity reference fields in the target's field scope, resolves their target bundles, and for each bundle loads the corresponding `annotation_target`'s bundle-level (overview) annotations. These are passed to `buildDialog()` as `$overview_annotations` and rendered in an `annotations-overlay-overview` section above the field-level items.
+
+A trigger is injected for an ER field if it has field-level annotations, an ER overview, or both. Fields without either get no trigger.
+
+Multi-bundle ER fields (e.g. a media field accepting image + document) merge overviews across target bundles; first type_id encountered wins on collision. Fields with `target_bundles = NULL` (unrestricted) are skipped — no safe enumeration.
+
+The wrapper template renders `{{ overview }}` before `{{ items }}` inside an `annotations-overlay-overview` div, only when non-empty. 
 
 ## Permission model
 

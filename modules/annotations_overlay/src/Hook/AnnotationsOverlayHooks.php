@@ -7,6 +7,7 @@ namespace Drupal\annotations_overlay\Hook;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -36,6 +37,7 @@ class AnnotationsOverlayHooks {
 
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly EntityFieldManagerInterface $entityFieldManager,
     private readonly AnnotationStorageService $annotationStorage,
     private readonly AccountProxyInterface $currentUser,
     private readonly RouteMatchInterface $routeMatch,
@@ -93,6 +95,7 @@ class AnnotationsOverlayHooks {
           'close_attributes' => NULL,
           'close_label' => '',
           'heading' => '',
+          'overview' => [],
           'items' => [],
         ],
       ],
@@ -188,7 +191,21 @@ class AnnotationsOverlayHooks {
       }
     }
 
-    $has_main_overlays = !empty($bundle_annotations) || !empty($fields_with_annotations);
+    // For entity-reference fields in scope, pull in the referenced bundle's
+    // overview annotation — gives context even when the ER field has no
+    // annotation of its own.
+    $field_overviews = $this->resolveErOverviews(
+      $entity_type_id, $bundle, $target->getFields(), $visible_types
+    );
+
+    // Fields that need a trigger: those with annotations, those with overviews,
+    // or both.
+    $all_field_names = array_unique(array_merge(
+      array_keys($fields_with_annotations),
+      array_keys($field_overviews),
+    ));
+
+    $has_main_overlays = !empty($bundle_annotations) || !empty($all_field_names);
 
     if ($has_main_overlays) {
       // Bundle trigger — floated right so it sits at the top of the form.
@@ -213,7 +230,7 @@ class AnnotationsOverlayHooks {
 
       // Field triggers — injected as the first child of each field container.
       // CSS positions them top-right within the container, near the label.
-      foreach (array_keys($fields_with_annotations) as $field_name) {
+      foreach ($all_field_names as $field_name) {
         if (!isset($form[$field_name])) {
           continue;
         }
@@ -233,7 +250,11 @@ class AnnotationsOverlayHooks {
         ];
       }
 
-      $single_type = $this->isSingleType($bundle_annotations, ...$fields_with_annotations);
+      $single_type = $this->isSingleType(
+        $bundle_annotations,
+        ...array_values($fields_with_annotations),
+        ...array_values($field_overviews),
+      );
 
       $dialogs = [];
 
@@ -241,9 +262,16 @@ class AnnotationsOverlayHooks {
         $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $target->label(), $bundle_annotations, $single_type);
       }
 
-      foreach ($fields_with_annotations as $field_name => $annotations) {
+      foreach ($all_field_names as $field_name) {
         $label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
-        $dialogs[$field_name] = $this->buildDialog($field_name, $label, $annotations, $single_type);
+        $dialogs[$field_name] = $this->buildDialog(
+          $field_name,
+          $label,
+          $fields_with_annotations[$field_name] ?? [],
+          $single_type,
+          'overlay',
+          $field_overviews[$field_name] ?? [],
+        );
       }
 
       $form['annotations_overlay_dialogs'] = [
@@ -567,6 +595,63 @@ class AnnotationsOverlayHooks {
   }
 
   /**
+   * Collects overview annotations from the targets of ER fields in scope.
+   *
+   * For each entity_reference field in $fields_in_scope, resolves its target
+   * bundles, loads the corresponding annotation_target, and returns any visible
+   * bundle-level (overview) annotations keyed by field name then type_id.
+   * Fields with no reachable overview annotations are omitted.
+   *
+   * @param string $entity_type_id
+   *   Entity type of the form being altered.
+   * @param string $bundle
+   *   Bundle of the entity being edited.
+   * @param array $fields_in_scope
+   *   Field map from annotation_target->getFields().
+   * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $visible_types
+   *   Annotation types the current user may consume.
+   *
+   * @return array<string, array<string, \Drupal\annotations\Entity\Annotation>>
+   *   Map of field_name => [type_id => Annotation].
+   */
+  private function resolveErOverviews(
+    string $entity_type_id,
+    string $bundle,
+    array $fields_in_scope,
+    array $visible_types,
+  ): array {
+    $overviews = [];
+    $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+    foreach (array_keys($fields_in_scope) as $field_name) {
+      $def = $field_definitions[$field_name] ?? NULL;
+      if ($def === NULL || $def->getType() !== 'entity_reference') {
+        continue;
+      }
+
+      $ref_type = $def->getSetting('target_type');
+      $target_bundles = $def->getSetting('handler_settings')['target_bundles'] ?? [];
+      if (empty($target_bundles)) {
+        continue;
+      }
+
+      $overview = [];
+      foreach (array_keys($target_bundles) as $ref_bundle) {
+        $ref_map = $this->annotationStorage->getEntityMapForTarget(
+          $ref_type . '__' . $ref_bundle, TRUE
+        );
+        // First type_id seen wins on collision across bundles.
+        $overview += $this->filterAnnotationEntities($ref_map[''] ?? [], $visible_types);
+      }
+
+      if (!empty($overview)) {
+        $overviews[$field_name] = $overview;
+      }
+    }
+
+    return $overviews;
+  }
+
+  /**
    * Loads annotation types visible to the current user, sorted by weight.
    *
    * @return \Drupal\annotations\Entity\AnnotationTypeInterface[]
@@ -741,9 +826,34 @@ class AnnotationsOverlayHooks {
    *   page for the current user. When TRUE the type heading is suppressed.
    * @param string $view_mode
    *   View mode used to render annotation entities inside the dialog.
+   * @param array<string, \Drupal\annotations\Entity\Annotation> $overview_annotations
+   *   Optional overview annotations from a referenced entity's target (e.g. a
+   *   taxonomy vocabulary overview surfaced inside an ER field dialog). Rendered
+   *   above the field-level items in a visually distinct overview section.
    */
-  private function buildDialog(string $field_key, string $label, array $annotation_entities, bool $single_type, string $view_mode = 'overlay'): array {
+  private function buildDialog(
+    string $field_key,
+    string $label,
+    array $annotation_entities,
+    bool $single_type,
+    string $view_mode = 'overlay',
+    array $overview_annotations = [],
+  ): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('annotation');
+
+    $overview = [];
+    foreach ($overview_annotations as $type_id => $entity) {
+      $type = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);
+      $overview[$type_id] = [
+        '#theme' => 'annotations_overlay_item',
+        '#type_id' => $type_id,
+        '#type_label' => $type ? (string) $type->label() : $type_id,
+        '#content' => $view_builder->view($entity, $view_mode),
+        '#edit_url' => $this->buildEditUrl($entity, $type_id),
+        '#single_type' => $single_type,
+      ];
+    }
+
     $items = [];
     foreach ($annotation_entities as $type_id => $entity) {
       $type = $this->entityTypeManager->getStorage('annotation_type')->load($type_id);
@@ -760,6 +870,7 @@ class AnnotationsOverlayHooks {
     return [
       '#theme' => 'annotations_overlay_wrapper',
       '#heading' => $label,
+      '#overview' => $overview,
       '#items' => $items,
       '#close_label' => $this->t('Close'),
       '#attributes' => new Attribute([

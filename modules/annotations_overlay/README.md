@@ -22,6 +22,7 @@ ddev drush cr
 ## What it does
 
 - **Field-level "?" modal triggers** on entity edit and add forms. Clicking opens a `<dialog>` with annotation content for that field. A **bundle-level (overview) trigger** appears at the top when an overview annotation exists — this is the target's bundle-level slot (`field_name = ''` in storage), covering the entity type as a whole rather than any specific field.
+- **Entity reference field overview injection.** When an entity reference field is in scope and the referenced entity type's `annotation_target` has an overview annotation, that overview is automatically shown at the top of the field's dialog (in a visually distinct overview section), even when the ER field has no annotation of its own. A trigger is injected for the field in either case. Example: a Tags vocabulary overview annotation surfaces inside the Tags ER field dialog on any node edit form, giving editors context on what the vocabulary is for without requiring a separate annotation on the field itself.
 - **View page overlays** on entity view pages (e.g. `/node/1`). Same "?" UX as forms. Opt-in per view mode via Manage Display.
 - **Bundle chooser descriptions** on entity type chooser pages (e.g. `/node/add`, `/media/add`). Bundle-level annotation text appears alongside each content type. Requires "Show overviews on entity select screens" enabled in module settings.
 - **Inline paragraph subform overlays** inside Paragraphs widget fields. Dialogs are placed inside the Paragraphs field wrapper to survive AJAX replacement.
@@ -45,6 +46,8 @@ View page overlays require explicit opt-in per view mode. Go to **Manage Display
 
 The **Annotations overlay** field only appears in Manage Display for entity types that have at least one `annotation_target` configured. If the field is not yet visible after creating a new target, run `drush cr`.
 
+The **Annotation view mode** setting defaults to `overlay`. If no custom display settings exist for that view mode on a given annotation type, Drupal falls back to the `default` display — annotations will still render. To control exactly which fields appear in dialogs, go to **Structure > Annotation types > [type] > Manage Display**, enable **Use custom display settings for Overlay**, and configure it there. The `overlay` view mode is registered by this module but not enabled per type automatically.
+
 Form overlays are automatic — no Manage Display setup required.
 
 ---
@@ -57,7 +60,7 @@ Four theme hooks, split into two pairs by context.
 
 | Hook | Template | Purpose |
 |---|---|---|
-| `annotations_overlay_wrapper` | `annotations-overlay-wrapper.html.twig` | Outer `<dialog>` with heading, close button, and items. |
+| `annotations_overlay_wrapper` | `annotations-overlay-wrapper.html.twig` | Outer `<dialog>` with heading, close button, optional overview section, and items. Variables: `heading`, `overview`, `items`, `attributes`, `close_attributes`, `close_label`. |
 | `annotations_overlay_item` | `annotations-overlay-item.html.twig` | Single annotation type. Variables: `type_id`, `type_label`, `content`, `edit_url`, `single_type`. |
 
 ### Chooser page descriptions

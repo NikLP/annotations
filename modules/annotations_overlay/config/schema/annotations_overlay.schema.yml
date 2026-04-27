@@ -5,3 +5,11 @@ annotations_overlay.settings:
     show_bundle_chooser_overview:
       type: boolean
       label: 'Show overview annotations on entity select screens'
+
+field.formatter.settings.annotations_overlay:
+  type: mapping
+  label: 'Annotations overlay formatter settings'
+  mapping:
+    annotation_view_mode:
+      type: string
+      label: 'Annotation view mode'

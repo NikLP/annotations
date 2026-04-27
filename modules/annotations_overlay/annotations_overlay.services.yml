@@ -6,6 +6,7 @@ services:
     class: Drupal\annotations_overlay\Hook\AnnotationsOverlayHooks
     arguments:
       - '@entity_type.manager'
+      - '@entity_field.manager'
       - '@annotations.annotation_storage'
       - '@current_user'
       - '@current_route_match'
