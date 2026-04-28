@@ -447,7 +447,7 @@ class AnnotationsOverlayHooks {
     $form['overlay']['show_bundle_chooser_overview'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show overviews on entity select screens'),
-      '#description' => $this->t('Adds overview annotations onto descriptions on entity type chooser pages (e.g. <em>/node/add</em>, <em>/media/add</em>).'),
+      '#description' => $this->t('Adds bundle overviews onto descriptions on type chooser pages (e.g. <em>/node/add, /media/add</em>).'),
       '#default_value' => $this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview'),
     ];
 

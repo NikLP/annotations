@@ -190,7 +190,7 @@ class TargetOverviewForm extends FormBase {
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Save target configuration'),
+      '#value' => $this->t('Save configuration'),
       '#button_type' => 'primary',
     ];
 
