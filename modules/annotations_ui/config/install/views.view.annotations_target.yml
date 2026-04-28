@@ -23,6 +23,59 @@ display:
     display_options:
       title: Annotations
       fields:
+        annotation_bulk_form:
+          id: annotation_bulk_form
+          table: annotation
+          field: annotation_bulk_form
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: annotation
+          plugin_id: bulk_form
+          label: 'Bulk update'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          action_title: Action
+          include_exclude: exclude
+          selected_actions: {  }
         field_label:
           id: field_label
           table: annotation_field_data
@@ -365,10 +418,24 @@ display:
           hide_alter_empty: true
           destination: true
       pager:
-        type: none
+        type: mini
         options:
           offset: 0
-          items_per_page: 0
+          pagination_heading_level: h4
+          items_per_page: 25
+          total_pages: null
+          id: 0
+          tags:
+            next: ››
+            previous: ‹‹
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
       exposed_form:
         type: basic
         options:
@@ -382,7 +449,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'access annotation collection'
+          perm: 'edit any annotation'
       cache:
         type: tag
         options: {  }
@@ -704,7 +771,7 @@ display:
       footer: {  }
       display_extenders: {  }
     cache_metadata:
-      max-age: -1
+      max-age: 0
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
@@ -720,7 +787,7 @@ display:
     display_options:
       display_extenders: {  }
     cache_metadata:
-      max-age: -1
+      max-age: 0
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
