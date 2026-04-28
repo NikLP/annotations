@@ -72,14 +72,6 @@
   margin-top: 0;
 }
 
-/* Overview section — referenced entity context above field-level items. */
-
-.annotations-overlay-overview {
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid;
-}
-
 /* Annotation items. */
 
 .annotations-overlay-item+.annotations-overlay-item {

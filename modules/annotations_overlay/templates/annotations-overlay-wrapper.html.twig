@@ -17,9 +17,6 @@
  * - close_attributes: HTML attributes for the close button.
  * - close_label: Accessible text label for the close button.
  * - heading: Human-readable field or bundle label shown as the dialog title.
- * - overview: Rendered overview items from a referenced entity's target
- *   (e.g. a vocabulary overview surfaced in an ER field dialog). Shown above
- *   items in a visually distinct section. Empty when not applicable.
  * - items: Rendered annotation items (annotations_overlay_item elements).
  */
 #}
@@ -31,11 +28,6 @@
   </button>
   <div class="annotations-overlay-body">
     <h2 class="annotations-overlay-heading">{{ heading }}</h2>
-    {% if overview %}
-      <div class="annotations-overlay-overview">
-        {{ overview }}
-      </div>
-    {% endif %}
     {{ items }}
   </div>
 </dialog>
