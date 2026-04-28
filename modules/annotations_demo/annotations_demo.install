@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 /**
  * @file
- */
-
-/**
- * @file
  * Install hooks for Annotations Demo.
  *
  * Demo annotation values are created programmatically here rather than shipped
- * as YAML content files, since the core content export format (available via
- * `php core/scripts/drupal content:export annotation <id>` in Drupal 11.3+)
- * is tied to the installed site's UUIDs and cannot be safely generated offline.
+ * as YAML content files, since the core content export format is tied to the
+ * installed site's UUIDs and cannot be safely generated offline.
  *
- * To replace these with proper YAML files:
- * 1. Enable annotations_demo on a fresh site so hook_install runs.
- * 2. Export all annotation entities to the module's content directory:
- *      php core/scripts/drupal content:export annotation --file=web/modules/custom/annotations/modules/annotations_demo/content/annotation
- *    (Drupal 11.3+ exports all entities of a type when no ID is given)
- * 3. The YAML files will appear in annotations_demo/content/annotation/.
- * 4. Remove hook_install once the YAML files are in place.
- *
- * Drupal 11.3+ auto-imports content/annotation/*.yml files when the module
- * is enabled — no default_content contrib module needed.
+ * To replace these with proper YAML files once Drupal 11.3+ content import is
+ * stable, export all annotation entities to the module's content directory and
+ * remove hook_install.
  */
+
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\node\Entity\Node;
+use Drupal\node\Entity\NodeType;
 
 /**
  * Implements hook_requirements().
@@ -39,7 +34,7 @@ function annotations_demo_requirements(string $phase): array {
     ->getStorage('annotation')
     ->getQuery()
     ->accessCheck(FALSE)
-    ->condition('target_id', 'node__article')
+    ->condition('target_id', ['node__product', 'node__collection'], 'IN')
     ->execute();
 
   if (empty($ids)) {
@@ -50,8 +45,8 @@ function annotations_demo_requirements(string $phase): array {
     'annotations_demo_content' => [
       'title' => t('Annotations Demo annotation content'),
       'value' => t('@count annotation record(s) will be permanently deleted.', ['@count' => count($ids)]),
-      'description' => t('Uninstalling annotations_demo deletes all annotation content entities for the demo node__article target. This cannot be undone.'),
-      'severity' => REQUIREMENT_WARNING,
+      'description' => t('Uninstalling annotations_demo deletes all annotation content entities for the demo targets. This cannot be undone.'),
+      'severity' => \Drupal\Core\Extension\Requirement\RequirementSeverity::Warning,
     ],
   ];
 }
@@ -60,65 +55,93 @@ function annotations_demo_requirements(string $phase): array {
  * Implements hook_install().
  */
 function annotations_demo_install(): void {
-  // Enable the node entity type so it appears on the Manage targets page.
-  $config = \Drupal::configFactory()->getEditable('annotations.target_types');
-  $enabled = $config->get('enabled_target_types') ?? [];
-  if (!in_array('node', $enabled, TRUE)) {
-    $enabled[] = 'node';
-    $config->set('enabled_target_types', $enabled)->save();
-  }
-
-  $storage = \Drupal::entityTypeManager()->getStorage('annotation');
-
-  $demo_values = [
-    [
-      'type_id' => 'editorial',
-      'target_id' => 'node__article',
-      'field_name' => '',
-      'value' => "Use Article for news posts, blog entries, and longer-form editorial content.\n\nFill in the Summary field so teasers display correctly on listing pages. The Image field is optional but improves engagement on promoted content.",
-    ],
-    [
-      'type_id' => 'technical',
-      'target_id' => 'node__article',
-      'field_name' => '',
-      'value' => "Standard Drupal node type with revision support. Ships with `body` (text_with_summary), `field_image` (image, media reference), and `field_tags` (taxonomy reference to Tags vocabulary) in the standard profile.\n\nDisplay modes: full, teaser, search_index, rss.",
-    ],
-    [
-      'type_id' => 'rules',
-      'target_id' => 'node__article',
-      'field_name' => '',
-      'value' => "All articles require a filled Summary before publication. Image captions are required when an image is attached.\n\nArticles representing press releases must include the 'Press Release' tag.",
-    ],
-  ];
-
-  foreach ($demo_values as $values) {
-    $storage->create($values + ['status' => 1, 'uid' => 1])->save();
-  }
+  _annotations_demo_enable_node_entity_type();
+  _annotations_demo_create_product_type();
+  _annotations_demo_create_collection_type();
+  _annotations_demo_configure_displays();
+  _annotations_demo_create_targets();
+  $product_nids = _annotations_demo_create_product_nodes();
+  _annotations_demo_create_collection_nodes($product_nids);
+  _annotations_demo_create_annotations();
 }
 
 /**
  * Implements hook_uninstall().
  */
 function annotations_demo_uninstall(): void {
-  // Remove node from enabled entity types if it was added by this module.
-  $config = \Drupal::configFactory()->getEditable('annotations.target_types');
-  $enabled = $config->get('enabled_target_types') ?? [];
-  $enabled = array_values(array_filter($enabled, fn($t) => $t !== 'node'));
-  $config->set('enabled_target_types', $enabled)->save();
+  $entity_type_manager = \Drupal::entityTypeManager();
 
-  // Delete demo annotation content entities for the node__article target so
-  // that a reinstall starts clean. Config deletion below removes the target
-  // config, but annotation rows are content entities and are not cleaned up
-  // by config sync — they must be deleted explicitly.
-  $storage = \Drupal::entityTypeManager()->getStorage('annotation');
-  $ids = $storage->getQuery()
+  // Delete annotation content entities for demo targets.
+  $annotation_storage = $entity_type_manager->getStorage('annotation');
+  $ids = $annotation_storage->getQuery()
     ->accessCheck(FALSE)
-    ->condition('target_id', 'node__article')
+    ->condition('target_id', ['node__product', 'node__collection'], 'IN')
     ->execute();
   if (!empty($ids)) {
-    $storage->delete($storage->loadMultiple($ids));
+    $annotation_storage->delete($annotation_storage->loadMultiple($ids));
   }
 
+  // Delete demo nodes before removing their content types.
+  $node_storage = $entity_type_manager->getStorage('node');
+  foreach (['product', 'collection'] as $bundle) {
+    $nids = $node_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', $bundle)
+      ->execute();
+    if (!empty($nids)) {
+      $node_storage->delete($node_storage->loadMultiple($nids));
+    }
+  }
+
+  // Delete annotation target config entities created in hook_install.
+  $target_storage = $entity_type_manager->getStorage('annotation_target');
+  foreach (['node__product', 'node__collection'] as $target_id) {
+    $target = $target_storage->load($target_id);
+    if ($target) {
+      $target->delete();
+    }
+  }
+
+  // Delete field storages — cascades to instances and data.
+  foreach ([
+    'field_description',
+    'field_sku',
+    'field_price',
+    'field_origin',
+    'field_lead_time',
+    'field_certifications',
+    'field_product_status',
+    'field_products',
+    'field_season',
+    'field_collection_active',
+  ] as $field_name) {
+    $storage = FieldStorageConfig::loadByName('node', $field_name);
+    if ($storage) {
+      $storage->delete();
+    }
+  }
+
+  // Delete node types.
+  foreach (['product', 'collection'] as $type) {
+    $node_type = NodeType::load($type);
+    if ($node_type) {
+      $node_type->delete();
+    }
+  }
+
+  // Remove node from enabled entity types only if no other targets remain.
+  $remaining = $entity_type_manager->getStorage('annotation_target')->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('entity_type', 'node')
+    ->execute();
+  if (empty($remaining)) {
+    $config = \Drupal::configFactory()->getEditable('annotations.target_types');
+    $enabled = $config->get('enabled_target_types') ?? [];
+    $enabled = array_values(array_filter($enabled, fn($t) => $t !== 'node'));
+    $config->set('enabled_target_types', $enabled)->save();
+  }
+
+  // Delete annotation types and auto-generated form displays from config/install.
   $config_factory = \Drupal::configFactory();
   foreach ([
     'core.entity_form_display.annotation.editorial.default',
@@ -127,8 +150,513 @@ function annotations_demo_uninstall(): void {
     'annotations.annotation_type.editorial',
     'annotations.annotation_type.rules',
     'annotations.annotation_type.technical',
-    'annotations.target.node__article',
   ] as $config_name) {
     $config_factory->getEditable($config_name)->delete();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Install helpers
+// ---------------------------------------------------------------------------
+
+function _annotations_demo_enable_node_entity_type(): void {
+  $config = \Drupal::configFactory()->getEditable('annotations.target_types');
+  $enabled = $config->get('enabled_target_types') ?? [];
+  if (!in_array('node', $enabled, TRUE)) {
+    $enabled[] = 'node';
+    $config->set('enabled_target_types', $enabled)->save();
+  }
+}
+
+function _annotations_demo_create_product_type(): void {
+  NodeType::create([
+    'type' => 'product',
+    'name' => 'Product',
+    'description' => 'A catalogued product. Created by the Annotations demo.',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_description',
+    'entity_type' => 'node',
+    'type' => 'string_long',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_sku',
+    'entity_type' => 'node',
+    'type' => 'string',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_price',
+    'entity_type' => 'node',
+    'type' => 'decimal',
+    'settings' => ['precision' => 10, 'scale' => 2],
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_origin',
+    'entity_type' => 'node',
+    'type' => 'string',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_lead_time',
+    'entity_type' => 'node',
+    'type' => 'integer',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_certifications',
+    'entity_type' => 'node',
+    'type' => 'list_string',
+    'cardinality' => -1,
+    'settings' => [
+      'allowed_values' => [
+        'CE' => 'CE',
+        'RoHS' => 'RoHS',
+        'ISO9001' => 'ISO 9001',
+        'FCC' => 'FCC',
+      ],
+    ],
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_product_status',
+    'entity_type' => 'node',
+    'type' => 'list_string',
+    'settings' => [
+      'allowed_values' => [
+        'available' => 'Available',
+        'discontinued' => 'Discontinued',
+        'coming_soon' => 'Coming soon',
+      ],
+    ],
+  ])->save();
+
+  foreach ([
+    ['field_name' => 'field_description', 'label' => 'Description'],
+    ['field_name' => 'field_sku', 'label' => 'SKU'],
+    ['field_name' => 'field_price', 'label' => 'Price'],
+    ['field_name' => 'field_origin', 'label' => 'Country of origin'],
+    ['field_name' => 'field_lead_time', 'label' => 'Lead time (days)'],
+    ['field_name' => 'field_certifications', 'label' => 'Certifications'],
+    ['field_name' => 'field_product_status', 'label' => 'Status'],
+  ] as $field) {
+    FieldConfig::create($field + ['entity_type' => 'node', 'bundle' => 'product'])->save();
+  }
+}
+
+function _annotations_demo_create_collection_type(): void {
+  NodeType::create([
+    'type' => 'collection',
+    'name' => 'Collection',
+    'description' => 'A curated grouping of products for a campaign or season. Created by the Annotations demo.',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_products',
+    'entity_type' => 'node',
+    'type' => 'entity_reference',
+    'cardinality' => -1,
+    'settings' => ['target_type' => 'node'],
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_season',
+    'entity_type' => 'node',
+    'type' => 'string',
+  ])->save();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_collection_active',
+    'entity_type' => 'node',
+    'type' => 'boolean',
+  ])->save();
+
+  FieldConfig::create([
+    'field_name' => 'field_products',
+    'entity_type' => 'node',
+    'bundle' => 'collection',
+    'label' => 'Products',
+    'settings' => [
+      'handler' => 'default:node',
+      'handler_settings' => [
+        'target_bundles' => ['product' => 'product'],
+        'sort' => ['field' => '_none'],
+        'auto_create' => FALSE,
+      ],
+    ],
+  ])->save();
+
+  FieldConfig::create([
+    'field_name' => 'field_season',
+    'entity_type' => 'node',
+    'bundle' => 'collection',
+    'label' => 'Season',
+  ])->save();
+
+  FieldConfig::create([
+    'field_name' => 'field_collection_active',
+    'entity_type' => 'node',
+    'bundle' => 'collection',
+    'label' => 'Active',
+  ])->save();
+}
+
+function _annotations_demo_configure_displays(): void {
+  $load_or_create_form = function (string $bundle): EntityFormDisplay {
+    $display = EntityFormDisplay::load("node.$bundle.default");
+    if (!$display) {
+      $display = EntityFormDisplay::create([
+        'targetEntityType' => 'node',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'status' => TRUE,
+      ]);
+    }
+    return $display;
+  };
+
+  $load_or_create_view = function (string $bundle): EntityViewDisplay {
+    $display = EntityViewDisplay::load("node.$bundle.default");
+    if (!$display) {
+      $display = EntityViewDisplay::create([
+        'targetEntityType' => 'node',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'status' => TRUE,
+      ]);
+    }
+    return $display;
+  };
+
+  $load_or_create_form('product')
+    ->setComponent('field_description', ['type' => 'string_textarea', 'weight' => 1])
+    ->setComponent('field_sku', ['type' => 'string_textfield', 'weight' => 2])
+    ->setComponent('field_price', ['type' => 'number', 'weight' => 3])
+    ->setComponent('field_origin', ['type' => 'string_textfield', 'weight' => 4])
+    ->setComponent('field_lead_time', ['type' => 'number', 'weight' => 5])
+    ->setComponent('field_certifications', ['type' => 'options_buttons', 'weight' => 6])
+    ->setComponent('field_product_status', ['type' => 'options_select', 'weight' => 7])
+    ->save();
+
+  $load_or_create_form('collection')
+    ->setComponent('field_products', ['type' => 'entity_reference_autocomplete', 'weight' => 1])
+    ->setComponent('field_season', ['type' => 'string_textfield', 'weight' => 2])
+    ->setComponent('field_collection_active', ['type' => 'boolean_checkbox', 'weight' => 3])
+    ->save();
+
+  $load_or_create_view('product')
+    ->setComponent('field_description', ['type' => 'basic_string', 'weight' => 1])
+    ->setComponent('field_sku', ['type' => 'string', 'weight' => 2])
+    ->setComponent('field_price', ['type' => 'number_decimal', 'weight' => 3])
+    ->setComponent('field_origin', ['type' => 'string', 'weight' => 4])
+    ->setComponent('field_lead_time', ['type' => 'number_integer', 'weight' => 5])
+    ->setComponent('field_certifications', ['type' => 'list_default', 'weight' => 6])
+    ->setComponent('field_product_status', ['type' => 'list_default', 'weight' => 7])
+    ->setComponent('annotations_overlay', ['type' => 'annotations_overlay', 'label' => 'hidden', 'weight' => 100, 'settings' => ['annotation_view_mode' => 'overlay']])
+    ->save();
+
+  $load_or_create_view('collection')
+    ->setComponent('field_products', ['type' => 'entity_reference_label', 'weight' => 1])
+    ->setComponent('field_season', ['type' => 'string', 'weight' => 2])
+    ->setComponent('field_collection_active', ['type' => 'boolean', 'weight' => 3])
+    ->setComponent('annotations_overlay', ['type' => 'annotations_overlay', 'label' => 'hidden', 'weight' => 100, 'settings' => ['annotation_view_mode' => 'overlay']])
+    ->save();
+}
+
+function _annotations_demo_create_targets(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('annotation_target');
+
+  $storage->create([
+    'id' => 'node__product',
+    'label' => 'Product',
+    'entity_type' => 'node',
+    'bundle' => 'product',
+    'fields' => [
+      'title' => [],
+      'field_description' => [],
+      'field_sku' => [],
+      'field_price' => [],
+      'field_origin' => [],
+      'field_lead_time' => [],
+      'field_certifications' => [],
+      'field_product_status' => [],
+    ],
+  ])->save();
+
+  $storage->create([
+    'id' => 'node__collection',
+    'label' => 'Collection',
+    'entity_type' => 'node',
+    'bundle' => 'collection',
+    'fields' => [
+      'title' => [],
+      'field_products' => [],
+      'field_season' => [],
+      'field_collection_active' => [],
+    ],
+  ])->save();
+}
+
+/**
+ * @return array<string, int> Node IDs keyed by handle (a–e).
+ */
+function _annotations_demo_create_product_nodes(): array {
+  $products = [
+    'a' => [
+      'title' => 'Aero Desk Lamp',
+      'field_sku' => 'EU-LGT-0001',
+      'field_price' => '89.95',
+      'field_origin' => 'DE',
+      'field_lead_time' => 5,
+      'field_certifications' => [['value' => 'CE'], ['value' => 'RoHS']],
+      'field_product_status' => 'available',
+      'field_description' => 'Sleek adjustable LED desk lamp with three colour temperatures and a USB-A charging port. Designed for home office and professional workspaces.',
+    ],
+    'b' => [
+      'title' => 'ProGrip Tool Kit',
+      'field_sku' => 'EU-TLS-0042',
+      'field_price' => '149.00',
+      'field_origin' => 'CN',
+      'field_lead_time' => 12,
+      'field_certifications' => [['value' => 'CE'], ['value' => 'RoHS'], ['value' => 'ISO9001']],
+      'field_product_status' => 'available',
+      'field_description' => '78-piece professional tool kit in a moulded carry case. Includes metric and imperial sockets, a reversible ratchet, and a 3-year warranty.',
+    ],
+    'c' => [
+      'title' => 'Summit Backpack 40L',
+      'field_sku' => 'EU-BAG-0108',
+      'field_price' => '210.50',
+      'field_origin' => 'PL',
+      'field_lead_time' => 8,
+      'field_certifications' => [['value' => 'CE']],
+      'field_product_status' => 'coming_soon',
+      'field_description' => 'Technical hiking pack with a 40-litre main compartment, hydration sleeve, and padded laptop section. Ships in three colourways.',
+    ],
+    'd' => [
+      'title' => 'FlexCharge Station',
+      'field_sku' => 'EU-ELC-0023',
+      'field_price' => '64.99',
+      'field_origin' => 'TW',
+      'field_lead_time' => 3,
+      'field_certifications' => [['value' => 'CE'], ['value' => 'RoHS'], ['value' => 'FCC']],
+      'field_product_status' => 'available',
+      'field_description' => 'Six-port USB charging station with 65 W GaN output and intelligent current sharing. Compatible with all USB-A and USB-C devices.',
+    ],
+    'e' => [
+      'title' => 'TrailRunner Jacket',
+      'field_sku' => 'EU-APP-0017',
+      'field_price' => '175.00',
+      'field_origin' => 'PT',
+      'field_lead_time' => 15,
+      'field_certifications' => [['value' => 'CE']],
+      'field_product_status' => 'discontinued',
+      'field_description' => 'Lightweight windproof running jacket with reflective detailing and a packable hood. Discontinued; retained for warranty lookup.',
+    ],
+  ];
+
+  $nids = [];
+  foreach ($products as $key => $values) {
+    $node = Node::create(['type' => 'product', 'status' => 1, 'uid' => 1] + $values);
+    $node->save();
+    $nids[$key] = (int) $node->id();
+  }
+  return $nids;
+}
+
+/**
+ * @param array<string, int> $product_nids
+ */
+function _annotations_demo_create_collection_nodes(array $product_nids): void {
+  $ref = fn(string ...$keys): array => array_map(
+    fn($k) => ['target_id' => $product_nids[$k]],
+    $keys,
+  );
+
+  $collections = [
+    [
+      'title' => 'Spring / Summer 2025',
+      'field_season' => 'SS25',
+      'field_collection_active' => 1,
+      'field_products' => $ref('a', 'b', 'c', 'd'),
+    ],
+    [
+      'title' => 'Autumn / Winter 2025',
+      'field_season' => 'AW25',
+      'field_collection_active' => 1,
+      'field_products' => $ref('b', 'd', 'e'),
+    ],
+    [
+      'title' => 'Tech Essentials',
+      'field_collection_active' => 1,
+      'field_products' => $ref('a', 'd', 'b'),
+    ],
+  ];
+
+  foreach ($collections as $values) {
+    Node::create(['type' => 'collection', 'status' => 1, 'uid' => 1] + $values)->save();
+  }
+}
+
+function _annotations_demo_create_annotations(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('annotation');
+
+  $annotations = [
+
+    // node__product — bundle level
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__product',
+      'field_name' => '',
+      'value' => "Product records drive the main catalogue. Entries require brand team sign-off before status is set to Available.\n\nDo not create products directly in the CMS — all new SKUs must originate from an approved onboarding request.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__product',
+      'field_name' => '',
+      'value' => "Products sync from the ERP nightly via a scheduled migration. Do not create or delete records manually outside of approved onboarding workflows.\n\nThe ERP is the system of record; changes made here without a matching ERP entry will be overwritten on the next sync.",
+    ],
+
+    // field_description
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__product',
+      'field_name' => 'field_description',
+      'value' => "Write in the active voice. Target 80–120 words. Tone: informative, not promotional. Avoid superlatives (best, unique, revolutionary).\n\nFill in the description before setting status to Available — an empty description displays as a blank block on the catalogue page.",
+    ],
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__product',
+      'field_name' => 'field_description',
+      'value' => "Descriptions are used verbatim in EU marketplace listings. Any marketing claims (e.g. 'eco-friendly', 'certified', 'industry-leading') must be approved in writing by the legal team before publishing.",
+    ],
+
+    // field_sku
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__product',
+      'field_name' => 'field_sku',
+      'value' => "Format: [REGION]-[CATEGORY]-[SEQ] — e.g. EU-ELC-0042. SKUs are auto-generated by the ERP on first sync.\n\nDo not edit manually. Changing a SKU breaks downstream fulfilment integrations and will cause orders to fail silently.",
+    ],
+
+    // field_price
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__product',
+      'field_name' => 'field_price',
+      'value' => "Excludes VAT. Regional pricing and tax logic are handled downstream by the pricing service — do not attempt to localise or override this field in the CMS.",
+    ],
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__product',
+      'field_name' => 'field_price',
+      'value' => "Prices are reviewed quarterly by the commercial team. Ad-hoc price changes require a pricing request ticket; do not update directly without approval.",
+    ],
+
+    // field_origin
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__product',
+      'field_name' => 'field_origin',
+      'value' => "Supplier changed for most EU-prefixed SKUs in Q1 2025. Product descriptions referencing the previous manufacturer are pending update by the content team — flag any you find.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__product',
+      'field_name' => 'field_origin',
+      'value' => "Stores the ISO 3166-1 alpha-2 country code of primary manufacture (e.g. DE, CN, PL). Not the country of dispatch or the supplier's registered country.",
+    ],
+
+    // field_lead_time
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__product',
+      'field_name' => 'field_lead_time',
+      'value' => "Value in working days. Add 10 days for orders placed Nov–Jan (seasonal capacity reduction). Procurement will not honour the standard SLA during this window — communicate accordingly.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__product',
+      'field_name' => 'field_lead_time',
+      'value' => "Set to 0 for items held in the local warehouse. Null and 0 are treated identically by the fulfilment API — always use 0 for in-stock items.",
+    ],
+
+    // field_certifications
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__product',
+      'field_name' => 'field_certifications',
+      'value' => "RoHS certification is mandatory for any product sold in the EU. If this field is empty the product must not be set to Available — raise a compliance ticket first.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__product',
+      'field_name' => 'field_certifications',
+      'value' => "RoHS cert for the ELC category expires 2027-06. Renewal is in progress — do not raise customer queries about this certificate; direct to the compliance team.",
+    ],
+
+    // field_product_status
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__product',
+      'field_name' => 'field_product_status',
+      'value' => "coming_soon triggers the pre-order landing page. Confirm with the dev team before setting this value — the pre-order flow requires a fulfilment date to be entered in the ERP first.",
+    ],
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__product',
+      'field_name' => 'field_product_status',
+      'value' => "Discontinued products must not be deleted. Set status to Discontinued and leave the record in place — it is retained for warranty lookups and support case history.",
+    ],
+
+    // node__collection — bundle level
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__collection',
+      'field_name' => '',
+      'value' => "Collections group products for campaign and seasonal pages. Each collection maps to one homepage carousel slot or landing page.\n\nThere should be no more than six active collections at any time. Archive by setting Active to false when a season ends — do not delete.",
+    ],
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__collection',
+      'field_name' => '',
+      'value' => "Collection nodes are the source of truth for the carousel CMS component. The carousel API reads directly from this content type — changes here go live on the next cache clear.",
+    ],
+
+    // field_products
+    [
+      'type_id' => 'editorial',
+      'target_id' => 'node__collection',
+      'field_name' => 'field_products',
+      'value' => "Order here reflects the carousel display sequence. Lead with the anchor product (highest margin or hero item) and close with the newest entry in the range.",
+    ],
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__collection',
+      'field_name' => 'field_products',
+      'value' => "A collection must contain between 3 and 12 products. Fewer than 3 breaks the carousel layout; items beyond 12 are silently truncated in the front-end component.",
+    ],
+
+    // field_season
+    [
+      'type_id' => 'rules',
+      'target_id' => 'node__collection',
+      'field_name' => 'field_season',
+      'value' => "Season codes must follow the brand guide format: [2-letter season][2-digit year] — e.g. SS25, AW26. Do not invent new codes; check with the merchandising team if you are unsure.",
+    ],
+
+    // field_collection_active
+    [
+      'type_id' => 'technical',
+      'target_id' => 'node__collection',
+      'field_name' => 'field_collection_active',
+      'value' => "Inactive collections are excluded from the carousel API response. Toggle this field rather than deleting when a season ends — the record is referenced in campaign analytics and must be retained.",
+    ],
+  ];
+
+  foreach ($annotations as $values) {
+    $storage->create($values + ['status' => 1, 'uid' => 1])->save();
   }
 }
