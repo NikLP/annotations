@@ -191,25 +191,6 @@ class AnnotationsOverlayHooks {
     $has_main_overlays = !empty($bundle_annotations) || !empty($fields_with_annotations);
 
     if ($has_main_overlays) {
-      // Bundle trigger — floated right so it sits at the top of the form.
-      if (!empty($bundle_annotations)) {
-        $form['annotations_bundle_trigger'] = [
-          '#type' => 'html_tag',
-          '#tag' => 'button',
-          '#attributes' => [
-            'type' => 'button',
-            'class' => [
-              'annotations-overlay-trigger',
-              'annotations-overlay-trigger--bundle',
-              'js-annotations-overlay-trigger',
-            ],
-            'data-annotations-field' => '_bundle',
-            'aria-label' => (string) $this->t('About @label', ['@label' => $target->label()]),
-          ],
-          '#value' => Markup::create('<span aria-hidden="true">?</span>'),
-          '#weight' => -1000,
-        ];
-      }
 
       // Field triggers — injected as the first child of each field container.
       // CSS positions them top-right within the container, near the label.
@@ -241,7 +222,7 @@ class AnnotationsOverlayHooks {
       $dialogs = [];
 
       if (!empty($bundle_annotations)) {
-        $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $target->label(), $bundle_annotations, $single_type);
+        $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $this->t('@label overview', ['@label' => $target->label()]), $bundle_annotations, $single_type);
       }
 
       foreach ($fields_with_annotations as $field_name => $annotations) {
@@ -393,7 +374,7 @@ class AnnotationsOverlayHooks {
     $dialogs = [];
 
     if (!empty($bundle_annotations)) {
-      $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $target->label(), $bundle_annotations, $single_type, $annotation_view_mode);
+      $dialogs['_bundle'] = $this->buildDialog('_bundle', (string) $this->t('@label overview', ['@label' => $target->label()]), $bundle_annotations, $single_type, $annotation_view_mode);
     }
     foreach ($fields_with_annotations as $field_name => $annotations) {
       $label = $this->resolveFieldLabel($entity_type_id, $bundle, $field_name);
@@ -949,7 +930,7 @@ class AnnotationsOverlayHooks {
         if (!empty($para_bundle_annotations)) {
           $dialogs[$prefix . '_bundle'] = $this->buildDialog(
             $prefix . '_bundle',
-            (string) $para_target->label(),
+            (string) $this->t('@label overview', ['@label' => $para_target->label()]),
             $para_bundle_annotations,
             $para_single_type,
           );
