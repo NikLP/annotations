@@ -67,15 +67,25 @@ class AnnotationController extends ControllerBase {
   public function page(Request $request): array {
     $open_section = $request->query->get('open', '');
 
+    $types = $this->loadAnnotationTypes();
+    if (empty($types)) {
+      return $this->buildNoTypesMessage($request->getPathInfo());
+    }
+
     $targets = $this->entityTypeManager
       ->getStorage('annotation_target')
       ->loadMultiple();
 
     if (empty($targets)) {
+      $message = $this->moduleHandler()->moduleExists('annotations_type_ui')
+        ? $this->t('No targets have been added yet. <a href=":url">Configure annotation targets</a> to choose which entity types and bundles to annotate.', [
+          ':url' => Url::fromRoute('entity.annotation_target.collection')->toString(),
+        ])
+        : $this->t('No targets have been added yet. Configure annotation targets to choose which entity types and bundles to annotate.');
       return [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => $this->t('No targets have been selected yet.'),
+        '#value' => $message,
       ];
     }
 
@@ -182,20 +192,7 @@ class AnnotationController extends ControllerBase {
     $types = $this->loadAnnotationTypes();
 
     if (empty($types)) {
-      if ($this->moduleHandler()->moduleExists('annotations_type_ui')) {
-        $link = Url::fromRoute('entity.annotation_type.add_form', [], [
-          'query' => ['destination' => $request->getPathInfo()],
-        ])->toString();
-        $message = $this->t('No annotation types are available. <a href=":url">Add an annotation type</a> to get started.', [':url' => $link]);
-      }
-      else {
-        $message = $this->t('No annotation types are available. Install the <em>annotations_type_ui</em> module to create annotation types.');
-      }
-      return [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => $message,
-      ];
+      return $this->buildNoTypesMessage($request->getPathInfo());
     }
 
     // Use latest revisions so in-progress drafts count as filled.
@@ -446,6 +443,23 @@ class AnnotationController extends ControllerBase {
    * @return array<string, \Drupal\annotations\Entity\AnnotationTypeInterface>
    *   Annotation types keyed by type ID, sorted by weight.
    */
+  private function buildNoTypesMessage(string $destination): array {
+    if ($this->moduleHandler()->moduleExists('annotations_type_ui')) {
+      $link = Url::fromRoute('entity.annotation_type.add_form', [], [
+        'query' => ['destination' => $destination],
+      ])->toString();
+      $message = $this->t('No annotation types are available. <a href=":url">Add an annotation type</a> to get started.', [':url' => $link]);
+    }
+    else {
+      $message = $this->t('No annotation types are available. Install the <em>annotations_type_ui</em> module to create annotation types.');
+    }
+    return [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $message,
+    ];
+  }
+
   private function loadAnnotationTypes(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $types */
     $types = $this->entityTypeManager()
@@ -486,7 +500,7 @@ class AnnotationController extends ControllerBase {
         'type' => $definition->getType(),
       ];
     }
-    
+
     return $info;
   }
 
