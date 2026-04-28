@@ -267,6 +267,14 @@ class AnnotationEditForm extends ContentEntityForm {
     $annotation->setRevisionCreationTime($this->time->getRequestTime());
     $result = $annotation->save();
 
+    $parts = static::resolveAnnotationTitleParts($annotation);
+    if ($result === SAVED_NEW) {
+      $this->messenger()->addStatus($this->t('Created <em>@type</em> annotation for @target &rsaquo; @field.', $parts));
+    }
+    else {
+      $this->messenger()->addStatus($this->t('Updated <em>@type</em> annotation for @target &rsaquo; @field.', $parts));
+    }
+
     $target_id = (string) $annotation->get('target_id')->value;
     $destination = (string) $this->getRequest()->query->get('destination', '');
 
