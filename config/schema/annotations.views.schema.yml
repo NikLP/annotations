@@ -1,11 +1,11 @@
 views.filter.annotation_field_filter:
   type: views.filter.in_operator
-  label: 'Annotation field (label)'
+  label: 'Annotation field filter'
 
 views.filter.annotation_type_filter:
   type: views.filter.in_operator
-  label: 'Annotation type (label)'
+  label: 'Annotation type filter'
 
 views.filter.annotation_target_filter:
   type: views.filter.in_operator
-  label: 'Target (label)'
+  label: 'Annotation target filter'
