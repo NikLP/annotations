@@ -6,9 +6,5 @@
     "maintainer": "NikLP",
     "support": {
         "source": "https://github.com/NikLP/annotations"
-    },
-    "require": {
-        "php": "^8.3",
-        "drupal/core": "^11"
     }
 }
