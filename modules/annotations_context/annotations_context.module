@@ -1,8 +1,0 @@
-<?php
-
-/**
- * @file
- * Annotations Context — context assembly and human-readable export.
- */
-
-declare(strict_types=1);

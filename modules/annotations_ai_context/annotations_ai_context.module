@@ -1,8 +1,0 @@
-<?php
-
-/**
- * @file
- * Annotations AI Context module.
- */
-
-declare(strict_types=1);

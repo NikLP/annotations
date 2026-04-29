@@ -1,8 +1,0 @@
-<?php
-
-/**
- * @file
- * Annotations Coverage module.
- */
-
-declare(strict_types=1);
