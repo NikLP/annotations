@@ -90,7 +90,7 @@
           trigger.focus({ preventScroll: true }); }, 0);
       }
     }
-  }, TRUE);
+  }, true);
 
   // On view pages, entityViewAlter injects triggers as build-array siblings of
   // their fields because field.html.twig discards arbitrary children. Move each

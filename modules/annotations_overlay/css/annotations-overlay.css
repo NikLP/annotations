@@ -2,14 +2,19 @@
  * Annotations Overlay
  */
 
-/* Bundle trigger (top-right of the form). */
+/* Bundle trigger — block-level, right-aligned, visually distinct from field triggers. */
 
 .annotations-overlay-trigger--bundle {
-  float: right;
-  clear: right;
-  margin: 0 0 0.75rem 0.5rem;
+  display: block;
+  width: fit-content;
+  margin: 0 0 0.75rem auto;
   position: relative;
   z-index: 10;
+  background-color: lightskyblue;
+}
+
+.annotations-overlay-trigger--bundle span {
+  font-family: 'Times New Roman', Times, serif;
 }
 
 /* Field-level triggers (top-right within each field container). */
@@ -36,7 +41,7 @@
   height: 1.25rem;
   padding: 0;
   border: 1px solid;
-  background: transparent;
+  /* background: white; */
   border-radius: 50%;
   cursor: pointer;
   font-weight: bold;
@@ -55,7 +60,7 @@
   max-width: min(90vw, 40rem);
   width: 100%;
   padding: 1.5rem;
-  border: 1px solid currentColor;
+  border: 1px solid;
   border-radius: 0.25rem;
 }
 
@@ -77,7 +82,7 @@
 .annotations-overlay-item+.annotations-overlay-item {
   margin-top: 1.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid currentColor;
+  border-top: 1px solid;
   opacity: 0.9;
 }
 

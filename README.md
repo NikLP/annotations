@@ -205,8 +205,8 @@ ddev php web/core/scripts/drupal content:export annotation --dir=recipes/myrecip
 
 The permission model maps to a non-standard CRUD because annotations are editorial content, not access-controlled content:
 
-- **edit = create + update.** There is no separate "create" permission — if you can write a type you can also create it. "View" in the Drupal sense is moot: anyone who can reach the annotation UI can read annotation values; the access question is whether you can write them.
-- **delete = delete.** Kept separate from edit so destructive bulk operations can be restricted independently.
+- **edit = create + update.** There is no separate "create" permission — if you can edit a type you can also create it. "View" in the Drupal sense is moot: anyone who can reach the annotation UI can read annotation values; the access question is whether you can write them.
+- **delete = delete.** Kept separate from edit so destructive operations are restricted independently.
 - **consume = "read" for end-users.** Controls which annotation types appear in context output, overlays, and AI payloads for a given role. Entirely separate from the editorial write layer.
 
 | Permission | Defined in | Notes |
@@ -238,7 +238,7 @@ When `annotations_workflows` is installed, `content_moderation` automatically ge
 | `use annotations transition publish` | Reviewer roles |
 | `use annotations transition reject` | Reviewer roles |
 
-These are standard Drupal `content_moderation` permissions and are assigned via the Drupal roles UI or config. The Drupal administrator role bypasses all moderation checks implicitly.
+These are standard Drupal `content_moderation` permissions and are assigned via the Drupal roles UI or config.
 
 If you use a custom workflow instead of the one shipped by `annotations_workflows`, `content_moderation` generates equivalent permissions for your workflow's transitions.
 
