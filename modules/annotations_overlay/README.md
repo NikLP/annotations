@@ -98,7 +98,5 @@ No hard dependency on the Paragraphs module — detection is structural array in
 
 ## Parked / planned
 
-- **`chooser` view mode** — dedicated annotation view mode for chooser pages, independent of dialog content.
-- **`in_view_context` behavior** — suppress specific types from view page overlays while keeping them on forms.
 - **`buildDialogsForTarget()` service method** — shared entry point for third-party attachment contexts.
 - **Module split** — base library + `annotations_overlay_edit` (form alter) + `annotations_overlay_view` (view alter). See CLAUDE.md for detail.

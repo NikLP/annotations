@@ -122,7 +122,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - `annotations_ui` — complete
 - `annotations_type_ui` — complete
 - `annotations_coverage` — complete (cron caching deferred)
-- `annotations_context` — largely complete
+- `annotations_context` — complete (tagged service provider pattern deferred)
 - `annotations_ai_context` — deprecated prototype, do not extend
 - `annotations_context_ccc` — complete
 - `annotations_overlay` — largely complete (per-field display mode override deferred)

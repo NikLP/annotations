@@ -270,6 +270,33 @@ $assembler->getLastCacheableMetadata()->applyTo($build);
 
 ---
 
+## Drush export
+
+`drush annotations:context:export` (alias `ann:ctx`) assembles the full context payload and prints it as markdown.
+
+```bash
+drush ann:ctx                                          # all targets
+drush ann:ctx --target=node__article                   # one target
+drush ann:ctx --type=node --ref-depth=1                # all node targets, follow ER one hop
+drush ann:ctx --types=editorial,rules                  # specific annotation types only
+drush ann:ctx --field-meta                             # include field type/cardinality/description
+drush ann:ctx --strip-headings                         # plain-text output without # markers
+drush ann:ctx > context.md                             # export to file
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--target` | — | Limit to a single `annotation_target` ID (e.g. `node__article`). |
+| `--type` | — | Limit to all targets of a given entity type (e.g. `node`). |
+| `--types` | — | Comma-separated annotation type IDs to include. |
+| `--ref-depth` | `0` | Entity-reference traversal depth (0–2). |
+| `--field-meta` | off | Include field type, cardinality, and description. |
+| `--strip-headings` | off | Remove `#` heading markers for plain-text terminal output. |
+
+All options are optional and combine freely. Outputs a summary line (target count, ref depth, generated timestamp) before the markdown block.
+
+---
+
 ## JSON API endpoint
 
 `GET /api/annotations/{target_id}` returns the assembled context payload as JSON. Designed for headless consumers that need annotation data without pulling in the AI module.

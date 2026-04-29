@@ -115,11 +115,6 @@ Auth: Drupal native permissions. Bearer token (for headless clients) requires `s
 - Export: `text/markdown`, `Content-Disposition: attachment`, filename from active filters (e.g. `annotations-context-node-article.md`)
 - `ContextFilterForm` uses `#method => 'get'` with `#token => FALSE` and an `#after_build` callback that strips `form_build_id`, `form_token`, and `form_id` — keeps the URL clean (only meaningful filter params appear in the query string)
 
-## Deferred
-
-- `display_mode` assembler option — filter fields to those rendered in a given `EntityViewDisplay`. Low priority; overlay must check `EntityViewDisplay::getComponents()` for its own purposes (see `annotations_overlay/CLAUDE.md`).
-- `drush annotations:export` — trivial when ready: `ContextRenderer::render($assembler->assemble($options))` piped to stdout.
-
 ## Status
 
 - [x] `ContextAssembler` — all options, entity reference traversal, cycle detection, skip_empty
@@ -127,6 +122,6 @@ Auth: Drupal native permissions. Bearer token (for headless clients) requires `s
 - [x] `ContextRenderer`, `ContextHtmlRenderer`
 - [x] `ContextPreviewController` — preview + export; merges alter hook cache metadata
 - [x] `ContextApiController` — JSON endpoint; `CacheableJsonResponse` with full cache tags/contexts
+- [x] `AnnotationsContextCommands` — `drush annotations:context:export` (`ann:ctx`); options: `--target`, `--type`, `--types`, `--ref-depth`, `--field-meta`, `--strip-headings`
 - [x] Routing, permissions, menu link
 - [ ] Tagged service provider pattern (`annotations.context_provider`) — deferred
-- [ ] `drush annotations:export` — parked
