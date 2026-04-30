@@ -1,0 +1,9 @@
+services:
+  annotations_export.drush_commands:
+    class: Drupal\annotations_export\Drush\Commands\AnnotationsExportCommands
+    arguments:
+      - '@annotations_context.assembler'
+      - '@annotations_context.renderer'
+      - '@annotations_export.obsidian_vault_writer'
+    tags:
+      - { name: drush.command }

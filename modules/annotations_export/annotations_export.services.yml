@@ -1,0 +1,3 @@
+services:
+  annotations_export.obsidian_vault_writer:
+    class: Drupal\annotations_export\ObsidianVaultWriter

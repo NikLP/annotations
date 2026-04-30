@@ -1,0 +1,213 @@
+# ADR-001: Annotations as a Knowledge Graph — Current State and Evolution Path
+
+**Status:** Discussion  
+**Date:** 2026-04-30
+
+---
+
+## Context
+
+The `annotations_context` sub-module includes a `ContextAssembler` service whose primary job is building a structured payload describing the site's content model — targets (entity type + bundle combinations), their fields, and the human-authored annotations attached to each — for consumption by AI tooling, editorial UIs, or other downstream systems.
+
+The question is whether this output constitutes a knowledge graph, what it is missing, and whether it is worth moving toward a true knowledge graph model.
+
+---
+
+## What the ContextAssembler currently produces
+
+The assembled payload has the following graph-like properties:
+
+**Nodes with typed properties**  
+Each `AnnotationTarget` (a bundle, or a field within one) appears as a node. Annotations keyed by `AnnotationType` act as typed attributes on those nodes.
+
+**Typed edges (entity-reference traversal)**  
+When `ref_depth > 0`, the assembler follows entity-reference fields outward from a target and recursively assembles the referenced targets. The edge label is the field name. Cycle detection via a `$visited` set prevents infinite loops.
+
+**Reverse edges**  
+The `include_incoming_refs` option adds a flat reverse index — which other targets reference the current one, and via which fields.
+
+**Structured output**  
+The payload is a nested array grouped by entity type, then target, then field, with optional field metadata (type, cardinality, description). It is format-agnostic; the context module serialises it to JSON or markdown depending on the consumer.
+
+---
+
+## What is present vs. what is missing
+
+| Property | Present | Notes |
+| --- | --- | --- |
+| Nodes with typed attributes | Yes | Annotations keyed by type |
+| Named edges (entity-reference) | Yes | Edge label = field name |
+| Bidirectional traversal | Partial | Forward is recursive; reverse is flat, one hop only |
+| Cycle detection | Yes | `$visited` array in assembler |
+| Annotations on edges | No | Edges carry no semantic content of their own |
+| Typed relationship predicates | No | "references via field X" is structural, not semantic |
+| Queryable graph | No | Output is a static snapshot; no post-assembly filtering or traversal |
+| Inference / derived facts | No | No rules engine; all content is human-authored |
+| External ontology linking | No | No schema.org, RDF, or linked-data alignment |
+| First-class edge entities | No | Relationships are inferred from field definitions, not asserted |
+
+### What this means in practice
+
+The current model tells a consumer *what* is connected and *how* (via which field). It does not say *why* the connection exists or *what the relationship means* in the domain. An AI consumer receiving this context must infer relationship semantics from field names and annotation prose — which works, but is fragile and requires the AI to fill gaps the system could state explicitly.
+
+---
+
+## Path toward a true knowledge graph
+
+### 1. Annotatable edges (highest value, moderate effort)
+
+Add a relationship entity or a new annotation scope that targets the triple `(source_target, field_name, dest_target)` rather than just a node. This allows a human to annotate "node__article → field_tags → taxonomy_term__tag" with a typed annotation: e.g., "this relationship classifies the article for editorial discovery, not for URL routing."
+
+This is the single change that closes the largest gap. It turns the graph from a node-annotated structure into a proper subject-predicate-object triple store where all three elements carry meaning.
+
+**AnnotationType IDs:** No new vocabulary design is required. Existing types (`description`, `editorial_note`, `ai_context`) apply to edge annotations the same way they apply to node annotations — `description` on an edge describes why that edge exists. The edge ID convention in `target_id` is the distinguishing factor, not the type. Edge-specific types (e.g. `relationship_direction`) are an escape hatch for semantics that genuinely only apply to relationships; they should not be designed upfront.
+
+#### Annotation hierarchy for edges
+
+Three levels apply, in ascending specificity:
+
+1. **Auto-inferred obvious** — no annotation required. The field name + destination type together communicate unambiguous semantics: `field_author → user`, `field_tags → taxonomy_term`, `field_image → media`. A static pattern map identifies these at edge enumeration time and marks them `inferred_obvious: true`. They pass coverage automatically.
+
+2. **Field-level annotation** — the existing `Annotation` with `target_id = source_target`, `field_name = field_name` already represents "what this field means in general." This annotation covers all destination bundles reachable via the field unless a more specific edge-level annotation exists. For a field like `field_related_content` that points to multiple bundles, one field-level annotation handles all of them.
+
+3. **Edge-level annotation** — `target_id = {source_target}__{field_name}__{dest_target}`, `field_name = ''`. Overrides the field-level annotation for a specific source→field→dest triple. Required only when the same field has meaningfully different semantics depending on destination bundle.
+
+This means the common case — annotate once at field level, done for all destinations — costs one annotation per ambiguous field. The edge-level override exists but is rarely needed.
+
+#### Relationship UI (annotations_ui)
+
+A new "Relationships" section in the `annotations_ui` module surfaces the edge graph alongside node annotations. Implementation outline:
+
+- **EdgeEnumerator service**: walks all `AnnotationTarget` configs, inspects entity-reference field definitions, enumerates all traversable `(source, field, dest)` triples, computes edge IDs, and applies the `inferred_obvious` heuristic. Output is a flat list of edge descriptors; never stored, always derived.
+- **Coverage state per edge**: `obvious` (auto-pass), `field_annotated` (field-level annotation exists), `edge_annotated` (edge-level override exists), `missing` (ambiguous field, no annotation at any level).
+- **UI display**: edge list grouped by source target, showing field name, destination target, and coverage state. Obvious edges are listed but visually de-emphasised. Clicking a field name opens the existing field annotation form pre-filled. Clicking a specific edge opens the annotation form with `target_id` pre-populated to the edge ID.
+- **Load reduction**: the `inferred_obvious` map typically covers 60–70% of edges on a real site. Annotators only act on the remainder.
+
+**What would need to change:**
+
+- `AnnotationStorageService`: add `getForEdge(source_id, field_name, dest_id)` — a thin wrapper around the existing query with a constructed `target_id` string.
+- `ContextAssembler`: when `ref_depth > 0` and an edge is followed, call `getForEdge()` and include the result in the `references` payload. Fall back to the field-level annotation if no edge annotation exists.
+- `CoverageService`: new `computeEdgeCoverage()` using the three-level hierarchy. `affects_edge_coverage` third-party setting on `AnnotationType` mirrors the existing `affects_coverage` pattern.
+- `ScanService::computeDiff()`: extend to enumerate and diff traversable edges when field target bundles change, surfacing newly reachable edges as coverage gaps.
+- `annotations_ui`: add `EdgeEnumerator` service and the Relationships section.
+
+**Remaining risk:** the naming convention for edge IDs must be documented and stable. If `AnnotationTarget` IDs ever change (rare — derived from entity type and bundle names, which are permanent), edge annotation `target_id` values would silently orphan. Acceptable given the dev-only reinstall policy.
+
+### 2. Queryable graph interface (moderate value, higher effort)
+
+Replace the static snapshot approach with a graph query API. Rather than assembling the full payload and filtering it in the consumer, allow callers to specify a starting node, traversal depth, filter predicates, and return shape.
+
+The `graphql` Drupal contrib module is the natural tool here. It exposes Drupal entities as a queryable graph via a typed schema, and the annotations entity model maps cleanly onto GraphQL types and resolvers.
+
+**Risk:** GraphQL adds a schema maintenance surface. Worth it only if multiple consumers need different subgraph shapes.
+
+### 3. Obsidian export (lower effort, immediate utility)
+
+Emit the assembled context as Obsidian-flavoured markdown: each target becomes a note, entity-reference relationships become `[[wikilinks]]`, and annotations become note body content. Obsidian's graph view and Dataview plugin provide human-readable graph visualisation and querying at zero additional infrastructure cost.
+
+This is the highest value / lowest effort starting point for two reasons. First, it delivers immediate utility for editorial navigation. Second, it functions as a coverage diagnostic: if the exported graph is navigable without edge annotations, the case for implementing them weakens. If it looks like a hairball of unlabelled connections, that confirms the gap and makes the priority concrete. The Obsidian output surfaces exactly where edge annotation precision matters before any coverage infrastructure is built.
+
+#### Implementation: annotations_export module
+
+`annotations_context` currently owns both the assembler and its markdown renderer (`ContextRenderer`) — a stateless service that turns an assembler payload into a markdown string. The preview UI and MCP/JSON endpoints depend on `ContextRenderer` directly and stay in `annotations_context`.
+
+`annotations_export` is a new sub-module that owns delivery: Drush commands and file writers. It depends on `annotations_context` for both the assembler and `ContextRenderer`, which it calls directly. The existing `annotations:context:export` Drush command moves here. The Obsidian vault writer is added alongside it.
+
+| Concern | Module |
+| --- | --- |
+| Assembly (`ContextAssembler`) | `annotations_context` |
+| Markdown rendering (`ContextRenderer`) | `annotations_context` |
+| Preview UI | `annotations_context` |
+| MCP / JSON API | `annotations_context` |
+| Drush export (`ann:ex`) | `annotations_export` |
+| Obsidian vault writer | `annotations_export` |
+
+```bash
+drush ann:ex --format=obsidian --output=/path/to/vault
+drush ann:ex --format=markdown --output=/path/to/file
+drush ann:ex                                            # markdown to stdout
+```
+
+The `obsidian` format writes one `.md` file per target:
+
+```markdown
+---
+target: node__article
+entity_type: node
+bundle: article
+tags: [annotated, 3-fields]
+---
+
+# Article
+
+{{description annotation}}
+
+## field_title
+{{field annotation}}
+
+## field_body
+{{field annotation}}
+
+## Relationships
+- [[taxonomy_term__tag]] via `field_tags` — {{edge or field annotation}}
+- [[user]] via `field_author` — (inferred: authorship)
+- [[node__article]] via `field_related_content` — {{field annotation}}
+```
+
+Each `[[wikilink]]` resolves to the corresponding target note in the vault. Obsidian's graph view connects them automatically. Dataview queries can surface unannotated nodes, edge coverage gaps, or all targets of a given type.
+
+### 4. schema.org alignment (low effort, optional)
+
+Map `AnnotationType` IDs to schema.org properties where applicable (e.g., `description`, `abstract`, `keywords`). This adds machine-readable semantics for external tools without changing the storage model.
+
+---
+
+## ECA and Modeler: what they are and what is borrowable
+
+**ECA (Event-Condition-Action)**  
+ECA is a no-code rules engine for Drupal. It processes `(event → condition → action)` models stored as config entities and executed at runtime. Its models are directed acyclic graphs. The graph structure, node configurations, and edge relationships are all serialised into a single config entity and deployed atomically via `cex`/`cim`.
+
+**Modeler API (Workflow Modeler)**  
+The Modeler API is a generic React-based visual graph editor — drag-and-drop nodes and edges on an infinite canvas. ECA is its primary consumer but it is built on a plugin API (`ModelOwner` / `Modeler`) that is genuinely domain-agnostic. The component taxonomy it exposes (`START`, `ELEMENT`, `LINK`, `GATEWAY`, `SUBPROCESS`, `SWIMLANE`, `ANNOTATION`) is workflow-oriented however, and a non-ECA use case would need to define its own mapping. Its `ANNOTATION` component type is a text note that can be assigned to other component IDs — the same concept as this module, applied to workflow nodes.
+
+**Does Modeler relate to entity relationship diagrams in Drupal?**  
+No. The Modeler's nodes and edges represent process flow, not data structure. There is no concept of entity type, field cardinality, or foreign key. A dedicated `entity_relationship_diagram` contrib module exists for schema visualisation. The Modeler canvas *could* be repurposed via a custom `ModelOwner` plugin, but it would be working against the component taxonomy. Only worth considering if a visual relationship editor becomes a priority and nothing better exists.
+
+### The trick to steal from ECA's graph storage
+
+ECA does not store edges as first-class entities. Each graph node (a `Component`) carries a `$successors` array — an adjacency list embedded directly in the source node:
+
+```php
+readonly class ComponentSuccessor {
+  public function __construct(
+    protected string $id,          // target component ID
+    protected string $conditionId, // edge label — also a component ID
+  ) {}
+}
+```
+
+The entire graph is self-contained in one config entity: traversable without JOINs, atomic on deploy, and versionable in git as a single file.
+
+**Applied here:** the `Annotation` entity's `target_id` field is already an unconstrained string — it has no foreign key enforcement. Every traversable edge in the context assembler has a derivable, stable ID: `{source_target}__{field_name}__{dest_target}`, e.g. `node__article__field_tags__taxonomy_term__tag`. An `Annotation` stored against that string as `target_id`, with `field_name = ''` (the existing bundle-level sentinel), *is* an edge annotation — with zero schema changes.
+
+This collapses the "annotatable edges" problem from "design and build a new entity" to "agree on a naming convention and wire it into the assembler." The valid edge IDs are computable from field definitions the assembler already traverses, so they never need to be stored explicitly — exactly the ECA insight applied to our model.
+
+### Other ECA relevance
+
+- **Inference layer.** ECA could react to annotation saves and create derived annotations — e.g. flagging an edge as under-described when no edge annotation exists for a traversed relationship. This avoids building a custom rules engine. Speculative until the base graph model is stable.
+
+- **ECA models as annotatable targets.** ECA models are config entities. They could be registered as `AnnotationTarget` entries, making the annotation system self-describing.
+
+---
+
+## Recommendation
+
+Start with the **Obsidian export** (`annotations_export` module, `drush ann:ex --format=obsidian`). It costs little, delivers immediate editorial utility, and functions as a coverage diagnostic — the graph view will reveal whether edge annotation gaps actually impede navigation in practice.
+
+The suite exposes two Drush commands: `ann:ex` (export, all formats) and `ann:scan`. The alias follows the `cex`/`cim` config management convention. The former `ann:ctx` command is retired; its functionality lives in `ann:ex --format=markdown`.
+
+If the Obsidian output confirms the gap, implement **annotatable edges** using the three-level hierarchy above: auto-inferred obvious edges pass automatically, field-level annotations cover the common case, edge-level annotations handle the exceptions. Reuse existing `AnnotationType` IDs throughout — no vocabulary design needed upfront.
+
+The **Relationship UI** in `annotations_ui` follows from annotatable edges: enumerate traversable edges, de-emphasise obvious ones, surface coverage state for the remainder.
+
+ECA as an inference layer is a longer-term option worth revisiting once the graph model is stable.
