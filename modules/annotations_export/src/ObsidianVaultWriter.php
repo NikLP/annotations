@@ -67,6 +67,7 @@ final class ObsidianVaultWriter {
       'target: ' . $targetData['id'],
       'entity_type: ' . $targetData['entity_type'],
       'bundle: ' . $targetData['bundle'],
+      'aliases: [' . $targetData['label'] . ']',
     ];
 
     if (!empty($tags)) {

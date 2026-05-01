@@ -27,7 +27,7 @@ final class AnnotationsExportCommands extends DrushCommands {
    * Export assembled annotations context.
    */
   #[CLI\Command(name: 'annotations:export', aliases: ['ann:ex'])]
-  #[CLI\Option(name: 'format', description: 'Output format: markdown or obsidian (default: markdown)')]
+  #[CLI\Option(name: 'format', description: 'Output format: markdown or obsidian')]
   #[CLI\Option(name: 'output', description: 'Output path. File path for markdown; directory for obsidian vault. Defaults to stdout for markdown.')]
   #[CLI\Option(name: 'target', description: 'Limit to a single annotation_target ID (e.g. node__article)')]
   #[CLI\Option(name: 'type', description: 'Limit to all targets of this entity type (e.g. node)')]
@@ -37,7 +37,7 @@ final class AnnotationsExportCommands extends DrushCommands {
   #[CLI\Option(name: 'strip-headings', description: 'Remove markdown heading markers (plain-text terminal output)')]
   #[CLI\Usage(name: 'drush ann:ex', description: 'Full site context as markdown to stdout')]
   #[CLI\Usage(name: 'drush ann:ex --output=context.md', description: 'Write markdown to file')]
-  #[CLI\Usage(name: 'drush ann:ex --format=obsidian --output=/path/to/vault', description: 'Write Obsidian vault')]
+  #[CLI\Usage(name: 'drush ann:ex --format=obsidian --output=/var/www/html/tmp/vault', description: 'Write Obsidian vault (use absolute container path to control where files land)')]
   #[CLI\Usage(name: 'drush ann:ex --target=node__article --ref-depth=1', description: 'Single target with ER traversal')]
   #[CLI\Usage(name: 'drush ann:ex --strip-headings', description: 'Plain-text output without heading markers')]
   public function export(
@@ -108,11 +108,8 @@ final class AnnotationsExportCommands extends DrushCommands {
       return;
     }
 
-    $this->io()->success(sprintf(
-      'Exported %d target(s) to %s.',
-      $payload['meta']['target_count'],
-      $output,
-    ));
+    $resolved = realpath($output) ?: $output;
+    $this->io()->success(sprintf('Exported %d target(s) to %s', $payload['meta']['target_count'], $resolved));
   }
 
   private function writeObsidian(array $payload, ?string $output): void {
@@ -129,11 +126,8 @@ final class AnnotationsExportCommands extends DrushCommands {
       return;
     }
 
-    $this->io()->success(sprintf(
-      'Exported %d target(s) to Obsidian vault at %s.',
-      $count,
-      $output,
-    ));
+    $resolved = realpath($output) ?: $output;
+    $this->io()->success(sprintf('Exported %d target(s) to %s', $count, $resolved));
   }
 
 }

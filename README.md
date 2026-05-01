@@ -69,7 +69,7 @@ Install annotations base module; enable submodules as needed.
 | `annotations_type_ui` | Agency / dev only | Stable | Browser CRUD for annotation types. Site-building tool only — use during initial setup, not for ongoing production use. |
 | `annotations_ui` | Agency + editors | Stable | Annotation editing UI with revision history and moderation controls. The primary authoring interface. |
 | `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
-| `annotations_context` | Agency / dev | Stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, Drush export (`drush ann:ctx`), JSON API endpoint, and the shared payload consumed by `annotations_context_ccc`. |
+| `annotations_context` | Agency / dev | Stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, Drush export (`drush ann:ex`, provided by `annotations_export`), JSON API endpoint, and the shared payload consumed by `annotations_context_ccc`. |
 | `annotations_context_ccc` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context (CCC)](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. Supersedes `annotations_ai_context`. |
 | `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
@@ -104,6 +104,49 @@ Every annotation target has one implicit bundle-level slot: the **overview**. Th
 Navigate to **Admin → Config → Annotations → Targets** (`/admin/config/annotations/targets`).
 
 Each Drupal entity type appears as an accordion section. Select (check) a row to bring a bundle into scope — this creates an `annotation_target` config entity with all available fields pre-included. Use **Configure** to adjust which fields are included.
+
+---
+
+## Drush commands
+
+### Inspection (root `annotations` module)
+
+Commands for querying the live state of targets, types, and annotation content. No submodules required.
+
+```bash
+# List all annotation_target config entities (field count + live annotation count)
+drush ann:targets
+drush ann:targets node            # filter by entity type
+drush ann:targets --format=json
+
+# List all annotation_type config entities (sorted by weight)
+drush ann:types
+drush ann:types --format=json
+
+# Show stored annotation content
+drush ann:show                              # all annotations (default limit 50)
+drush ann:show node__article               # single target
+drush ann:show --entity-type=node          # all node targets
+drush ann:show node__article --type=editorial
+drush ann:show node__article --field=body  # specific field
+drush ann:show node__article --field=      # bundle-level only
+drush ann:show --limit=200 --format=json
+
+# Coverage stats: annotation counts per target broken down by type
+drush ann:stats
+drush ann:stats --entity-type=node
+drush ann:stats --format=yaml
+```
+
+Use `drush list --filter=annotations` to see all registered annotations commands. Use `drush help ann:show` for full option docs.
+
+### Scan (`annotations_scan`)
+
+See [modules/annotations_scan/README.md](modules/annotations_scan/README.md) for `ann:scan` (`--diff`, `--strict`, `--fields`).
+
+### Export (`annotations_export`)
+
+See [modules/annotations_export/README.md](modules/annotations_export/README.md) for `ann:ex` (markdown and Obsidian vault export).
 
 ---
 

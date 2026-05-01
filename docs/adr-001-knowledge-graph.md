@@ -45,10 +45,13 @@ The payload is a nested array grouped by entity type, then target, then field, w
 | Inference / derived facts | No | No rules engine; all content is human-authored |
 | External ontology linking | No | No schema.org, RDF, or linked-data alignment |
 | First-class edge entities | No | Relationships are inferred from field definitions, not asserted |
+| Push / streaming surface | No | Output is pull-only (static snapshot); no webhook or event stream for agent pipelines to subscribe to |
 
 ### What this means in practice
 
 The current model tells a consumer *what* is connected and *how* (via which field). It does not say *why* the connection exists or *what the relationship means* in the domain. An AI consumer receiving this context must infer relationship semantics from field names and annotation prose — which works, but is fragile and requires the AI to fill gaps the system could state explicitly.
+
+The pull-only model also means agent pipelines must poll or request a full snapshot on demand. Agentic platform architectures (per Bain, 2025) expect real-time streaming pipelines alongside batch delivery so agents operate on current data, not stale snapshots. The Drupal-native path if push delivery is ever needed: `hook_entity_insert/update/delete` writes annotation change events to a queue; a worker pushes them to whatever the consumer is (webhook, message broker). The entity layer is clean enough to add this without schema changes. Not planned; noted as an integration gap if a live-consuming agent pipeline is introduced.
 
 ---
 
@@ -155,6 +158,22 @@ tags: [annotated, 3-fields]
 ```
 
 Each `[[wikilink]]` resolves to the corresponding target note in the vault. Obsidian's graph view connects them automatically. Dataview queries can surface unannotated nodes, edge coverage gaps, or all targets of a given type.
+
+#### Reverse direction: Obsidian vault → Drupal bootstrap
+
+The inverse operation is theoretically viable. An Obsidian vault authored as a content model — one note per content type, wikilinks as relationships, frontmatter as target metadata, note body sections as annotation prose — could drive a `drush ann:import --source=obsidian` command that:
+
+1. Reads vault `.md` files and derives `annotation_target` config entity definitions from frontmatter and note titles.
+2. Walks wikilinks to infer entity-reference field relationships between targets.
+3. Creates `Annotation` content entities from note body sections keyed by field name headings.
+
+This inverts the authoring workflow: instead of annotating an existing Drupal site to describe it, an author models the desired site structure in Obsidian first, then bootstraps Drupal config from that model. Most useful for greenfield site builds where the content model is being designed before Drupal is configured — the graph becomes the spec, not the output.
+
+The Obsidian format the export produces (section 3 above) is already structured for round-trip fidelity: frontmatter carries `target`, `entity_type`, `bundle`; field headings are machine names; `[[wikilinks]]` are target IDs. An importer would parse exactly those conventions.
+
+Not planned; noted as a potential long-term direction.
+
+---
 
 ### 4. schema.org alignment (low effort, optional)
 

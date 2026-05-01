@@ -81,6 +81,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - Scope management UI: `TargetOverviewForm`, `TargetFieldsForm`, `TargetDeleteConfirmForm`
 - Views field plugins: `AnnotationTargetLabelField`, `AnnotationFieldLabelField`, `AnnotationTypeLabelField`
 - Admin menu: Annotations top-level entry under Admin → Config
+- `AnnotationsCommands` (`src/Drush/Commands/`) — inspection commands: `annotations:targets`, `annotations:types`, `annotations:show`, `annotations:stats` (aliases `ann:targets`, `ann:types`, `ann:show`, `ann:stats`)
 
 ---
 
