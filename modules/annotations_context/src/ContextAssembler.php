@@ -477,13 +477,23 @@ class ContextAssembler {
           continue;
         }
 
-        $refs[$field_name][$ref_id] = $this->assembleTarget(
+        $assembled = $this->assembleTarget(
           $ref_target,
           $types,
           $max_depth,
           $current_depth + 1,
           $visited,
         );
+
+        // Attach any annotations on this specific relationship edge.
+        $edge_id  = $target->id() . '__' . $field_name . '__' . $ref_id;
+        $edge_raw = $this->annotationStorage->getEntityMapForTarget($edge_id, TRUE)[''] ?? [];
+        $edge_ann = $this->extractAnnotations($edge_raw, $types);
+        if (!empty($edge_ann)) {
+          $assembled['edge_annotations'] = $edge_ann;
+        }
+
+        $refs[$field_name][$ref_id] = $assembled;
       }
     }
 

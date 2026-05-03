@@ -176,10 +176,20 @@ class ContextRenderer {
 
     foreach ($references as $field_name => $ref_targets) {
       foreach ($ref_targets as $ref_data) {
-        // Include the source field context in the heading.
-        $ref_section = $this->renderTarget($ref_data, $child_level);
-        // Prepend a note about where the reference comes from.
-        $parts[] = '_via ' . $field_name . ':_' . "\n\n" . $ref_section;
+        $via = '_via ' . $field_name . ':_';
+
+        // Edge annotations describe the relationship itself; render as blockquotes before the target section.
+        if (!empty($ref_data['edge_annotations'])) {
+          $edge_lines = [];
+          foreach ($ref_data['edge_annotations'] as $annotation) {
+            foreach ($this->annotationLines($annotation) as $line) {
+              $edge_lines[] = '> ' . $line;
+            }
+          }
+          $via .= "\n\n" . implode("\n\n", $edge_lines);
+        }
+
+        $parts[] = $via . "\n\n" . $this->renderTarget($ref_data, $child_level);
       }
     }
 

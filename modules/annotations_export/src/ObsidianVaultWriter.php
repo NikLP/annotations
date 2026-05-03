@@ -130,8 +130,17 @@ final class ObsidianVaultWriter {
   private function buildRelationships(array $references): string {
     $lines = ['## Relationships'];
     foreach ($references as $fieldName => $refTargets) {
-      foreach (array_keys($refTargets) as $refId) {
+      foreach ($refTargets as $refId => $refData) {
         $lines[] = sprintf('- [[%s]] via `%s`', $refId, $fieldName);
+        // Edge annotations appear as indented sub-bullets under the wikilink.
+        foreach ($refData['edge_annotations'] ?? [] as $annotation) {
+          if ($annotation['value'] !== '') {
+            $lines[] = '  - ' . $annotation['value'];
+          }
+          foreach ($annotation['extra_fields'] ?? [] as $extra) {
+            $lines[] = '  - **' . $extra['label'] . ':** ' . implode(', ', $extra['values']);
+          }
+        }
       }
     }
     return implode("\n", $lines);

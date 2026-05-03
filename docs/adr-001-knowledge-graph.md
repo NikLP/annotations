@@ -219,6 +219,38 @@ This collapses the "annotatable edges" problem from "design and build a new enti
 
 ---
 
+## Value for in-house AI systems
+
+Businesses building internal AI — fine-tuned models, RAG pipelines, agent systems — all hit the same wall: the model knows the world but not *their* business. It doesn't know what their content types mean, what their editorial rules are, how their domain concepts relate. That gap is domain grounding, and it is exactly what a complete annotation layer addresses.
+
+The annotations suite does not produce training data in the content-volume sense. What it produces is the **knowledge layer** that makes everything else work better. The distinction matters: the annotations describe the *schema and semantics* of a business's content model; the business's actual content is the volume. Both are needed; only one is hard to produce in a structured, machine-readable form.
+
+### RAG knowledge base
+
+The context payload — structured, human-curated, relationship-aware — is superior RAG source material to anything produced by scraping the site. Raw pages carry what content *says*; annotations carry what content *means*. A RAG system grounded on annotation context answers domain questions more accurately because it is working from the ontology, not the text. The `annotations_context_ccc` integration already demonstrates this at smaller scope: agent system prompts enriched with annotation context are more precise than prompts without it.
+
+### System prompt components
+
+The assembled context payload drops directly into any agent system prompt as a reusable component. This is format-agnostic: the same JSON or markdown the assembler produces today works for CCC, for OpenAI-compatible agents, for any LLM API. No bespoke integration per agent framework.
+
+### Synthetic training data
+
+The annotation layer is a *specification* from which training data can be generated. Every content type is described, every field has annotated semantics, every relationship has (or should have) an edge annotation. From that specification you can generate schema-valid synthetic examples programmatically — diverse, correctly structured, grounded in the business's actual domain model. This is more defensible than "here is some text to train on" and scales independently of how much real content the business has published.
+
+### Evaluation grounding
+
+When a business tests whether their in-house model is behaving correctly, they need ground truth. The annotation layer is a formal description of correct domain understanding. A model output that contradicts an annotation — misidentifies a relationship, misunderstands a field's purpose, violates an editorial rule — is a measurable failure. The annotation layer can drive an evaluation harness without additional tooling.
+
+### The differentiating property: it stays current
+
+One-time documentation goes stale. The annotation layer is version-controlled config (`cex`/`cim`), regeneratable on demand, with a coverage metric showing what has drifted. As the content model evolves, the knowledge layer can be updated and re-exported. AI systems fed by it stay grounded on the current state of the business, not a snapshot from an earlier point in time.
+
+### Boundary
+
+The suite does not address content-volume training needs — style, tone, product catalogue, historical records. Those require a separate data pipeline. What the annotations suite provides is the structural and semantic layer: the ontology, the rules, the relationships. For most in-house AI use cases (internal assistants, content tooling, editorial support, agent grounding), that structural layer is the hard part the business does not know how to produce. The content volume they already have.
+
+---
+
 ## Recommendation
 
 Start with the **Obsidian export** (`annotations_export` module, `drush ann:ex --format=obsidian`). It costs little, delivers immediate editorial utility, and functions as a coverage diagnostic — the graph view will reveal whether edge annotation gaps actually impede navigation in practice.

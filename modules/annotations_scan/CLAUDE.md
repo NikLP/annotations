@@ -14,3 +14,9 @@ Crawls opted-in `annotation_target` entities and produces a structured snapshot 
 - `AnnotationsScanCommands` (`src/Drush/Commands/`) — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`
 - `administer annotations scanner` permission
 - Logger channel `annotations_scan`
+
+## Edge annotation target discovery (deferred)
+
+Edge annotations are stored as `annotation` entities with `target_id = {source}__{field}__{dest}` (e.g. `node__collection__field_products__node__product`). These edge target IDs are auto-derived by `ContextAssembler` at runtime from in-scope ER fields — no `annotation_target` config entity is created for them.
+
+When an edge annotation UI is built, `annotations_scan` should gain an edge discovery step: walk in-scope ER fields on each target, compute the edge ID, and surface discoverable edges to the UI. Until then, edge annotations can only be created via Drush or direct DB insert.
