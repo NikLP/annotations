@@ -31,6 +31,20 @@ use Symfony\Component\HttpFoundation\Response;
  *   resources/list       — enumerate all annotation targets as MCP resources
  *   resources/read       — assembled context for 1 target, rendered as markdown
  *   ping                 — keep-alive; returns empty result object
+ *
+ * Migration note (mcp_core): this class is a candidate for replacement by an
+ * McpServer + McpResource plugin pair using drupal/mcp_core (the same
+ * infrastructure the ctx module uses). The JSON-RPC boilerplate here —
+ * initialize, ping, notifications/*, error envelopes, protocol negotiation —
+ * would be absorbed by mcp_core, leaving only the resource list/read logic.
+ * Two blockers to resolve first:
+ *   1. Auth: mcp_core controls auth at the endpoint level; verify it supports
+ *      Bearer token or per-server access control before migrating (see
+ *      McpAccessCheck — Bearer token is required for headless LMS agents).
+ *   2. Separation: ctx is dev-only (PHP eval, raw SQL); this endpoint is
+ *      production-facing. Confirm mcp_core allows separate authenticated
+ *      servers rather than one shared endpoint.
+ * Note: ctx requires PHP 8.4; check mcp_core's constraint before adding it.
  */
 class ContextMcpController extends ControllerBase {
 

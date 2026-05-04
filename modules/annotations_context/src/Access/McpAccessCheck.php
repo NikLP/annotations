@@ -24,6 +24,14 @@ use Symfony\Component\Routing\Route;
  * When Bearer auth is used, sets the '_mcp_bearer_auth' request attribute so
  * ContextMcpController can omit the account filter from the assembler (giving
  * the token holder access to all annotation types, equivalent to admin).
+ *
+ * Migration note (mcp_core): this is the primary blocker for migrating to
+ * mcp_core plugins. mcp_core manages auth at the endpoint level with no
+ * Bearer token support as of beta2. Headless LMS agents that cannot hold a
+ * Drupal session depend on the Bearer path here; losing it would be a
+ * regression. Resolve this before any migration — either by contributing
+ * Bearer support to mcp_core or by keeping a thin Drupal route with this
+ * check wrapping the mcp_core dispatch.
  */
 class McpAccessCheck implements AccessInterface {
 
