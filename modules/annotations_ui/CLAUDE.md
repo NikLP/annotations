@@ -52,7 +52,7 @@ If core ever fixes `EntityOperations::entityDelete()` to query by `content_entit
 
 All entity routes use `_entity_access` checks, resolved by `AnnotationAccessControlHandler` (root module) for standard CRUD and by `hook_entity_access` in `AnnotationsUiHooks` for revision-specific operations:
 
-- `view` — any edit or delete permission, or `access annotation collection`
+- `view` — any edit or delete permission (any or per-type)
 - `update` — `edit any annotation` or `edit {bundle} annotations`
 - `delete` — `delete any annotation` or `delete {bundle} annotations`
 - `revert`, `delete revision` — requires `edit any annotation`

@@ -77,6 +77,8 @@ class AnnotationsUiHooks {
       'entity.annotation.edit_form',
       'entity.annotation.canonical',
       'annotations_ui.target.create',
+      'annotations_ui.target.edges',
+      'annotations_ui.edge.create',
     ];
   }
 

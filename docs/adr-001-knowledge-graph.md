@@ -1,7 +1,31 @@
 # ADR-001: Annotations as a Knowledge Graph — Current State and Evolution Path
 
-**Status:** Discussion  
-**Date:** 2026-04-30
+**Status:** In progress  
+**Date:** 2026-04-30  
+**Updated:** 2026-05-04
+
+## Implementation status
+
+### Done
+
+- `annotations_export` module — `ann:ex --format=markdown|obsidian`, `ObsidianVaultWriter`, Obsidian diagnostic complete
+- Edge annotation storage — `annotation` entity with `target_id = {source}__{field}__{dest}`, `field_name = ''`; zero schema changes
+- `ContextAssembler` — folds edge annotations into `references[field][dest]['edge_annotations']` when `ref_depth > 0`
+- `ContextRenderer` — renders edge annotations as blockquotes under the `_via field:_` line
+- `ObsidianVaultWriter` — renders edge annotations as indented sub-bullets under wikilinks
+- `EdgeEnumerator` service (`annotations.edge_enumerator`, root module) — derives outbound edges from in-scope ER fields; used by UI and eventually scan
+- `annotations_ui` add page — edge rows injected between Overview and Fields; `annotations_ui.edge.create` route; `createEdgeAnnotationForm()` / `createEdgeAnnotationTitle()`
+
+### Remaining — next thread
+
+**Edge coverage (`annotations_coverage`)**
+`CoverageService` does not yet factor in edges. When implemented: `computeEdgeCoverage()` using a two-level hierarchy (field_annotated → edge_annotated); `affects_edge_coverage` third-party setting on `AnnotationType`; new `edge_total`/`edge_annotated` keys in `getScore()`. See `annotations_coverage/CLAUDE.md`.
+
+**Edge discovery in scan (`annotations_scan`)**
+`ScanService` does not yet enumerate or diff edges. When implemented: walk in-scope ER fields per target, compute edge IDs, surface newly reachable edges as coverage gaps when field target bundles change. See `annotations_scan/CLAUDE.md`.
+
+**`AnnotationStorageService::getForEdge()` convenience method**
+The ADR proposed this thin wrapper. Currently callers use `getEntityMapForTarget($edge_id)` directly. Add if the pattern recurs enough to warrant naming.
 
 ---
 
@@ -39,7 +63,7 @@ The payload is a nested array grouped by entity type, then target, then field, w
 | Named edges (entity-reference) | Yes | Edge label = field name |
 | Bidirectional traversal | Partial | Forward is recursive; reverse is flat, one hop only |
 | Cycle detection | Yes | `$visited` array in assembler |
-| Annotations on edges | No | Edges carry no semantic content of their own |
+| Annotations on edges | Yes | `target_id = {source}__{field}__{dest}`, `field_name = ''`; assembled into `references[field][dest]['edge_annotations']` |
 | Typed relationship predicates | No | "references via field X" is structural, not semantic |
 | Queryable graph | No | Output is a static snapshot; no post-assembly filtering or traversal |
 | Inference / derived facts | No | No rules engine; all content is human-authored |
@@ -67,13 +91,11 @@ This is the single change that closes the largest gap. It turns the graph from a
 
 #### Annotation hierarchy for edges
 
-Three levels apply, in ascending specificity:
+Two levels apply, in ascending specificity:
 
-1. **Auto-inferred obvious** — no annotation required. The field name + destination type together communicate unambiguous semantics: `field_author → user`, `field_tags → taxonomy_term`, `field_image → media`. A static pattern map identifies these at edge enumeration time and marks them `inferred_obvious: true`. They pass coverage automatically.
+1. **Field-level annotation** — the existing `Annotation` with `target_id = source_target`, `field_name = field_name` already represents "what this field means in general." This annotation covers all destination bundles reachable via the field unless a more specific edge-level annotation exists. For a field like `field_related_content` that points to multiple bundles, one field-level annotation handles all of them.
 
-2. **Field-level annotation** — the existing `Annotation` with `target_id = source_target`, `field_name = field_name` already represents "what this field means in general." This annotation covers all destination bundles reachable via the field unless a more specific edge-level annotation exists. For a field like `field_related_content` that points to multiple bundles, one field-level annotation handles all of them.
-
-3. **Edge-level annotation** — `target_id = {source_target}__{field_name}__{dest_target}`, `field_name = ''`. Overrides the field-level annotation for a specific source→field→dest triple. Required only when the same field has meaningfully different semantics depending on destination bundle.
+2. **Edge-level annotation** — `target_id = {source_target}__{field_name}__{dest_target}`, `field_name = ''`. Overrides the field-level annotation for a specific source→field→dest triple. Required only when the same field has meaningfully different semantics depending on destination bundle.
 
 This means the common case — annotate once at field level, done for all destinations — costs one annotation per ambiguous field. The edge-level override exists but is rarely needed.
 
@@ -81,16 +103,15 @@ This means the common case — annotate once at field level, done for all destin
 
 A new "Relationships" section in the `annotations_ui` module surfaces the edge graph alongside node annotations. Implementation outline:
 
-- **EdgeEnumerator service**: walks all `AnnotationTarget` configs, inspects entity-reference field definitions, enumerates all traversable `(source, field, dest)` triples, computes edge IDs, and applies the `inferred_obvious` heuristic. Output is a flat list of edge descriptors; never stored, always derived.
-- **Coverage state per edge**: `obvious` (auto-pass), `field_annotated` (field-level annotation exists), `edge_annotated` (edge-level override exists), `missing` (ambiguous field, no annotation at any level).
-- **UI display**: edge list grouped by source target, showing field name, destination target, and coverage state. Obvious edges are listed but visually de-emphasised. Clicking a field name opens the existing field annotation form pre-filled. Clicking a specific edge opens the annotation form with `target_id` pre-populated to the edge ID.
-- **Load reduction**: the `inferred_obvious` map typically covers 60–70% of edges on a real site. Annotators only act on the remainder.
+- **EdgeEnumerator service**: walks all `AnnotationTarget` configs, inspects entity-reference field definitions, enumerates all traversable `(source, field, dest)` triples, computes edge IDs. Output is a flat list of edge descriptors; never stored, always derived.
+- **Coverage state per edge**: `field_annotated` (field-level annotation exists), `edge_annotated` (edge-level override exists), `missing` (no annotation at any level).
+- **UI display**: edge list grouped by source target showing field name, destination target, and coverage state. Add links for unannotated types; Edit links for existing annotations.
 
 **What would need to change:**
 
 - `AnnotationStorageService`: add `getForEdge(source_id, field_name, dest_id)` — a thin wrapper around the existing query with a constructed `target_id` string.
 - `ContextAssembler`: when `ref_depth > 0` and an edge is followed, call `getForEdge()` and include the result in the `references` payload. Fall back to the field-level annotation if no edge annotation exists.
-- `CoverageService`: new `computeEdgeCoverage()` using the three-level hierarchy. `affects_edge_coverage` third-party setting on `AnnotationType` mirrors the existing `affects_coverage` pattern.
+- `CoverageService`: new `computeEdgeCoverage()` using the two-level hierarchy (field_annotated → edge_annotated). `affects_edge_coverage` third-party setting on `AnnotationType` mirrors the existing `affects_coverage` pattern.
 - `ScanService::computeDiff()`: extend to enumerate and diff traversable edges when field target bundles change, surfacing newly reachable edges as coverage gaps.
 - `annotations_ui`: add `EdgeEnumerator` service and the Relationships section.
 
@@ -244,6 +265,14 @@ When a business tests whether their in-house model is behaving correctly, they n
 ### The differentiating property: it stays current
 
 One-time documentation goes stale. The annotation layer is version-controlled config (`cex`/`cim`), regeneratable on demand, with a coverage metric showing what has drifted. As the content model evolves, the knowledge layer can be updated and re-exported. AI systems fed by it stay grounded on the current state of the business, not a snapshot from an earlier point in time.
+
+### LLM-readable export surface (llms.txt)
+
+The assembled annotation payload is already a structured, machine-readable description of a site's content model. Exposing it as an `llms.txt`-style file (analogous to `robots.txt`, an emerging convention for site-level LLM context) costs almost nothing on top of the existing `ann:ex --format=markdown` output. A site-level endpoint or drush-written file at `llms.txt` would let any LLM-aware toolchain discover and load the annotation layer without bespoke integration. The `annotations_context` JSON endpoint already provides the richer structured form; `llms.txt` is the low-friction human-and-machine-readable complement. Not planned; worth a small spike if the module needs a demo-friendly "drop this on your site and LLMs understand it" story.
+
+### Annotations as a persistent memory layer
+
+RAG treats content as a retrieval corpus at inference time. Memory is different: state that persists *between* LLM interactions — facts, user preferences, episodic context — so later sessions have continuity. The annotation entity model maps onto this directly. Annotation types become memory categories (fact, preference, observation, episode); annotation targets tie memories to the specific content they are *about* rather than floating them in a disconnected key-value store. The `consume {type} annotations` permission model lets an AI agent read certain memory categories but not others. The write path is the current gap: annotations are human-authored today, and an AI agent creating annotations as memories would need a lightweight POST pattern (JSON:API or a thin custom endpoint). This is a small addition. The differentiator over purpose-built LLM memory stores (Mem0, conversation-level summaries) is content-linkage: a memory is anchored to the node, paragraph, or field it concerns, not just to a session. No other system in the Drupal ecosystem provides that.
 
 ### Boundary
 

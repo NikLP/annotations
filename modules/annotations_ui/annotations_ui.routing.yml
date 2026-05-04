@@ -72,3 +72,30 @@ annotations_ui.target.create:
       annotation_target:
         type: entity:annotation_target
     no_cache: TRUE
+
+annotations_ui.target.edges:
+  path: '/admin/content/annotations/{annotation_target}/edges'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::edgesPage'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::edgesTitle'
+  requirements:
+    _permission: 'access annotation collection'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+
+annotations_ui.edge.create:
+  path: '/admin/content/annotations/{annotation_target}/edge/{edge_field}/{dest_target}/{type_id}'
+  defaults:
+    _controller: '\Drupal\annotations_ui\Controller\AnnotationController::createEdgeAnnotationForm'
+    _title_callback: '\Drupal\annotations_ui\Controller\AnnotationController::createEdgeAnnotationTitle'
+  requirements:
+    _custom_access: '\Drupal\annotations_ui\Controller\AnnotationController::createAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+    no_cache: TRUE

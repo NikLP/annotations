@@ -47,7 +47,6 @@ class AnnotationAccessControlHandler extends EntityAccessControlHandler {
         ->orIf(AccessResult::allowedIfHasPermission($account, 'edit ' . $bundle . ' annotations'))
         ->orIf(AccessResult::allowedIfHasPermission($account, 'delete any annotation'))
         ->orIf(AccessResult::allowedIfHasPermission($account, 'delete ' . $bundle . ' annotations'))
-        ->orIf(AccessResult::allowedIfHasPermission($account, 'access annotation collection'))
         ->cachePerPermissions(),
 
       default => AccessResult::neutral(),
