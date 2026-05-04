@@ -61,6 +61,10 @@ class ContextPreviewController extends ControllerBase {
    */
   public function page(Request $request): array {
     $options = $this->optionsFromRequest($request);
+    if (!isset($options['role'])) {
+      $options['account'] = $this->currentUser();
+    }
+    
     $payload = $this->assembler->assemble($options);
 
     $build = [];
@@ -188,7 +192,10 @@ class ContextPreviewController extends ControllerBase {
    * Raw markdown download.
    */
   public function export(Request $request): Response {
-    $options  = $this->optionsFromRequest($request);
+    $options = $this->optionsFromRequest($request);
+    if (!isset($options['role'])) {
+      $options['account'] = $this->currentUser();
+    }
     $payload  = $this->assembler->assemble($options);
     $markdown = $this->markdownRenderer->render($payload);
 

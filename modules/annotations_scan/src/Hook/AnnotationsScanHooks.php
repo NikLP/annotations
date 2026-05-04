@@ -40,9 +40,7 @@ class AnnotationsScanHooks {
   #[Hook('cron')]
   public function cron(): void {
     $result = $this->scanner->scan();
-    if (!empty($result)) {
-      $this->scanner->saveSnapshot($result);
-    }
+    $this->scanner->saveSnapshot($result);
   }
 
 }

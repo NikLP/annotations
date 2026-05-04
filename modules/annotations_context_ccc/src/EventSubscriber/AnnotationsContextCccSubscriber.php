@@ -10,6 +10,7 @@ use Drupal\annotations_context\ContextRenderer;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -30,6 +31,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
     private readonly ContextRenderer $renderer,
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly RouteMatchInterface $routeMatch,
+    private readonly AccountProxyInterface $currentUser,
   ) {}
 
   /**
@@ -50,7 +52,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
       return;
     }
 
-    $options = ['types' => $types];
+    $options = ['types' => $types, 'account' => $this->currentUser];
 
     $target_id = $this->resolveTargetId($event->getTokens());
     if ($target_id !== NULL) {
@@ -137,7 +139,7 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
         && $this->entityTypeManager->hasDefinition($tokens['entity_type'])) {
 
       $entity = $this->entityTypeManager->getStorage($tokens['entity_type'])->load($tokens['entity_id']);
-      if ($entity instanceof EntityInterface) {
+      if ($entity instanceof EntityInterface && $entity->access('view')) {
         return $entity;
       }
     }

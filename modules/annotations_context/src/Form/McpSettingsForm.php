@@ -40,7 +40,8 @@ class McpSettingsForm extends ConfigFormBase {
 
     $form['mcp']['description'] = [
       '#type'   => 'item',
-      '#markup' => '<p>' . $this->t('Use this key in the Authorization: Bearer header when calling POST /api/annotations/mcp from a local MCP client.') . '</p>',
+      '#markup' => '<p>' . $this->t('Use this key in the Authorization: Bearer header when calling POST /api/annotations/mcp from a local MCP client.') . '</p>'
+        . '<p>' . $this->t('This token grants access to all annotation types enabled for AI context, regardless of role. Treat it as a privileged API secret and store it outside version control (e.g. via the Key module).') . '</p>',
     ];
 
     if ($key !== '') {

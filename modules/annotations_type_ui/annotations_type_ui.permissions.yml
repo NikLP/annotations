@@ -1,3 +1,4 @@
 administer annotation types:
   title: 'Administer annotation types'
   description: 'Create, edit, and delete annotation type configuration.'
+  restrict access: true

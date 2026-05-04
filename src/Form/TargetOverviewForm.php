@@ -180,7 +180,7 @@ class TargetOverviewForm extends FormBase {
             '#default_value' => (int) $is_selected,
             '#parents' => ['targets', $entity_type_id, $target_key],
           ],
-          'label' => ['#markup' => $target_label],
+          'label' => ['#plain_text' => $target_label],
           'coverage' => $coverage_cell,
           'operations' => $operations_cell,
         ];

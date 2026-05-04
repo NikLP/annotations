@@ -76,7 +76,7 @@ class ContextApiController extends ControllerBase {
       $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
     ));
     // Fold in cache metadata contributed by hook_annotations_context_alter().
-    $meta->merge($this->assembler->getLastCacheableMetadata());
+    $meta = $meta->merge($this->assembler->getLastCacheableMetadata());
 
     $response = new CacheableJsonResponse($payload);
     $response->addCacheableDependency($meta);

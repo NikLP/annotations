@@ -666,7 +666,7 @@ class AnnotationsOverlayHooks {
 
     $html = '<div class="annotations-chooser">';
     if ($existing_description !== '') {
-      $html .= '<div class="annotations-chooser__description">' . $existing_description . '</div>';
+      $html .= '<div class="annotations-chooser__description">' . Html::escape($existing_description) . '</div>';
     }
     $html .= '<div class="annotations-chooser__annotations">' . $items_html . '</div>';
     $html .= '</div>';

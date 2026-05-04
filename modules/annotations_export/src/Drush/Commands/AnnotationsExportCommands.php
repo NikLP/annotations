@@ -25,6 +25,10 @@ final class AnnotationsExportCommands extends DrushCommands {
 
   /**
    * Export assembled annotations context.
+   *
+   * Runs without an account filter: all annotation types are included
+   * regardless of consume permissions. This is intentional — Drush runs as a
+   * privileged caller. Use --types to limit output when needed.
    */
   #[CLI\Command(name: 'annotations:export', aliases: ['ann:ex'])]
   #[CLI\Option(name: 'format', description: 'Output format: markdown or obsidian')]

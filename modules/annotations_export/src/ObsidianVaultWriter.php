@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_export;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Writes a ContextAssembler payload as an Obsidian markdown vault.
  *
@@ -62,21 +64,18 @@ final class ObsidianVaultWriter {
       $tags[] = $fieldCount . '-fields';
     }
 
-    $lines = [
-      '---',
-      'target: ' . $targetData['id'],
-      'entity_type: ' . $targetData['entity_type'],
-      'bundle: ' . $targetData['bundle'],
-      'aliases: [' . $targetData['label'] . ']',
+    $data = [
+      'target'      => $targetData['id'],
+      'entity_type' => $targetData['entity_type'],
+      'bundle'      => $targetData['bundle'],
+      'aliases'     => [$targetData['label']],
     ];
-
     if (!empty($tags)) {
-      $lines[] = 'tags: [' . implode(', ', $tags) . ']';
+      $data['tags'] = $tags;
     }
 
-    $lines[] = '---';
-
-    return implode("\n", $lines) . "\n";
+    // Inline level 2 keeps scalars on one line while arrays stay as [a, b].
+    return "---\n" . Yaml::dump($data, 2, 2) . "---\n";
   }
 
   private function buildBody(array $targetData): string {

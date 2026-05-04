@@ -257,8 +257,14 @@ class ContextAssembler {
     if ($role !== NULL) {
       /** @var \Drupal\user\RoleInterface|null $role_entity */
       $role_entity = $this->entityTypeManager->getStorage('user_role')->load($role);
+
+      if ($role_entity === NULL) {
+        // Unknown role ID — return nothing rather than leaking all types.
+        return [];
+      }
+      
       // Admin roles bypass all permission checks — filtering is meaningless.
-      if ($role_entity !== NULL && !$role_entity->isAdmin()) {
+      if (!$role_entity->isAdmin()) {
         $all = array_filter($all, fn($t) => $role_entity->hasPermission($t->getConsumePermission()));
       }
     }
