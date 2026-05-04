@@ -21,7 +21,7 @@ class AnnotationsCoverageHooks {
   ) {}
 
   /**
-   * Registers the annotations_coverage_gap_section theme hook.
+   * Registers theme hooks for annotations_coverage.
    */
   #[Hook('theme')]
   public function theme(): array {
@@ -32,6 +32,12 @@ class AnnotationsCoverageHooks {
           'visually_hidden_prefix' => NULL,
           'items' => [],
           'modifier' => '',
+        ],
+      ],
+      'annotations_coverage_gap_details' => [
+        'variables' => [
+          'summary' => NULL,
+          'content' => [],
         ],
       ],
     ];

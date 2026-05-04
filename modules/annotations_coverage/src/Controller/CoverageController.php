@@ -247,11 +247,13 @@ class CoverageController extends ControllerBase {
     }
 
     return [
-      '#prefix' => '<details class="annotations-report__gaps" name="annotations-report-gaps"><summary>' . Html::escape($summary_text) . '</summary>',
-      '#suffix' => '</details>',
-      'empty'    => $this->buildCompletelyEmptySection($target, $missing, $all_types, $field_labels),
-      'tracked'  => $this->buildGapSection((string) $this->t('Tracked types'), $tracked_types, $missing, 'tracked', $field_labels),
-      'optional' => $this->buildGapSection((string) $this->t('Optional types'), $optional_types, $missing, 'optional', $field_labels),
+      '#theme'   => 'annotations_coverage_gap_details',
+      '#summary' => $summary_text,
+      '#content' => [
+        'empty'    => $this->buildCompletelyEmptySection($target, $missing, $all_types, $field_labels),
+        'tracked'  => $this->buildGapSection((string) $this->t('Tracked types'), $tracked_types, $missing, 'tracked', $field_labels),
+        'optional' => $this->buildGapSection((string) $this->t('Optional types'), $optional_types, $missing, 'optional', $field_labels),
+      ],
     ];
   }
 
