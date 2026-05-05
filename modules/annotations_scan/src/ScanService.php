@@ -89,7 +89,7 @@ class ScanService {
     $now = time();
 
     foreach ($result as $target_id => $data) {
-      $this->database->merge('annotations_scan_snapshot')
+      $this->database->merge('annotations_scan')
         ->key('target_id', $target_id)
         ->fields([
           'data' => \json_encode($data),
@@ -100,12 +100,12 @@ class ScanService {
 
     // Remove rows for targets no longer in scope.
     if (!empty($result)) {
-      $this->database->delete('annotations_scan_snapshot')
+      $this->database->delete('annotations_scan')
         ->condition('target_id', array_keys($result), 'NOT IN')
         ->execute();
     }
     else {
-      $this->database->truncate('annotations_scan_snapshot')->execute();
+      $this->database->truncate('annotations_scan')->execute();
     }
 
     $this->logger->info('Annotations Scan: snapshot saved for @count target(s).', [
@@ -121,7 +121,7 @@ class ScanService {
    *   if no snapshot exists.
    */
   public function loadSnapshot(): array {
-    $rows = $this->database->select('annotations_scan_snapshot', 's')
+    $rows = $this->database->select('annotations_scan', 's')
       ->fields('s', ['target_id', 'data'])
       ->execute()
       ->fetchAllKeyed();
@@ -188,6 +188,20 @@ class ScanService {
       'removed' => $removed,
       'changed' => $changed,
     ];
+  }
+
+  /**
+   * Returns the Unix timestamp of the last saved snapshot, or NULL if none.
+   */
+  public function getLastScanTimestamp(): ?int {
+    $saved = $this->database->select('annotations_scan', 's')
+      ->fields('s', ['saved'])
+      ->orderBy('saved', 'DESC')
+      ->range(0, 1)
+      ->execute()
+      ->fetchField();
+
+    return $saved !== FALSE ? (int) $saved : NULL;
   }
 
   /**

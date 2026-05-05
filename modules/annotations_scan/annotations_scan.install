@@ -12,7 +12,7 @@ declare(strict_types=1);
  */
 function annotations_scan_schema(): array {
   return [
-    'annotations_scan_snapshot' => [
+    'annotations_scan' => [
       'description' => 'Stores the last accepted scan result per annotation target.',
       'fields' => [
         'target_id' => [
@@ -38,4 +38,11 @@ function annotations_scan_schema(): array {
       'primary key' => ['target_id'],
     ],
   ];
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function annotations_scan_uninstall(): void {
+  \Drupal::database()->schema()->dropTable('annotations_scan');
 }

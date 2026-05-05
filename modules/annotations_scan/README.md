@@ -27,11 +27,11 @@ This module is optional. Sites where targets are pre-configured via a recipe or 
 1. Loads all opted-in, enabled `annotation_target` config entities.
 2. Calls each target's plugin `discover()` method.
 3. Returns a structured result keyed by `{entity_type}__{bundle}`.
-4. Saves the result as a snapshot to the `annotations_scan_snapshot` database table.
+4. Saves the result as a snapshot to the `annotations_scan` database table.
 
 It also provides:
 
-- A manual scan trigger at **Admin → Config → Annotations → Scanner** (`/admin/config/annotations/scanner`). Each manual run saves a new snapshot.
+- A scanner admin page at **Admin → Config → Annotations → Scanner** (`/admin/config/annotations/scanner`) showing last scan time, a table of all discovered targets from the stored snapshot, and a "Run scan now" button. Each manual run saves a new snapshot.
 - Cron integration — runs a full scan and saves a snapshot on each cron run.
 - Drush commands for CI and pre-commit hook use (see below).
 
@@ -116,7 +116,7 @@ $has_changes = $scanner->diffHasChanges($diff);
 
 ### Snapshot table
 
-`annotations_scan_snapshot` — one row per `{entity_type}__{bundle}` target:
+`annotations_scan` — one row per `{entity_type}__{bundle}` target:
 
 | Column | Type | Notes |
 | --- | --- | --- |

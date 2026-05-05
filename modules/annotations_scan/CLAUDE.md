@@ -10,16 +10,17 @@ Crawls opted-in `annotation_target` entities and produces a structured snapshot 
 
 - `ScanService` (`annotations_scan.scanner`) — iterates opted-in targets via `DiscoveryService`, calls each plugin's `discover()`, returns structured result; also owns snapshot persistence and diff logic:
   - `scan()` — runs discovery, returns `array<target_id, data>`
-  - `saveSnapshot(array $result)` — persists result to `annotations_scan_snapshot`, removing stale rows
+  - `saveSnapshot(array $result)` — persists result to `annotations_scan`, removing stale rows
   - `loadSnapshot()` — returns last saved snapshot keyed by target ID
   - `computeDiff(array $current, array $stored)` — returns `['added' => ..., 'removed' => ..., 'changed' => ...]`
   - `diffHasChanges(array $diff)` — returns `bool`
-- `ScanController` — admin page at `/admin/config/annotations/scanner`; overview + "Run scan now" button
+  - `getLastScanTimestamp()` — returns `?int` (unix timestamp of last save, or NULL)
+- `ScanController` — admin page at `/admin/config/annotations/scanner`; shows last scan timestamp, snapshot target table, and "Run scan now" button; injects `ScanService` + `DateFormatterInterface`
 - `AnnotationsScanHooks` (`src/Hook/`) — `hook_help`, `hook_cron`; `.module` is an empty stub
 - `AnnotationsScanCommands` (`src/Drush/Commands/`) — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`, `--diff`, `--strict`
 - `administer annotations scanner` permission
 - Logger channel `annotations_scan`
-- DB table: `annotations_scan_snapshot` (`target_id` PK, `data` longblob JSON, `saved` unix timestamp)
+- DB table: `annotations_scan` (`target_id` PK, `data` longblob JSON, `saved` unix timestamp)
 
 ## Edge annotation target discovery (deferred)
 
