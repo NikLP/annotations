@@ -105,6 +105,8 @@ $diff = $scanner->computeDiff($result, $stored);
 //       'fields_added'   => ['field_name', ...],
 //       'fields_removed' => ['field_name', ...],
 //       'fields_changed' => ['field_name', ...],  // any property change
+//       'edges_added'    => ['edge_id', ...],
+//       'edges_removed'  => ['edge_id', ...],
 //     ],
 //     ...
 //   ],
@@ -113,6 +115,32 @@ $diff = $scanner->computeDiff($result, $stored);
 // Check whether a diff contains any changes.
 $has_changes = $scanner->diffHasChanges($diff);
 ```
+
+### Scan result structure
+
+Each entry in `$result` (and in the stored snapshot) is keyed by `{entity_type}__{bundle}`:
+
+```php
+'node__article' => [
+  'entity_type' => 'node',
+  'label'       => 'Article',
+  'fields'      => [
+    'field_body' => ['label' => 'Body', 'type' => 'text_long', ...],
+  ],
+  'edges' => [
+    // Keyed by edge ID: {source}__{field}__{dest}
+    'node__article__field_products__node__product' => [
+      'edge_id'     => 'node__article__field_products__node__product',
+      'field_name'  => 'field_products',
+      'field_label' => 'Products',
+      'dest_id'     => 'node__product',
+      'dest_label'  => 'Product',
+    ],
+  ],
+],
+```
+
+`edges` is always present after a scan. It is empty for targets with no in-scope ER fields pointing to other registered targets, and always empty for non-fieldable targets (roles, views, menus). Edge IDs follow the convention `{source}__{field}__{dest}`.
 
 ### Snapshot table
 

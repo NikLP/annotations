@@ -11,6 +11,7 @@ services:
       - '@logger.channel.annotations_scan'
       - '@annotations.discovery'
       - '@database'
+      - '@annotations.edge_enumerator'
 
   Drupal\annotations_scan\ScanService:
     alias: annotations_scan.scanner

@@ -57,10 +57,12 @@ class ScanController extends ControllerBase {
       $rows = [];
       foreach ($snapshot as $target_id => $data) {
         $field_count = count($data['fields'] ?? []);
+        $edge_count  = count($data['edges'] ?? []);
         $rows[] = [
           $target_id,
           $data['label'] ?? '',
           $field_count ?: $this->t('(none)'),
+          $edge_count  ?: $this->t('(none)'),
         ];
       }
 
@@ -70,6 +72,7 @@ class ScanController extends ControllerBase {
           $this->t('Target'),
           $this->t('Label'),
           $this->t('Fields'),
+          $this->t('Edges'),
         ],
         '#rows' => $rows,
         '#empty' => $this->t('No targets in snapshot.'),

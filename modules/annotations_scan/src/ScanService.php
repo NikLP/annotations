@@ -7,6 +7,7 @@ namespace Drupal\annotations_scan;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\annotations\AnnotationDiscoveryService;
+use Drupal\annotations\EdgeEnumerator;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -31,6 +32,7 @@ class ScanService {
     protected LoggerInterface $logger,
     protected AnnotationDiscoveryService $discovery,
     protected Connection $database,
+    protected EdgeEnumerator $edgeEnumerator,
   ) {}
 
   /**
@@ -66,6 +68,13 @@ class ScanService {
           '@plugin' => get_class($plugin),
           '@message' => $e->getMessage(),
         ]);
+      }
+    }
+
+    // Attach outbound annotation edges to each discovered target.
+    foreach ($scopes as $target_id => $target) {
+      if (isset($result[$target_id])) {
+        $result[$target_id]['edges'] = $this->edgeEnumerator->getEdges($target);
       }
     }
 
@@ -152,7 +161,8 @@ class ScanService {
    *   added: array<string, array<string, mixed>>,
    *   removed: array<string, array<string, mixed>>,
    *   changed: array<string, array{fields_added: list<string>,
-   *   fields_removed: list<string>, fields_changed: list<string>}>
+   *   fields_removed: list<string>, fields_changed: list<string>,
+   *   edges_added: list<string>, edges_removed: list<string>}>
    *   }
    */
   public function computeDiff(array $current, array $stored): array {
@@ -174,11 +184,18 @@ class ScanService {
         }
       }
 
-      if ($fields_added || $fields_removed || $fields_changed) {
+      $current_edges = $current_data['edges'] ?? [];
+      $stored_edges  = $stored[$target_id]['edges'] ?? [];
+      $edges_added   = array_values(array_diff(array_keys($current_edges), array_keys($stored_edges)));
+      $edges_removed = array_values(array_diff(array_keys($stored_edges), array_keys($current_edges)));
+
+      if ($fields_added || $fields_removed || $fields_changed || $edges_added || $edges_removed) {
         $changed[$target_id] = [
-          'fields_added' => $fields_added,
+          'fields_added'   => $fields_added,
           'fields_removed' => $fields_removed,
           'fields_changed' => $fields_changed,
+          'edges_added'    => $edges_added,
+          'edges_removed'  => $edges_removed,
         ];
       }
     }
@@ -227,6 +244,7 @@ class ScanService {
       if (!$scope->status()) {
         continue;
       }
+      
       $key = $scope->getTargetEntityTypeId() . '__' . $scope->getBundle();
       $indexed[$key] = $scope;
     }

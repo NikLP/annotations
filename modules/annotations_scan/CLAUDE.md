@@ -8,22 +8,45 @@ Crawls opted-in `annotation_target` entities and produces a structured snapshot 
 
 ## What it owns
 
-- `ScanService` (`annotations_scan.scanner`) — iterates opted-in targets via `DiscoveryService`, calls each plugin's `discover()`, returns structured result; also owns snapshot persistence and diff logic:
-  - `scan()` — runs discovery, returns `array<target_id, data>`
+- `ScanService` (`annotations_scan.scanner`) — iterates opted-in targets via `DiscoveryService`, calls each plugin's `discover()`, attaches outbound edges via `EdgeEnumerator`, returns structured result; also owns snapshot persistence and diff logic:
+  - `scan()` — runs discovery + edge enumeration, returns `array<target_id, data>`; each entry may contain an `edges` key (see snapshot structure below)
   - `saveSnapshot(array $result)` — persists result to `annotations_scan`, removing stale rows
   - `loadSnapshot()` — returns last saved snapshot keyed by target ID
-  - `computeDiff(array $current, array $stored)` — returns `['added' => ..., 'removed' => ..., 'changed' => ...]`
+  - `computeDiff(array $current, array $stored)` — returns `['added' => ..., 'removed' => ..., 'changed' => ...]`; `changed` entries include `edges_added` and `edges_removed` alongside `fields_*`
   - `diffHasChanges(array $diff)` — returns `bool`
   - `getLastScanTimestamp()` — returns `?int` (unix timestamp of last save, or NULL)
-- `ScanController` — admin page at `/admin/config/annotations/scanner`; shows last scan timestamp, snapshot target table, and "Run scan now" button; injects `ScanService` + `DateFormatterInterface`
+- `ScanController` — admin page at `/admin/config/annotations/scanner`; shows last scan timestamp, snapshot target table (Target, Label, Fields, Edges), and "Run scan now" button; injects `ScanService` + `DateFormatterInterface`
 - `AnnotationsScanHooks` (`src/Hook/`) — `hook_help`, `hook_cron`; `.module` is an empty stub
 - `AnnotationsScanCommands` (`src/Drush/Commands/`) — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`, `--diff`, `--strict`
 - `administer annotations scanner` permission
 - Logger channel `annotations_scan`
 - DB table: `annotations_scan` (`target_id` PK, `data` longblob JSON, `saved` unix timestamp)
 
-## Edge annotation target discovery (deferred)
+## Snapshot structure
 
-Edge annotations are stored as `annotation` entities with `target_id = {source}__{field}__{dest}` (e.g. `node__collection__field_products__node__product`). These edge target IDs are auto-derived by `ContextAssembler` at runtime from in-scope ER fields — no `annotation_target` config entity is created for them.
+Each entry in the scan result (and stored snapshot) is keyed by `{entity_type}__{bundle}` and has the shape:
 
-When an edge annotation UI is built, `annotations_scan` should gain an edge discovery step: walk in-scope ER fields on each target, compute the edge ID, and surface discoverable edges to the UI. Until then, edge annotations can only be created via Drush or direct DB insert.
+```php
+[
+  'entity_type' => 'node',
+  'label'       => 'Article',
+  'fields'      => [
+    'field_body' => ['label' => 'Body', 'type' => 'text_long', ...],
+    // ...
+  ],
+  'edges' => [
+    // Keyed by edge ID: {source}__{field}__{dest}
+    'node__article__field_products__node__product' => [
+      'edge_id'     => 'node__article__field_products__node__product',
+      'field_name'  => 'field_products',
+      'field_label' => 'Products',
+      'dest_id'     => 'node__product',
+      'dest_label'  => 'Product',
+    ],
+  ],
+]
+```
+
+`edges` is always present after a scan but may be empty (`[]`) for targets with no in-scope ER fields pointing to other registered targets. Edge IDs follow `EdgeEnumerator`'s convention (`{source}__{field}__{dest}`). Non-fieldable targets (roles, views, menus) always have an empty `edges` map.
+
+Edge discovery uses `EdgeEnumerator` (`annotations.edge_enumerator`) from the root module — no dependency on `annotations_context`.

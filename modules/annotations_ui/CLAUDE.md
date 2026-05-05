@@ -9,7 +9,10 @@ Provides the annotation editing UI. Editors write overview text and per-field an
 ## What it owns
 
 - `AnnotationEditForm` — full `ContentEntityForm` for a single `annotation` entity. Primary editing interface. Gets `content_moderation_control` widget, revision log field, and language tabs automatically. `show_revision_ui = TRUE` on the entity type, so the "Create new revision" checkbox and log message appear in the Gin sidebar (checkbox defaults to checked; content_moderation hides it when `annotations_workflows` is installed). At `/admin/content/annotations/value/{annotation}/edit`.
-- `AnnotationController` — landing page, per-target records page (embeds the `annotations_target` view), add-new-annotations table, and the create-annotation form (renders `AnnotationEditForm` for new entities).
+- `AnnotationController` — landing page, per-target records page (embeds the `annotations_target` view), add-new-annotations table, the create-annotation form (renders `AnnotationEditForm` for new entities), and the edge annotation UI:
+  - `edgesPage(AnnotationTarget $annotation_target)` — lists all outbound annotation edges for a target (route `annotations_ui.target.edges`); each edge row shows existing annotations and Add links per type.
+  - `createEdgeAnnotationForm(AnnotationTarget $annotation_target, string $edge_field, string $dest_target, string $type_id)` — returns `AnnotationEditForm` pre-populated for a new edge annotation (route `annotations_ui.edge.create`). Validates the edge via `EdgeEnumerator::getEdges()` before rendering.
+  - Injects `EdgeEnumerator` (`annotations.edge_enumerator`) from the root module.
 - Revision history and per-revision view via core's `VersionHistoryController` / `EntityRevisionViewController` / `RevisionRevertForm` / `RevisionDeleteForm` — registered automatically by `RevisionHtmlRouteProvider`.
 - `AnnotationDeleteForm`, `AnnotationViewController`.
 - `AnnotationsUiHooks` — registers form classes, link templates, and route providers (`AdminHtmlRouteProvider`, `RevisionHtmlRouteProvider`) on `annotation`; registers Gin content-form routes; grants revision-only access via `hook_entity_access` (standard CRUD is handled by `AnnotationAccessControlHandler` in the root module).
