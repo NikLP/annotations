@@ -1,6 +1,6 @@
 name: 'Annotations Export'
 type: module
-description: 'Drush-based export of assembled annotation context. Supports markdown (file) and Obsidian vault formats.'
+description: 'Drush-based export of assembled annotation context. Supports formats: markdown file, Obsidian vault.'
 package: Annotations
 core_version_requirement: ^11
 dependencies:

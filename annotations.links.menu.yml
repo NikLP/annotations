@@ -15,7 +15,7 @@ annotations.admin.targets:
 annotations.admin.target_types:
   title: 'Manage target types'
   parent: annotations.admin
-  description: 'Manage target entity types for annotation.'
+  description: 'Manage entity types for annotation targets.'
   route_name: annotations.configure
   weight: 10
 
