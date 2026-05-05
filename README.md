@@ -73,7 +73,7 @@ Install annotations base module; enable submodules as needed.
 | `annotations_context_ccc` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context (CCC)](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. Supersedes `annotations_ai_context`. |
 | `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
-| `annotations_scan` | Agency / dev | WIP | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI and `drush annotations:scan` command. Snapshot storage and `--diff`/`--strict` flags are parked pending `annotations_delta`. |
+| `annotations_scan` | Agency / dev | Stable | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
 | `annotations_ai_context` | — | Deprecated | Deprecated prototype. Superseded by `annotations_context_ccc`. Do not enable alongside it. |
 | `annotations_demo` | Dev / evaluation | Stable | Ships the default editorial/technical/rules annotation types, form displays, a sample target, and starter content. Install for dev or evaluation; omit for blank-slate production. |
 

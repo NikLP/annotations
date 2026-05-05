@@ -123,9 +123,3 @@ $has_changes = $scanner->diffHasChanges($diff);
 | `target_id` | `varchar(255)` PK | `{entity_type}__{bundle}` |
 | `data` | `longblob` | JSON-encoded scan result for this target |
 | `saved` | `int unsigned` | Unix timestamp of last save |
-
----
-
-## What's still missing
-
-- **`annotations_delta` module** — not started. The snapshot layer here is the foundation for `annotations_delta`, which is intended to expose change-detection output as a higher-level reporting surface (dashboard, notification triggers, etc.).

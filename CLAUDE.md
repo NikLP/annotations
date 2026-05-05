@@ -16,8 +16,7 @@ annotations/                ← root module (always required)
     ├── annotations_overlay/        ← CLAUDE.md, README.md
     ├── annotations_workflows/      ← CLAUDE.md, README.md
     ├── annotations_scan/           ← CLAUDE.md, README.md
-    ├── annotations_demo/           ← default types, form displays, starter content
-    └── annotations_delta/          ← not started
+    └── annotations_demo/           ← default types, form displays, starter content
 ```
 
 Each submodule has its own `CLAUDE.md`. This file covers the root module, cross-cutting conventions, the data model, and design decisions.
@@ -89,7 +88,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 
 | Module | Purpose |
 | --- | --- |
-| `annotations_scan` | Crawls opted-in targets; manual trigger + cron |
+| `annotations_scan` | Crawls opted-in targets; manual trigger + cron; snapshot storage; `--diff`/`--strict` Drush flags for change detection |
 | `annotations_ui` | Annotation editing UI; per-target and site-wide forms; revisions; permission model |
 | `annotations_type_ui` | Browser CRUD for annotation types |
 | `annotations_coverage` | Coverage tracking; `CoverageService` API; status rollup |
@@ -99,7 +98,6 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
 | `annotations_demo` | editorial/technical/rules types, form displays, starter annotations; install for dev/eval |
-| `annotations_delta` | *Not started.* Drush change-detection command; diffs scan snapshots against last stored state |
 
 ---
 
@@ -119,7 +117,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 ## Status
 
 - `annotations` root — complete
-- `annotations_scan` — complete
+- `annotations_scan` — complete (snapshot storage, `--diff`/`--strict` integrated)
 - `annotations_ui` — complete
 - `annotations_type_ui` — complete
 - `annotations_coverage` — complete (cron caching deferred)
@@ -129,4 +127,3 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - `annotations_overlay` — largely complete (per-field display mode override deferred)
 - `annotations_workflows` — complete
 - `annotations_demo` — complete
-- `annotations_delta` — not started
