@@ -2,6 +2,16 @@ services:
   Drupal\annotations\AnnotationStorageService:
     alias: annotations.annotation_storage
 
+  Drupal\annotations_overlay\Service\AnnotationsOverlayService:
+    alias: annotations_overlay.service
+
+  annotations_overlay.service:
+    class: Drupal\annotations_overlay\Service\AnnotationsOverlayService
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations.annotation_storage'
+      - '@current_user'
+
   annotations_overlay.hooks:
     class: Drupal\annotations_overlay\Hook\AnnotationsOverlayHooks
     arguments:
@@ -11,3 +21,4 @@ services:
       - '@current_route_match'
       - '@language_manager'
       - '@config.factory'
+      - '@annotations_overlay.service'

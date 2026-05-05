@@ -8,11 +8,47 @@ Surfaces annotation content while users work. Field-level `?` triggers on entity
 
 ## What it owns
 
+- `AnnotationsOverlayService` (`src/Service/`) — shared dialog-building logic; injected into the hooks class
 - `AnnotationsOverlayHooks` (`src/Hook/`) — `hook_entity_base_field_info`, `hook_theme`, `hook_form_alter`, `hook_entity_view_alter`, chooser preprocesses
 - `AnnotationsOverlayItem` / `AnnotationsOverlayFormatter` (`src/Plugin/Field/`) — computed field (`no_ui: TRUE`); formatter exposes `annotation_view_mode` setting in Manage Display UI
 - Templates: `annotations-overlay-wrapper.html.twig`, `annotations-overlay-item.html.twig`, `annotations-overlay-chooser.html.twig`, `annotations-overlay-chooser-item.html.twig`
 - Library: `annotations_overlay/overlay` — `js/annotations-overlay.js`, `css/annotations-overlay.css`
 - Permission: `view annotations overlay`
+
+## Service: AnnotationsOverlayService
+
+`annotations_overlay.service` — handles the shared load → filter → build pipeline used by both form and view attachment contexts.
+
+**Public API:**
+
+```php
+// Load annotation types the current user can consume, sorted by weight.
+$visible_types = $service->loadVisibleAnnotationTypes();
+
+// Build dialog render arrays for a target. Returns NULL if no annotation_target
+// exists for $target_id. Otherwise returns:
+// [
+//   'target_label'           => string,
+//   'bundle_annotations'     => array<string, Annotation>,   // keyed by type_id
+//   'fields_with_annotations'=> array<string, array<string, Annotation>>,
+//   'dialogs'                => array<string, array>,        // keyed by field_key
+// ]
+$overlay_data = $service->buildDialogsForTarget(
+  $target_id,          // e.g. 'node__article'
+  $visible_types,
+  $annotation_view_mode,  // default 'overlay'
+  $rendered_fields,       // [] = all fields; non-empty = restrict to these (view alter)
+  $key_prefix,            // '' = none; 'para__{bundle}__' for paragraph subforms
+);
+
+// Build a single dialog render array directly (used by annotationPreviewViewAlter).
+$dialog = $service->buildDialog($field_key, $label, $annotation_entities, $single_type, $view_mode);
+
+// Resolve a field's human-readable label from config.
+$label = $service->resolveFieldLabel($entity_type_id, $bundle, $field_name);
+```
+
+**Not in the service:** chooser-page rendering (`buildBundleAnnotationHtml`, `buildBundleAnnotationRenderItems`) stays in the hooks class because it bypasses the render pipeline deliberately and uses a different output format.
 
 ## Data contract
 
@@ -24,7 +60,7 @@ $entity_map = $this->annotationStorage->getEntityMapForTarget($target_id, TRUE);
 // TRUE = published-only filter (no-op when annotations_workflows absent)
 ```
 
-Both `hook_form_alter` and `hook_entity_view_alter` follow: `getEntityMapForTarget()` → `filterAnnotationEntities()` → `buildDialog()`. If a third attachment context is added, extract to a `buildDialogsForTarget(string $target_id, array $visible_types): array` service method.
+Both `hook_form_alter` and `hook_entity_view_alter` call `$this->overlayService->buildDialogsForTarget()` and then inject triggers and dialogs from the returned data. The hooks own trigger markup; the service owns dialog markup.
 
 ## JS architecture
 
@@ -71,7 +107,6 @@ Themes: `annotations_overlay_chooser` (description + items) and `annotations_ove
 
 ## Parked work
 
-- **Service extraction:** `buildDialogsForTarget()` to DRY up form/view attachment duplication (load → filter → build).
-- **Module split:** base (library, `buildDialog()`, computed field) / `annotations_overlay_edit` (form alter) / `annotations_overlay_view` (view alter + Manage Display). The two attachment contexts have opposite caching concerns and independent opt-in mechanisms.
+- **Module split:** `AnnotationsOverlayService` is the natural shared dependency. A split into `annotations_overlay_edit` (form alter) and `annotations_overlay_view` (view alter + Manage Display) would give sites that only want one context the ability to omit the other. The service would move to the base module alongside the library and computed field. Primary driver: edit overlays without view overlays (content editors only).
 - **Gin description toggle:** inject annotation text into `#description` + `#description_toggle: TRUE` to reuse Gin's reveal UX. Parked — ties module to Gin dependency.
 - **Chooser view mode:** dedicated `chooser` annotation view mode separate from `overlay`. Requires replacing `buildBundleAnnotationHtml()` with `buildBundleAnnotationRenderItems()`, which needs the preprocess-to-render-pipeline restriction resolved first (e.g. pre-rendering via a `KernelEvents::VIEW` subscriber).

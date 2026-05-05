@@ -98,5 +98,4 @@ No hard dependency on the Paragraphs module — detection is structural array in
 
 ## Parked / planned
 
-- **`buildDialogsForTarget()` service method** — shared entry point for third-party attachment contexts.
-- **Module split** — base library + `annotations_overlay_edit` (form alter) + `annotations_overlay_view` (view alter). See CLAUDE.md for detail.
+- **Module split** — `AnnotationsOverlayService` is now the natural shared dependency. A future split into `annotations_overlay_edit` (form alter) and `annotations_overlay_view` (view alter + Manage Display) would let sites omit whichever overlay context they don't need. See CLAUDE.md for detail.
