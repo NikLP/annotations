@@ -39,7 +39,7 @@ annotations.target.fields:
   path: '/admin/config/annotations/targets/{annotation_target}/fields'
   defaults:
     _entity_form: 'annotation_target.fields'
-    _title: 'Configure target fields'
+    _title: 'Manage target fields'
   requirements:
     _permission: 'administer annotation targets'
 

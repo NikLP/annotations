@@ -54,7 +54,7 @@ class AnnotationsCoverageHooks {
     $form['behavior']['affects_coverage'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Affects coverage status'),
-      '#description' => $this->t('When enabled, targets missing an annotation of this type are flagged in coverage reports and counted against the coverage score.'),
+      '#description' => $this->t('When enabled, targets missing an annotation of this type are flagged in coverage reports.'),
       '#default_value' => $entity->getThirdPartySetting('annotations_coverage', 'affects_coverage', FALSE),
     ];
 

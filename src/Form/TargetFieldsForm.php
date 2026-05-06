@@ -47,7 +47,7 @@ class TargetFieldsForm extends EntityForm {
     $entity = $this->entity;
 
     $form['#title'] = $this->t(
-      'Configure %label fields',
+      'Manage %label target fields',
       [
         '@type' => $this->targetTypeLabel($entity->getTargetEntityTypeId()),
         '%label' => $entity->label(),
@@ -202,7 +202,7 @@ class TargetFieldsForm extends EntityForm {
       ) {
         continue;
       }
-      
+
       $options[$field_name] = sprintf(
         '%s (%s)',
         $definition->getLabel(),
