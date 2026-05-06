@@ -84,7 +84,7 @@ display:
           group_type: group
           admin_label: ''
           entity_type: annotation
-          plugin_id: annotation_target_label
+          plugin_id: annotation_field_label
           label: Field
           exclude: false
           alter:
@@ -508,7 +508,7 @@ display:
           admin_label: ''
           entity_type: annotation
           entity_field: target_id
-          plugin_id: string
+          plugin_id: annotation_target_id
           default_action: empty
           exception:
             value: all

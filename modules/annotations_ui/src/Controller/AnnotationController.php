@@ -17,7 +17,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\AnnotationDiscoveryService;
-use Drupal\annotations\EdgeEnumerator;
 use Drupal\annotations\Entity\AnnotationTarget;
 use Drupal\annotations\Plugin\Target\TargetBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -32,9 +31,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * to users with 'access annotation collection' without requiring
  * 'administer annotations'.
  *
- * Add page: shows a table of annotation slots that have no content yet for a
- * given target, with inline Add links per missing type per field. When all
- * slots are filled a link to the edit view is shown instead.
+ * Add page: shows a unified table of annotation slots (overview and per-field)
+ * with inline Add links per missing type. When all slots are filled, a link to
+ * the edit view is shown instead.
  *
  * Create form: returns AnnotationEditForm pre-populated for a new entity so
  * the user can write the annotation text and choose a moderation state.
@@ -46,7 +45,6 @@ class AnnotationController extends ControllerBase {
     private readonly AnnotationDiscoveryService $discoveryService,
     private readonly EntityFieldManagerInterface $fieldManager,
     private readonly AnnotationStorageService $annotationStorage,
-    private readonly EdgeEnumerator $edgeEnumerator,
   ) {
     $this->entityTypeManager = $entityTypeManager;
   }
@@ -60,7 +58,6 @@ class AnnotationController extends ControllerBase {
       $container->get('annotations.discovery'),
       $container->get('entity_field.manager'),
       $container->get('annotations.annotation_storage'),
-      $container->get('annotations.edge_enumerator'),
     );
   }
 
@@ -210,7 +207,6 @@ class AnnotationController extends ControllerBase {
       $rows[] = $this->buildAddRow($annotation_target, '_overview', $this->t('Overview'), $missing);
     }
 
-
     // Per-field rows.
     foreach (array_keys($annotation_target->getFields()) as $field_name) {
       $label = $field_info[$field_name]['label'] ?? $field_name;
@@ -240,7 +236,7 @@ class AnnotationController extends ControllerBase {
     }
     $build['fields_table'] = [
       '#theme' => 'table',
-      '#header' => [$this->t('Field'), $this->t('Missing annotations')],
+      '#header' => [$this->t('Scope'), $this->t('Annotations')],
       '#rows' => $rows,
     ];
     return $build;
@@ -326,64 +322,6 @@ class AnnotationController extends ControllerBase {
   }
 
   /**
-   * Returns AnnotationEditForm pre-populated for a new edge annotation.
-   *
-   * @param \Drupal\annotations\Entity\AnnotationTarget $annotation_target
-   *   The source target.
-   * @param string $edge_field
-   *   The ER field machine name on the source target.
-   * @param string $dest_target
-   *   The destination annotation_target ID.
-   * @param string $type_id
-   *   Annotation type machine name.
-   */
-  public function createEdgeAnnotationForm(AnnotationTarget $annotation_target, string $edge_field, string $dest_target, string $type_id): array {
-    if (!$this->entityTypeManager()->getStorage('annotation_type')->load($type_id)) {
-      throw new NotFoundHttpException();
-    }
-
-    $edge_id = $annotation_target->id() . '__' . $edge_field . '__' . $dest_target;
-
-    if (!array_key_exists($edge_id, $this->edgeEnumerator->getEdges($annotation_target))) {
-      throw new NotFoundHttpException();
-    }
-
-    $entity = $this->entityTypeManager()->getStorage('annotation')->create([
-      'target_id' => $edge_id,
-      'field_name' => '',
-      'type_id'   => $type_id,
-    ]);
-
-    return [
-      'form' => $this->entityFormBuilder()->getForm($entity, 'edit'),
-    ];
-  }
-
-  /**
-   * Title callback for the edge annotation create form.
-   */
-  public function createEdgeAnnotationTitle(AnnotationTarget $annotation_target, string $edge_field, string $dest_target, string $type_id): TranslatableMarkup {
-    $type = $this->entityTypeManager()->getStorage('annotation_type')->load($type_id);
-    $type_label = $type ? (string) $type->label() : $type_id;
-
-    $defs = $this->fieldManager->getFieldDefinitions(
-      $annotation_target->getTargetEntityTypeId(),
-      $annotation_target->getBundle(),
-    );
-    $field_label = isset($defs[$edge_field]) ? (string) $defs[$edge_field]->getLabel() : $edge_field;
-
-    $dest = $this->entityTypeManager()->getStorage('annotation_target')->load($dest_target);
-    $dest_label = $dest ? (string) $dest->label() : $dest_target;
-
-    return $this->t('Add %type annotation for %source → %dest (via %field)', [
-      '%type'   => $type_label,
-      '%source' => $annotation_target->label(),
-      '%dest'   => $dest_label,
-      '%field'  => $field_label,
-    ]);
-  }
-
-  /**
    * Builds the collapsible target details panel for the add page.
    *
    * Lists all annotatable fields for the target with their type and whether
@@ -451,83 +389,6 @@ class AnnotationController extends ControllerBase {
         ],
       ],
     ];
-  }
-
-  /**
-   * Builds the edges management page for a target.
-   *
-   * Lists all outbound annotation edges with Add links for unannotated types
-   * and Edit links for existing annotations.
-   */
-  public function edgesPage(AnnotationTarget $annotation_target): array {
-    $types = $this->loadAnnotationTypes();
-    $edges = $this->edgeEnumerator->getEdges($annotation_target);
-
-    if (empty($edges)) {
-      return [
-        '#type'  => 'html_tag',
-        '#tag'   => 'p',
-        '#value' => $this->t('No outbound relationships are configured for this target.'),
-      ];
-    }
-
-    $destination = Url::fromRoute('annotations_ui.target.edges', ['annotation_target' => $annotation_target->id()])->toString();
-
-    $rows = [];
-    foreach ($edges as $edge) {
-      $entities = $this->annotationStorage->getEntitiesForTarget($edge['edge_id']);
-      $existing_by_type = [];
-      foreach ($entities as $key => $entity) {
-        [$fn, $type_id] = explode('|', $key, 2);
-        if ($fn === '') {
-          $existing_by_type[$type_id] = $entity;
-        }
-      }
-      $missing = $this->missingTypes($existing_by_type, $types);
-
-      $buttons = ['#type' => 'container', '#attributes' => ['class' => ['annotations-add-buttons']]];
-      foreach ($missing as $type) {
-        $buttons['add_' . $type->id()] = [
-          '#type'       => 'link',
-          '#title'      => $this->t('Add @label', ['@label' => $type->label()]),
-          '#url'        => Url::fromRoute('annotations_ui.edge.create', [
-            'annotation_target' => $annotation_target->id(),
-            'edge_field'        => $edge['field_name'],
-            'dest_target'       => $edge['dest_id'],
-            'type_id'           => $type->id(),
-          ], ['query' => ['destination' => $destination]]),
-          '#attributes' => ['class' => ['button', 'button--small']],
-        ];
-      }
-      foreach ($existing_by_type as $type_id => $entity) {
-        $type_label = isset($types[$type_id]) ? $types[$type_id]->label() : $type_id;
-        $buttons['edit_' . $type_id] = [
-          '#type'       => 'link',
-          '#title'      => $this->t('Edit @label', ['@label' => $type_label]),
-          '#url'        => $entity->toUrl('edit-form', ['query' => ['destination' => $destination]]),
-          '#attributes' => ['class' => ['button', 'button--small', 'button--secondary']],
-        ];
-      }
-
-      $rows[] = [
-        ['data' => ['#plain_text' => (string) $this->t('→ @dest', ['@dest' => $edge['dest_label']])]],
-        ['data' => ['#plain_text' => $edge['field_label']]],
-        ['data' => $buttons],
-      ];
-    }
-
-    return [
-      '#theme'  => 'table',
-      '#header' => [$this->t('Destination'), $this->t('Field'), $this->t('Annotations')],
-      '#rows'   => $rows,
-    ];
-  }
-
-  /**
-   * Title callback for the edges management page.
-   */
-  public function edgesTitle(AnnotationTarget $annotation_target): TranslatableMarkup {
-    return $this->t('Edge annotations for %label', ['%label' => $annotation_target->label()]);
   }
 
   /**

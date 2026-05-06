@@ -1,15 +1,9 @@
-# Annotations / Edges tabs on the per-target collection page.
+# Annotations tab on the per-target collection page.
 annotations_ui.target.collection.tab:
   route_name: annotations_ui.target.collection
   title: 'Annotations'
   base_route: annotations_ui.target.collection
   weight: 0
-
-annotations_ui.target.edges.tab:
-  route_name: annotations_ui.target.edges
-  title: 'Edges'
-  base_route: annotations_ui.target.collection
-  weight: 10
 
 # View / Edit / Revisions tabs on the annotation entity.
 # Revisions is provided by the core VersionHistoryLocalTasks deriver — do NOT

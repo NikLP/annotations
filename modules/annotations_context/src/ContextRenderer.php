@@ -177,18 +177,6 @@ class ContextRenderer {
     foreach ($references as $field_name => $ref_targets) {
       foreach ($ref_targets as $ref_data) {
         $via = '_via ' . $field_name . ':_';
-
-        // Edge annotations describe the relationship itself; render as blockquotes before the target section.
-        if (!empty($ref_data['edge_annotations'])) {
-          $edge_lines = [];
-          foreach ($ref_data['edge_annotations'] as $annotation) {
-            foreach ($this->annotationLines($annotation) as $line) {
-              $edge_lines[] = '> ' . $line;
-            }
-          }
-          $via .= "\n\n" . implode("\n\n", $edge_lines);
-        }
-
         $parts[] = $via . "\n\n" . $this->renderTarget($ref_data, $child_level);
       }
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\annotations\Plugin\views\field;
 
+use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -58,13 +59,13 @@ class AnnotationFieldLabelField extends FieldPluginBase {
     if ($target_id === '') {
       return $this->t('N/A');
     }
-    
+
     if ($field_name === '') {
       return $this->t('Overview');
     }
 
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
-    if (!$target) {
+    if (!$target instanceof AnnotationTargetInterface) {
       return $field_name;
     }
 

@@ -11,12 +11,6 @@ services:
     arguments:
       - '@entity_type.manager'
 
-  annotations.edge_enumerator:
-    class: Drupal\annotations\EdgeEnumerator
-    arguments:
-      - '@entity_type.manager'
-      - '@entity_field.manager'
-
   annotations.discovery:
     class: Drupal\annotations\AnnotationDiscoveryService
     arguments:

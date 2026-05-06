@@ -148,12 +148,6 @@ final class AnnotationsScanCommands extends DrushCommands {
       foreach ($changes['fields_changed'] as $field) {
         $rows[] = ['~', $target_id, $field, 'field changed'];
       }
-      foreach ($changes['edges_added'] ?? [] as $edge_id) {
-        $rows[] = ['~', $target_id, $edge_id, 'edge added'];
-      }
-      foreach ($changes['edges_removed'] ?? [] as $edge_id) {
-        $rows[] = ['~', $target_id, $edge_id, 'edge removed'];
-      }
     }
 
     if (empty($rows)) {
@@ -167,27 +161,23 @@ final class AnnotationsScanCommands extends DrushCommands {
    * Prints the standard scan summary table.
    */
   private function printSummaryTable(array $result, bool $show_fields): void {
+    $headers = ['Target', 'Label', 'Fields'];
+    $rows = [];
     if ($show_fields) {
-      $headers = ['Target', 'Label', 'Fields', 'Edges'];
-      $rows = [];
       foreach ($result as $target_id => $data) {
         $rows[] = [
           $target_id,
           $data['label'] ?? '',
           implode(', ', array_keys($data['fields'] ?? [])) ?: '(none)',
-          count($data['edges'] ?? []),
         ];
       }
     }
     else {
-      $headers = ['Target', 'Label', 'Fields', 'Edges'];
-      $rows = [];
       foreach ($result as $target_id => $data) {
         $rows[] = [
           $target_id,
           $data['label'] ?? '',
           count($data['fields'] ?? []),
-          count($data['edges'] ?? []),
         ];
       }
     }

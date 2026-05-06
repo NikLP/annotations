@@ -131,15 +131,6 @@ final class ObsidianVaultWriter {
     foreach ($references as $fieldName => $refTargets) {
       foreach ($refTargets as $refId => $refData) {
         $lines[] = sprintf('- [[%s]] via `%s`', $refId, $fieldName);
-        // Edge annotations appear as indented sub-bullets under the wikilink.
-        foreach ($refData['edge_annotations'] ?? [] as $annotation) {
-          if ($annotation['value'] !== '') {
-            $lines[] = '  - ' . $annotation['value'];
-          }
-          foreach ($annotation['extra_fields'] ?? [] as $extra) {
-            $lines[] = '  - **' . $extra['label'] . ':** ' . implode(', ', $extra['values']);
-          }
-        }
       }
     }
     return implode("\n", $lines);
