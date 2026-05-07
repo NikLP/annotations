@@ -127,10 +127,19 @@ class AnnotationEditForm extends ContentEntityForm {
       '#wrapper_attributes' => ['class' => ['entity-meta__last-saved']],
     ];
 
+    $form['meta']['created'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Authored on'),
+      '#markup' => !$annotation->isNew()
+        ? $this->dateFormatter->format($annotation->get('created')->value, 'short')
+        : $this->t('Not saved yet'),
+      '#wrapper_attributes' => ['class' => ['entity-meta__created']],
+    ];
+
     $owner = $annotation->get('uid')->entity;
     $form['meta']['author'] = [
       '#type' => 'item',
-      '#title' => $this->t('Last edited by'),
+      '#title' => $this->t('Author'),
       '#markup' => $owner?->getDisplayName() ?? $this->t('Unknown'),
       '#wrapper_attributes' => ['class' => ['entity-meta__author']],
     ];
@@ -262,7 +271,6 @@ class AnnotationEditForm extends ContentEntityForm {
       $published ? $annotation->setPublished() : $annotation->setUnpublished();
     }
 
-    $annotation->set('uid', $this->currentUser()->id());
     $annotation->setRevisionUserId($this->currentUser()->id());
     $annotation->setRevisionCreationTime($this->time->getRequestTime());
     $result = $annotation->save();

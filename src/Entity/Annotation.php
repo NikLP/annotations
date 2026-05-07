@@ -137,9 +137,17 @@ class Annotation extends EditorialContentEntityBase {
       ->setDisplayOptions('view', ['region' => 'hidden'])
       ->setDisplayConfigurable('view', FALSE);
 
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Authored on'))
+      ->setDescription(t('The time the annotation was created.'))
+      ->setDisplayOptions('form', ['region' => 'hidden'])
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayOptions('view', ['region' => 'hidden'])
+      ->setDisplayConfigurable('view', FALSE);
+
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
-      ->setDescription(t('The user who last saved this annotation.'))
+      ->setDescription(t('The user who created the annotation.'))
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner')
       ->setRevisionable(TRUE)
