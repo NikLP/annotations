@@ -19,7 +19,7 @@ annotations/                ← root module (always required)
     └── annotations_demo/           ← default types, form displays, starter content
 ```
 
-Each submodule has its own `CLAUDE.md`. This file covers the root module, cross-cutting conventions, the data model, and design decisions.
+Each submodule should have its own `CLAUDE.md` and `README.md`. These files cover the root module, cross-cutting conventions, the data model, and design decisions.
 
 ---
 
@@ -111,19 +111,3 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - **`annotations_context` is the payload API:** `annotations_context_ccc` is the CCC consumer; `annotations_ai_context` is a deprecated prototype.
 - **Permissions:** `edit {type} annotations` (write + create per type), `delete {type} annotations` (delete per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `administer annotation targets`, `edit any annotation`, `delete any annotation`, `access annotation collection`, `view annotation revisions`, `view annotations context`, `administer annotation types`. Entity-level access is enforced by `AnnotationAccessControlHandler`; `hook_entity_access` in `annotations_ui` handles revision-only operations.
 - **No multivalue types:** All values are plain strings; `rules` type uses markdown in a textarea.
-
----
-
-## Status
-
-- `annotations` root — complete
-- `annotations_scan` — complete (snapshot storage, `--diff`/`--strict` integrated)
-- `annotations_ui` — complete
-- `annotations_type_ui` — complete
-- `annotations_coverage` — complete (cron caching deferred)
-- `annotations_context` — complete (tagged service provider pattern deferred)
-- `annotations_ai_context` — deprecated prototype, do not extend
-- `annotations_context_ccc` — complete
-- `annotations_overlay` — largely complete (per-field display mode override deferred)
-- `annotations_workflows` — complete
-- `annotations_demo` — complete
