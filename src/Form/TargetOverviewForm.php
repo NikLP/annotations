@@ -66,14 +66,6 @@ class TargetOverviewForm extends FormBase {
     $enabled = $this->configFactory()->get('annotations.target_types')->get('enabled_target_types') ?? [];
     $plugins = array_intersect_key($plugins, array_flip($enabled));
 
-    $form['description'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#value' => $this->t(
-        'Select targets for inclusion in annotation. For targets with configurable fields, select/save, then use <em>Configure</em> to choose which are included.'
-      ),
-    ];
-
     if (empty($plugins)) {
       $form['empty'] = [
         '#type' => 'html_tag',
@@ -84,6 +76,14 @@ class TargetOverviewForm extends FormBase {
       ];
       return $form;
     }
+
+    $form['description'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t(
+        'Select targets for inclusion in annotation. For targets with configurable fields, select/save, then use <em>Configure</em> to choose which are included.'
+      ),
+    ];
 
     $open_section = $this->getRequest()->query->get('open', '');
     $exclusive = (bool) $this->configFactory()->get('annotations.settings')->get('use_accordion_single');
