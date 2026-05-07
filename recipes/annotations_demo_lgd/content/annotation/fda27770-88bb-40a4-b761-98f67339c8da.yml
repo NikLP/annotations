@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: fda27770-88bb-40a4-b761-98f67339c8da
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: localgov_event_price
+  value:
+    -
+      value: "Tag every event — don't leave this blank. Use 'Free' for anything with no admission charge, even if donations are welcome. Use 'Paid' for any event that requires a ticket or payment. If pricing is tiered (e.g. adults £5, children free) select 'Paid' and explain the pricing structure in the body."
+  revision_translation_affected:
+    -
+      value: true

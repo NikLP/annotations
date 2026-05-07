@@ -1,0 +1,7 @@
+name: 'Annotations LocalGov demo data'
+description: 'Demo annotations targeting the LocalGov Event content type. Covers all core fields with editorial, technical, and business-rules annotations. Install on a LocalGov Drupal site for evaluation or staff onboarding.'
+type: 'Demo content'
+install:
+  - annotations
+  - annotations_ui
+  - annotations_type_ui

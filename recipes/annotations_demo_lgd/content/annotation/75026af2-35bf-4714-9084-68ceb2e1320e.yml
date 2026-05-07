@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 75026af2-35bf-4714-9084-68ceb2e1320e
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: localgov_event_categories
+  value:
+    -
+      value: "New category terms must be requested via the web team — editors cannot create taxonomy terms directly. This prevents duplicate or near-duplicate categories appearing in the filter UI. The approved category list is maintained by the communications manager; requests go to the digital team inbox."
+  revision_translation_affected:
+    -
+      value: true

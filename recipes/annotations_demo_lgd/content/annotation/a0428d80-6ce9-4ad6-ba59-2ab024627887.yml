@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: a0428d80-6ce9-4ad6-ba59-2ab024627887
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: body
+  value:
+    -
+      value: 'All public-facing events must include an accessibility statement in the body. Minimum: confirm whether the venue has step-free access and state the nearest accessible parking or drop-off point. Events that cannot accommodate wheelchair users must include a contact number for alternative arrangements. This is a legal requirement under the Equality Act 2010.'
+  revision_translation_affected:
+    -
+      value: true

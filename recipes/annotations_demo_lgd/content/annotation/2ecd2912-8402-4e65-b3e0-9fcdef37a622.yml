@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 2ecd2912-8402-4e65-b3e0-9fcdef37a622
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: body
+  value:
+    -
+      value: "Describe the event so a resident can decide whether to attend without needing to click anywhere else. Cover: what happens, who it is for, what to bring or wear, whether booking is required, and any accessibility arrangements (step-free access, hearing loop, BSL interpreter). Keep the summary field (shown in listing cards) to 1–2 sentences."
+  revision_translation_affected:
+    -
+      value: true

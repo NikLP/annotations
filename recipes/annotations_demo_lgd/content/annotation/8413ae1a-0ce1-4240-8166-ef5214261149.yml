@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 8413ae1a-0ce1-4240-8166-ef5214261149
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  value:
+    -
+      value: 'Events are public-facing listings for anything the council organises or promotes — community meetings, consultations, fun days, exhibitions. Use this content type whenever something has a date, a location, and an audience. If the event is purely internal (staff briefings, team away-days) do not publish it here.'
+  revision_translation_affected:
+    -
+      value: true

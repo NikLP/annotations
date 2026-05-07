@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: f9cdc1d3-c9d8-4aa1-a5b3-fce2bca40e45
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: localgov_event_location
+  value:
+    -
+      value: 'Link to an existing location record rather than typing the address into the body. If the venue does not exist as a location yet, ask the web team to create one — this keeps address data consistent across events held at the same place. For online-only events, leave this blank and explain the joining link in the body or Call to action field.'
+  revision_translation_affected:
+    -
+      value: true

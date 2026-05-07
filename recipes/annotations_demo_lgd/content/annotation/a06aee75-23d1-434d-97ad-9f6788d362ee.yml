@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: a06aee75-23d1-434d-97ad-9f6788d362ee
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: localgov_event_categories
+  value:
+    -
+      value: "Choose the most specific category that fits. Most events need only one category; add a second only if the event genuinely crosses two audiences (e.g. a health fair that is also a community consultation). Don't apply more than three — over-tagging dilutes the listing filters and makes it harder for residents to find what they're looking for."
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: d9d23173-1f83-4b8d-9190-c96c5253c559
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  value:
+    -
+      value: "- Events must not be published without a date and a location.\n- Events run by third parties (community groups, charities) may be promoted only if the comms team has approved the organisation.\n- Past events must not be deleted; unpublish them once the date has passed.\n- Any event charging admission must be flagged to the communications manager before publishing."
+  revision_translation_affected:
+    -
+      value: true

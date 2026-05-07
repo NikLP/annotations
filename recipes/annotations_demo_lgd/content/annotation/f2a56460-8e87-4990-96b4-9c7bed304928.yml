@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: f2a56460-8e87-4990-96b4-9c7bed304928
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: body
+  value:
+    -
+      value: 'text_with_summary field type. Rendered via CKEditor 5 on the edit form. The summary sub-field is used by the teaser view mode (events listing) — if left blank, Drupal trims the body automatically. Both body and summary are indexed by the localgov_events search API index. Filter format is typically basic_html or full_html depending on site configuration.'
+  revision_translation_affected:
+    -
+      value: true

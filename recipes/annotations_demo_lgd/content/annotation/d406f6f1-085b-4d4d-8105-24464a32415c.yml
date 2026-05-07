@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: d406f6f1-085b-4d4d-8105-24464a32415c
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: title
+  value:
+    -
+      value: 'Plain text, 255 character maximum (Drupal core node title). Used as the page <h1>, browser tab title, and the listing card heading. No HTML permitted. Referenced in search index and pathauto pattern — changing an existing title generates a redirect if the pathauto module is installed.'
+  revision_translation_affected:
+    -
+      value: true

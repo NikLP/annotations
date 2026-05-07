@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {}
+id: rules
+label: 'Business rules'
+description: 'Client-specific business logic and constraints.'
+weight: 20

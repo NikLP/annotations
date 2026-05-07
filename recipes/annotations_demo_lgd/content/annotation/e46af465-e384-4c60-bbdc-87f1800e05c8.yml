@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: e46af465-e384-4c60-bbdc-87f1800e05c8
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  value:
+    -
+      value: "Bundle: localgov_event (machine name). Provided by the localgov_events contrib module. Key dependency: date_recur for the date field — this handles recurrence rules (RRULE). The localgov_event_location field is an entity reference to a paragraph or location entity depending on site configuration; inspect field.field.node.localgov_event.localgov_event_location.yml for the target bundle. Content moderation workflow applies if annotations_workflows or localgov_workflows is installed."
+  revision_translation_affected:
+    -
+      value: true

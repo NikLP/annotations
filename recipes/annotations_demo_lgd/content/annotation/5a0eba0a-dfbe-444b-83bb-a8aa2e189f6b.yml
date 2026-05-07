@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 5a0eba0a-dfbe-444b-83bb-a8aa2e189f6b
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_event
+  field_name:
+    -
+      value: localgov_event_date
+  value:
+    -
+      value: "field_type: date_recur. Stores start/end datetimes plus an optional RRULE string for recurring events. The date_recur module generates occurrence rows in a separate table (date_recur__node__localgov_event_date) — queries for 'upcoming events' must join this table, not the field data table directly. The localgov_events Views display already handles this correctly via the date_recur_occurrences relationship."
+  revision_translation_affected:
+    -
+      value: true
