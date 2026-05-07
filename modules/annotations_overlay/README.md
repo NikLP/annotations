@@ -96,6 +96,16 @@ No hard dependency on the Paragraphs module — detection is structural array in
 
 ---
 
+## field_group
+
+field_group nests fields into group containers during the theme preprocess phase, after this module's `hook_entity_view_alter` and `hook_form_alter` have already run. This means field-level trigger buttons — added as top-level siblings of the entity build — are left at the build root while their fields move into group containers, breaking the CSS positioning that associates triggers with fields.
+
+Bundle-level triggers and dialog containers are unaffected. The JS dialog lookup still works (the `data-annotations-field` attribute travels with the field into the group). Only the visual positioning of per-field triggers breaks.
+
+A dedicated `annotations_field_group` submodule will fix this once built. Install it on any site using field_group. See CLAUDE.md for the implementation design.
+
+---
+
 ## Parked / planned
 
-- **Module split** — `AnnotationsOverlayService` is now the natural shared dependency. A future split into `annotations_overlay_edit` (form alter) and `annotations_overlay_view` (view alter + Manage Display) would let sites omit whichever overlay context they don't need. See CLAUDE.md for detail.
+- **Module split** — planned split into `annotations_overlay_edit` (form alter), `annotations_overlay_view` (view alter + Manage Display), and `annotations_field_group` (field_group bridge). See CLAUDE.md for detail.

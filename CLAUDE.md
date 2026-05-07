@@ -62,7 +62,7 @@ Each submodule should have its own `CLAUDE.md` and `README.md`. These files cove
 
 Tables: `annotation` / `annotation_field_data`. **Never touched by config sync.**
 
-Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `field_name` (string; `''` = bundle-level), `type_id` (bundle key), `value` (`string_long`, plain text — **stored raw, escape on output**), `changed`, `uid`.
+Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `field_name` (string; `''` = bundle-level), `type_id` (bundle key), `value` (`string_long`, plain text — **stored raw, escape on output**), `created` (set once on first save, never updated), `changed`, `uid` (original author — set on create via `defaultValueCallback`, never overwritten on subsequent saves; `revision_uid` tracks per-revision editor).
 
 **Sentinel:** `field_name = ''` is bundle-level. Drupal's `StringItem::isEmpty()` treats `''` as NULL, so queries must use `IS NULL`.
 
