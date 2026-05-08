@@ -15,6 +15,9 @@ The recipe will:
 - set up annotations targets & types pertinent to the demo
 - insert demo annotations
 
+Bear in mind this is a work in progress; annotation content here was created by
+AI, and has no necessary bearing on reality.
+
 ## 'Cooking' the recipe
 
 Recipes in Drupal usually appear in the project root, ie outside of the webroot.
@@ -71,5 +74,20 @@ A little more? Click the following in order:
 - Accordion
 
 Voila, this has annotations too, on this form within a form (within a form?)
+
+The overlay module also contains functionality for the front end. Let's enable
+that and show it working.
+
+- Navigate to the event page's manage fields section (`admin/structure/types/manage/localgov_event/display`).
+- Enable the annotations overlay by moving the field out of the disabled section
+into the active fields, setting the label to hidden.
+- Save
+
+Now create an Event, and you can see the annotations inserted into the page.
+
+You'll have read the module's README so you understand that different annotation
+types can be displayed to different roles, right? So annotations here could have
+been set up differently, you might have a set just for displaying to (front)
+end users. The annotation content here isn't really geared towards these folk.
 
 *There is more to it than this.*
