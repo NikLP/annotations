@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 2985c53e-03f6-4cde-b969-984299ed5ccd
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  value:
+    -
+      value: 'Bundle: localgov_accordion (machine name). Provided by the localgov_paragraphs contrib module. The child panes are stored in the localgov_paragraphs field (entity_reference_revisions), typically referencing localgov_accordion_pane paragraph entities. Heading level and show/hide-all behaviour are controlled by localgov_heading_level and localgov_display_show_hide_all respectively; these values are passed to the Twig template as variables.'
+  revision_translation_affected:
+    -
+      value: true

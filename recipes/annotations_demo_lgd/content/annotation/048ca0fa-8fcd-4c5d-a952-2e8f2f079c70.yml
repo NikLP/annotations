@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 048ca0fa-8fcd-4c5d-a952-2e8f2f079c70
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  value:
+    -
+      value: 'The primary banner is a full-width hero component intended for high-impact introductions — subsite home pages, major campaign landing pages. Use it once per page, at the top of the content area. The banner should communicate the purpose of the subsite at a glance; a resident arriving for the first time should immediately understand where they are and what they can do. Do not use it on every page within a subsite.'
+  revision_translation_affected:
+    -
+      value: true

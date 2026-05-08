@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 499f68cd-652b-4ff3-920b-7576ae246fa6
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_subsites_page
+  field_name:
+    -
+      value: localgov_subsites_banner
+  value:
+    -
+      value: 'Optional. Add a banner only when the page genuinely benefits from a strong visual introduction — for example, a campaign landing page or a section home. Avoid adding banners to every page: it dilutes their impact and pushes the main content further down for users on smaller screens. If you add a banner, ensure the image is high quality and the title text contrasts clearly against it.'
+  revision_translation_affected:
+    -
+      value: true

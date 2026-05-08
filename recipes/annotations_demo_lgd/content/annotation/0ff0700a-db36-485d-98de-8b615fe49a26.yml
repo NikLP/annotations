@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 0ff0700a-db36-485d-98de-8b615fe49a26
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  field_name:
+    -
+      value: localgov_url
+  value:
+    -
+      value: 'An optional call-to-action URL rendered as a button on the banner. Use it only when there is one clear primary action — for example a booking link or an application form. Link to an internal page wherever possible; use a full URL for external destinations. Do not add a URL just to have a button: if residents need to explore the subsite rather than take a single action, leave this blank.'
+  revision_translation_affected:
+    -
+      value: true

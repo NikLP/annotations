@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 0edb5d51-58c0-4f45-96fd-5a18c043579a
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_subsites_page
+  field_name:
+    -
+      value: localgov_subsites_content
+  value:
+    -
+      value: 'Build the page body here using paragraph components. Start with the most important information — many residents will not scroll. Use text and media paragraphs for narrative content; use accordions for reference information residents may need to dig into (FAQs, eligibility criteria). Avoid adding components just to fill space: a focused page with two or three well-chosen components is more effective than one with eight.'
+  revision_translation_affected:
+    -
+      value: true

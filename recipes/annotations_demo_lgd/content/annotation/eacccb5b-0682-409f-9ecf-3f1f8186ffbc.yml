@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: eacccb5b-0682-409f-9ecf-3f1f8186ffbc
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  field_name:
+    -
+      value: localgov_subsites_banner_logo
+  value:
+    -
+      value: 'An optional partner or sponsor logo displayed within the banner. Use only when a formal co-branding agreement requires it — for example, a jointly funded programme. Upload an SVG or a high-resolution PNG with a transparent background. Logos must be approved by the communications team before being added to any public-facing page.'
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {}
+id: paragraph__localgov_accordion
+label: 'Accordion'
+entity_type: paragraph
+bundle: localgov_accordion
+fields:
+  localgov_title: {}
+  localgov_heading_level: {}
+  localgov_paragraphs: {}
+  localgov_display_show_hide_all: {}
+  localgov_allow_multiple_open: {}

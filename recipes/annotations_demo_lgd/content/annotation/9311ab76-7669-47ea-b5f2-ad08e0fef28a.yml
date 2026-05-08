@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 9311ab76-7669-47ea-b5f2-ad08e0fef28a
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  field_name:
+    -
+      value: localgov_subsites_banner_text
+  value:
+    -
+      value: 'A short supporting sentence beneath the banner title. One sentence is ideal — two at most. Use it to add a key detail the title cannot carry on its own, for example the geographic scope or the primary audience. Do not repeat the page title. If the title already communicates everything needed, leave this blank rather than padding with filler text.'
+  revision_translation_affected:
+    -
+      value: true

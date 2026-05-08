@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: f814d570-00c0-47b3-bdc0-d716e8b4073f
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  field_name:
+    -
+      value: localgov_allow_multiple_open
+  value:
+    -
+      value: 'Leave unchecked (default) so that opening one pane closes the others — this is the expected accordion behaviour and keeps the page from becoming overwhelming. Only enable multiple-open if the content explicitly needs to be compared across panes, for example a side-by-side feature comparison. Discuss with the web team before enabling on a public-facing page.'
+  revision_translation_affected:
+    -
+      value: true

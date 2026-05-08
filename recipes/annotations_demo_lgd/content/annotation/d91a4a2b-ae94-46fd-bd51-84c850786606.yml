@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: d91a4a2b-ae94-46fd-bd51-84c850786606
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_subsites_page
+  field_name:
+    -
+      value: title
+  value:
+    -
+      value: 'The title appears in the subsite sidebar navigation, breadcrumb, and browser tab — keep it short (under 50 characters). Use sentence case. It should describe the content of this specific page, not repeat the subsite name: "Parking and transport" not "Scarfolk subsite — Parking and transport".'
+  revision_translation_affected:
+    -
+      value: true

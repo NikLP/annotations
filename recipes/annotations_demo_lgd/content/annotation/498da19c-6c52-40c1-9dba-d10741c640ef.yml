@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 498da19c-6c52-40c1-9dba-d10741c640ef
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_subsites_page
+  field_name:
+    -
+      value: localgov_subsites_content
+  value:
+    -
+      value: 'Field type: entity_reference_revisions (paragraphs). The allowed paragraph types are defined in field.field.node.localgov_subsites_page.localgov_subsites_content.yml under handler_settings.target_bundles. Each paragraph is stored as a paragraph entity and soft-deleted when removed from this field. Layout Builder is NOT used here — component order is determined by the weight of items in this field.'
+  revision_translation_affected:
+    -
+      value: true

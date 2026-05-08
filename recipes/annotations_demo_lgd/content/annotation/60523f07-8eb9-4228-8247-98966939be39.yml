@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 60523f07-8eb9-4228-8247-98966939be39
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  field_name:
+    -
+      value: localgov_title
+  value:
+    -
+      value: 'The banner headline — usually the subsite name or campaign name. Keep it to 5 words or fewer; it is displayed large over the banner image and long titles wrap awkwardly at smaller screen sizes. Use plain language: avoid slogans, puns, or internal project names that residents will not recognise.'
+  revision_translation_affected:
+    -
+      value: true

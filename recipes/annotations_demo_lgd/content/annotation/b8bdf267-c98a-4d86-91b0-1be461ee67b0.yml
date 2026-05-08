@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: b8bdf267-c98a-4d86-91b0-1be461ee67b0
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__localgov_subsites_page
+  value:
+    -
+      value: 'Bundle: localgov_subsites_page (machine name). Provided by the localgov_subsites contrib module. The parent hierarchy is managed via the entity_reference_hierarchy field (localgov_subsites_parent), which drives the automatic sidebar navigation. Content moderation workflow applies if localgov_workflows or annotations_workflows is installed. The localgov_subsites_content field is an entity_reference_revisions paragraphs field — paragraph types allowed depend on site configuration in field.field.node.localgov_subsites_page.localgov_subsites_content.yml.'
+  revision_translation_affected:
+    -
+      value: true

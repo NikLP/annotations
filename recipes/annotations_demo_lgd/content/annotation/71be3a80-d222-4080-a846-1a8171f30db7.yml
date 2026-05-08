@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 71be3a80-d222-4080-a846-1a8171f30db7
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  value:
+    -
+      value: 'Use an accordion for reference content residents may need to look up but not read in full — eligibility criteria, FAQs, step-by-step processes with many steps. Do not use accordions just to compress a long page: if all the information is equally important, present it as flowing text instead. Each accordion pane should be self-contained; a resident opening just one pane should get a complete, useful answer.'
+  revision_translation_affected:
+    -
+      value: true

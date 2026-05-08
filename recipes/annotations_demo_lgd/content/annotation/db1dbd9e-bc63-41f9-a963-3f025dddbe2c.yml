@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: db1dbd9e-bc63-41f9-a963-3f025dddbe2c
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_banner_primary
+  field_name:
+    -
+      value: localgov_image
+  value:
+    -
+      value: 'Choose a wide landscape image (minimum 1600 × 600 px recommended) with the main subject centred, as the image is cropped differently across breakpoints. Avoid images with text baked in — the banner title overlays the image and text-on-text is illegible. Ensure the image has sufficient contrast with the title overlay; dark or mid-tone images with a light area in the centre work best. Always provide meaningful alt text.'
+  revision_translation_affected:
+    -
+      value: true

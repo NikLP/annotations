@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 4326bdea-2547-47a4-9a40-170de4aa013d
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  field_name:
+    -
+      value: localgov_title
+  value:
+    -
+      value: 'An optional heading displayed above the accordion group. Use it when the accordion follows other content and needs a clear label to orient the reader — for example "Frequently asked questions" or "Eligibility criteria". If the accordion is the sole content on the page or the page title already provides enough context, leave this blank.'
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 833cf1b1-b5d8-49df-b4fb-fb6db1671b3e
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  field_name:
+    -
+      value: localgov_paragraphs
+  value:
+    -
+      value: 'Add one pane per distinct question or topic. Order panes by frequency of need — most-asked first — not alphabetically or chronologically. Keep pane titles short and question-shaped where content is FAQ-style ("How do I apply?" not "Application process"). Aim for no more than 8–10 panes; if you need more, consider splitting into two accordion components with distinct headings.'
+  revision_translation_affected:
+    -
+      value: true

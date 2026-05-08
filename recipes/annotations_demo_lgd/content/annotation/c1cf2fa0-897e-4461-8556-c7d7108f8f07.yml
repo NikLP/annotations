@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: c1cf2fa0-897e-4461-8556-c7d7108f8f07
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: paragraph__localgov_accordion
+  field_name:
+    -
+      value: localgov_heading_level
+  value:
+    -
+      value: 'Field type: list_string. Controls the HTML heading element (h2–h4) rendered for each accordion pane title. Choose the level that fits the document outline of the page — if the accordion title (localgov_title) is an h2, pane titles should be h3. Incorrect heading levels break document structure and harm screen-reader navigation; inspect the page heading hierarchy before selecting a value.'
+  revision_translation_affected:
+    -
+      value: true

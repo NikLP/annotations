@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {}
+id: paragraph__localgov_banner_primary
+label: 'Banner primary'
+entity_type: paragraph
+bundle: localgov_banner_primary
+fields:
+  localgov_title: {}
+  localgov_subsites_banner_text: {}
+  localgov_image: {}
+  localgov_url: {}
+  localgov_subsites_banner_logo: {}
