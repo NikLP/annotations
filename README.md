@@ -93,6 +93,21 @@ Stores all annotation text as content entity rows. Edited via `annotations_ui`.
 
 Define type of annotation - editorial guidance, tech notes, etc. Types are config entities — add, rename, or remove via config management or the `annotations_type_ui` browser UI.
 
+### Role-based type layering
+
+Because every annotation type generates a `consume {type} annotations` permission, you can author once and serve role-appropriate context automatically. Assign consume permissions to different roles to control which types surface in overlays, context payloads, and AI prompts for each audience.
+
+**Example:** With three types — `editorial`, `technical`, and `rules`:
+
+| Role | Permissions granted | Sees in overlays / context |
+| --- | --- | --- |
+| Editor | `consume editorial annotations` | Tone and style guidance |
+| Developer | `consume technical annotations` | Field config and schema notes |
+| Authenticated user | `consume rules annotations` | Mandatory compliance notes |
+| Administrator | (all permissions implicitly) | Everything |
+
+Annotations are authored against the same targets and fields regardless of type — the role determines which types are visible, not where the annotation lives. Types stack freely: grant multiple consume permissions to a role to combine audiences. The `annotations_demo` module ships `editorial`, `technical`, and `rules` types as a starting point.
+
 ### Overview annotation
 
 Every annotation target has one implicit bundle-level slot: the **overview**. This is an annotation about the target as a whole — what the content type, role, or entity is for — rather than any specific field. In storage it is an `annotation` entity with `field_name` set to the empty string. It surfaces as the first row (labeled "Overview") in the add-new table in `annotations_ui`, as a bundle-level trigger at the top of entity forms and view pages in `annotations_overlay`, and as the opening description in context output from `annotations_context`. See the API example in the Developer API section for how to read it: `$all['']['editorial']`.
