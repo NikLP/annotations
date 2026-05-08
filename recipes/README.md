@@ -5,6 +5,8 @@
 - [Install LGD](https://docs.localgovdrupal.org/devs/workflows/installing-and-deploying-lgd.html#_1-initial-installation)
 - [Install LGD demo](https://www.drupal.org/project/localgov_demo) which is
 present in the default LGD site install
+- Install the annotations module suite into your modules/contrib|custom folder:
+  - `git clone git@github.com:NikLP/annotations.git` until it's on d.o
 - Run the LGD demo recipe
 
 ## What this does
