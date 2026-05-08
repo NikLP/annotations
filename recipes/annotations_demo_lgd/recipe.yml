@@ -5,3 +5,4 @@ install:
   - annotations
   - annotations_ui
   - annotations_type_ui
+  - annotations_overlay
