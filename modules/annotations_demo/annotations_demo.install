@@ -375,14 +375,14 @@ function _annotations_demo_create_targets(): void {
     'entity_type' => 'node',
     'bundle' => 'product',
     'fields' => [
-      'title' => [],
-      'field_description' => [],
-      'field_sku' => [],
-      'field_price' => [],
-      'field_origin' => [],
-      'field_lead_time' => [],
-      'field_certifications' => [],
-      'field_product_status' => [],
+      'title',
+      'field_description',
+      'field_sku',
+      'field_price',
+      'field_origin',
+      'field_lead_time',
+      'field_certifications',
+      'field_product_status',
     ],
   ])->save();
 
@@ -392,10 +392,10 @@ function _annotations_demo_create_targets(): void {
     'entity_type' => 'node',
     'bundle' => 'collection',
     'fields' => [
-      'title' => [],
-      'field_products' => [],
-      'field_season' => [],
-      'field_collection_active' => [],
+      'title',
+      'field_products',
+      'field_season',
+      'field_collection_active',
     ],
   ])->save();
 }
