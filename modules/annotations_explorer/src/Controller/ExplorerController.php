@@ -213,12 +213,15 @@ class ExplorerController extends ControllerBase {
     ];
 
     if ($this->moduleHandler()->moduleExists('annotations_ui')) {
-      $build['header']['edit'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Edit annotations'),
-        '#url' => Url::fromRoute('annotations_ui.target.collection', ['annotation_target' => $target->id()]),
-        '#attributes' => ['class' => ['button', 'button--small']],
-      ];
+      $url = Url::fromRoute('annotations_ui.target.collection', ['annotation_target' => $target->id()]);
+      if ($url->access($this->currentUser())) {
+        $build['header']['edit'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Edit'),
+          '#url' => $url,
+          '#attributes' => ['class' => ['button', 'button--small']],
+        ];
+      }
     }
 
     if (!empty($overview)) {
