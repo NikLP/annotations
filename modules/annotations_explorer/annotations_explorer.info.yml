@@ -1,0 +1,8 @@
+name: 'Annotations Explorer'
+type: module
+description: 'Explorer-style viewer for browsing annotations.'
+package: Annotations
+core_version_requirement: ^11
+
+dependencies:
+  - annotations:annotations

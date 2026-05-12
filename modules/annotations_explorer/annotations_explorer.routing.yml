@@ -1,0 +1,19 @@
+annotations_explorer.page:
+  path: '/annotations/explorer'
+  defaults:
+    _controller: '\Drupal\annotations_explorer\Controller\ExplorerController::page'
+    _title: 'Annotations Explorer'
+  requirements:
+    _custom_access: '\Drupal\annotations_explorer\Controller\ExplorerController::access'
+
+annotations_explorer.target:
+  path: '/annotations/explorer/{annotation_target}'
+  defaults:
+    _controller: '\Drupal\annotations_explorer\Controller\ExplorerController::targetPanel'
+    _title: 'Annotations Explorer'
+  requirements:
+    _custom_access: '\Drupal\annotations_explorer\Controller\ExplorerController::access'
+  options:
+    parameters:
+      annotation_target:
+        type: entity:annotation_target

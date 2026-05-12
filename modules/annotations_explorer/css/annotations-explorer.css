@@ -1,0 +1,64 @@
+.annotations-explorer {
+  display: flex;
+  min-height: 60vh;
+}
+
+.annotations-explorer__nav {
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.annotations-explorer__nav-list,
+.annotations-explorer__fields-list {
+  margin: 0;
+  padding: 0;
+}
+
+.annotations-explorer__fields-list {
+  padding-left: 2rem;
+}
+
+.annotations-explorer__fields-list a {
+  display: block;
+}
+
+.annotations-explorer__main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.annotations-explorer__main-inner {
+    border-left: 1px solid currentColor;
+    padding-left: 2rem;
+}
+
+.annotations-explorer__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.annotations-explorer__target-heading {
+  margin: 0;
+}
+
+.annotations-explorer__group {
+  margin: 1.5rem 0;
+}
+
+.annotations-explorer__annotation {
+  margin-bottom: 0.5rem;
+}
+
+.annotations-explorer__type-label {
+  display: block;
+}
+
+.annotations-explorer__annotation-value {
+  margin: 0;
+}
+
+.annotations-explorer__machine-name {
+  display: block;
+}

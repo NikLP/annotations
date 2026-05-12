@@ -1,0 +1,12 @@
+annotations_explorer.page:
+  version: VERSION
+  css:
+    theme:
+      css/annotations-explorer.css: {}
+  js:
+    js/annotations-explorer.js: {}
+
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupal.ajax
