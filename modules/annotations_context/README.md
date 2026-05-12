@@ -364,3 +364,70 @@ GET /api/annotations/media__image?include_incoming_refs=1
 ```
 
 The response is the raw assembler structure. Consumers that need a flatter shape (`{field_name: {type_label: value}}`) should flatten client-side — no `?format=flat` option is provided.
+
+---
+
+## MCP endpoint
+
+`POST /api/annotations/mcp` implements the [MCP Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) (2025-03-26 spec). Each `annotation_target` is exposed as an MCP resource addressed by `annotation://target/{target_id}`.
+
+**Supported methods:**
+
+| Method | Description |
+| --- | --- |
+| `initialize` | Capability handshake; negotiates protocol version (`2025-03-26` or `2024-11-05`). |
+| `resources/list` | Returns all annotation targets as MCP resources. |
+| `resources/read` | Returns assembled context for one target as markdown (`text/plain`). |
+| `ping` | Keep-alive; returns empty result object. |
+| `notifications/*` | Acknowledged with `202 No Content`; no response body. |
+
+**Query parameters on `resources/read` URIs:**
+
+| Parameter | Values | Default | Description |
+| --- | --- | --- | --- |
+| `ref_depth` | `0`, `1`, `2` | `0` | Entity reference traversal depth. |
+| `include_field_meta` | `1` | off | Include field type, cardinality, and description. |
+
+Example URI: `annotation://target/node__article?ref_depth=1&include_field_meta=1`
+
+**Type filtering:** `resources/read` only returns annotation types where the `annotations_context.in_ai_context` third-party setting is `TRUE`. Types must be opted in via the annotation type edit form — default is off. If no types are opted in the response content will be empty.
+
+### Auth
+
+Two mechanisms are supported — use whichever fits the client:
+
+**Bearer token (headless clients):** Generate a key at `/admin/config/annotations/context/mcp`. By default the key is stored in `annotations_context.settings` — to keep it out of config exports and the database, use the [Key module](https://www.drupal.org/project/key) (`drupal/key`) file provider with a config override:
+
+1. Write the token to a file outside the webroot and VCS (e.g. `../keys/annotations_mcp.key`).
+2. Create a Key entity (Admin → Configuration → System → Keys) using the **File** key provider pointing at that path.
+3. Add a config override in `settings.local.php` (gitignored):
+
+   ```php
+   $config['annotations_context.settings']['mcp_api_key'] = trim(file_get_contents('../keys/annotations_mcp.key'));
+   ```
+
+Drupal reads the override at bootstrap — the key never enters config exports or the DB.
+
+Pass the key as `Authorization: Bearer <key>`. Bearer token holders bypass per-role type filtering and see all opted-in types.
+
+**Session auth:** Any authenticated user with `view annotations context` or `administer annotations` can call the endpoint using a Drupal session cookie. Type visibility is filtered by the user's `consume {type} annotations` permissions.
+
+### Claude Code setup
+
+To make annotation context available to Claude Code during development sessions, add the server to `.claude/settings.local.json` (not `settings.json` — the key must stay out of version control):
+
+```json
+{
+  "mcpServers": {
+    "annotations": {
+      "type": "http",
+      "url": "https://dotdev.ddev.site/api/annotations/mcp",
+      "headers": {
+        "Authorization": "Bearer <your-key>"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Code after saving. The `resources/list` and `resources/read` tools will be available in session, allowing annotation context to be pulled for any target on demand.
