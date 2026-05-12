@@ -388,7 +388,7 @@ class ContextAssembler {
     );
 
     $fields = [];
-    foreach (array_keys($target->getFields()) as $field_name) {
+    foreach ($target->getFields() as $field_name) {
       $field_annotations = $this->extractAnnotations(
         $all_annotations[$field_name] ?? [],
         $types,
@@ -455,7 +455,7 @@ class ContextAssembler {
     $storage = $this->entityTypeManager->getStorage('annotation_target');
     $refs    = [];
 
-    foreach (array_keys($target->getFields()) as $field_name) {
+    foreach ($target->getFields() as $field_name) {
       $def = $defs[$field_name] ?? NULL;
       if ($def === NULL) {
         continue;
@@ -518,7 +518,7 @@ class ContextAssembler {
         $source_target->getBundle(),
       );
 
-      foreach (array_keys($source_target->getFields()) as $field_name) {
+      foreach ($source_target->getFields() as $field_name) {
         $def = $defs[$field_name] ?? NULL;
         if ($def === NULL) {
           continue;

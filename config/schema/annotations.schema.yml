@@ -1,6 +1,8 @@
 annotations.settings:
   type: config_object
   label: 'General settings'
+  constraints:
+    FullyValidatable: ~
   mapping:
     use_accordion_single:
       type: boolean
@@ -9,6 +11,8 @@ annotations.settings:
 annotations.target_types:
   type: config_object
   label: 'Target types'
+  constraints:
+    FullyValidatable: ~
   mapping:
     enabled_target_types:
       type: sequence
@@ -20,6 +24,8 @@ annotations.target_types:
 annotations.annotation_type.*:
   type: config_entity
   label: 'Annotation type'
+  constraints:
+    FullyValidatable: ~
   mapping:
     id:
       type: string
@@ -30,6 +36,7 @@ annotations.annotation_type.*:
     description:
       type: text
       label: 'Description'
+      nullable: true
     weight:
       type: integer
       label: 'Ordering weight (lower = shown first in UI and output)'
@@ -37,6 +44,8 @@ annotations.annotation_type.*:
 annotations.target.*:
   type: config_entity
   label: 'Target'
+  constraints:
+    FullyValidatable: ~
   mapping:
     id:
       type: string
@@ -51,5 +60,8 @@ annotations.target.*:
       type: string
       label: 'Bundle (or, entity ID for unbundled types such as views, roles etc)'
     fields:
-      type: ignore
-      label: 'Fields included in scope; keyed by field machine name, values are empty arrays'
+      type: sequence
+      label: 'Field machine names included in scope'
+      sequence:
+        type: string
+        label: 'Field machine name'

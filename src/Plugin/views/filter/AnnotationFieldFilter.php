@@ -68,7 +68,7 @@ class AnnotationFieldFilter extends InOperator {
         $target->getTargetEntityTypeId(),
         $target->getBundle(),
       );
-      foreach (array_keys($fields) as $field_name) {
+      foreach ($fields as $field_name) {
         if (!isset($options[$field_name])) {
           $options[$field_name] = isset($definitions[$field_name])
             ? (string) $definitions[$field_name]->getLabel()

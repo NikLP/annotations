@@ -71,13 +71,11 @@ class AnnotationTarget extends ConfigEntityBase implements AnnotationTargetInter
   protected string $bundle = '';
 
   /**
-   * Fields in-scope map.
+   * Field machine names in scope.
    *
-   * Keyed by field machine name. Values are empty arrays — presence means the
-   * field is in scope, absence means excluded. No annotation data is stored
-   * here; that lives in annotation rows.
+   * Presence in this list means the field is included; absence means excluded.
    *
-   * @var array<string, array>
+   * @var string[]
    */
   protected array $fields = [];
 
@@ -106,7 +104,7 @@ class AnnotationTarget extends ConfigEntityBase implements AnnotationTargetInter
    * {@inheritdoc}
    */
   public function isFieldIncluded(string $field_name): bool {
-    return array_key_exists($field_name, $this->fields);
+    return in_array($field_name, $this->fields, TRUE);
   }
 
   /**

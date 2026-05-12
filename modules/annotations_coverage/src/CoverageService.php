@@ -169,7 +169,7 @@ class CoverageService {
       }
     }
 
-    foreach (array_keys($target->getFields()) as $field_name) {
+    foreach ($target->getFields() as $field_name) {
       foreach ($types as $type_id => $type) {
         if (!array_key_exists($type_id, $annotations[$field_name] ?? [])) {
           $missing[$type_id][] = $field_name;

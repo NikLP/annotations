@@ -68,7 +68,7 @@ class TargetFieldsForm extends EntityForm {
     );
 
     if ($field_options) {
-      $in_scope = array_keys($entity->getFields());
+      $in_scope = $entity->getFields();
 
       $form['fields'] = [
         '#type' => 'checkboxes',
@@ -121,19 +121,9 @@ class TargetFieldsForm extends EntityForm {
     FormStateInterface $form_state,
   ): void {
     /** @var \Drupal\annotations\Entity\AnnotationTargetInterface $entity */
-    $checked_fields = array_keys(
+    $entity->setFields(array_keys(
       array_filter((array) $form_state->getValue('fields', []))
-    );
-
-    // Preserve existing annotation data for fields that remain selected.
-    // Add an empty entry for newly selected fields.
-    // Remove entries for deselected fields — their annotation data is discarded.
-    $existing_fields = $entity->getFields();
-    $new_fields = [];
-    foreach ($checked_fields as $field_name) {
-      $new_fields[$field_name] = $existing_fields[$field_name] ?? [];
-    }
-    $entity->setFields($new_fields);
+    ));
   }
 
   /**

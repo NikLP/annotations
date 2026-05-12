@@ -208,7 +208,7 @@ class AnnotationController extends ControllerBase {
     }
 
     // Per-field rows.
-    foreach (array_keys($annotation_target->getFields()) as $field_name) {
+    foreach ($annotation_target->getFields() as $field_name) {
       $label = $field_info[$field_name]['label'] ?? $field_name;
       $missing = $this->missingTypes($existing[$field_name] ?? [], $types);
       if (!empty($missing)) {
@@ -276,7 +276,7 @@ class AnnotationController extends ControllerBase {
       throw new NotFoundHttpException();
     }
 
-    if ($field_name !== '_overview' && !array_key_exists($field_name, $annotation_target->getFields())) {
+    if ($field_name !== '_overview' && !$annotation_target->isFieldIncluded($field_name)) {
       throw new NotFoundHttpException();
     }
 
@@ -335,10 +335,9 @@ class AnnotationController extends ControllerBase {
       return [];
     }
 
-    $in_scope = $annotation_target->getFields();
     $rows = [];
     foreach ($all_fields as $field_name => $info) {
-      $in = array_key_exists($field_name, $in_scope);
+      $in = $annotation_target->isFieldIncluded($field_name);
       $scope_cell = $in
         ? [
           'data' => [

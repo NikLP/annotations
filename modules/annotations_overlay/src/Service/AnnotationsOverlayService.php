@@ -86,7 +86,7 @@ class AnnotationsOverlayService {
     $bundle_annotations = $this->filterAnnotationEntities($entity_map[''] ?? [], $visible_types);
 
     $fields_with_annotations = [];
-    foreach (array_keys($target->getFields()) as $field_name) {
+    foreach ($target->getFields() as $field_name) {
       if (!empty($rendered_fields) && !in_array($field_name, $rendered_fields, TRUE)) {
         continue;
       }

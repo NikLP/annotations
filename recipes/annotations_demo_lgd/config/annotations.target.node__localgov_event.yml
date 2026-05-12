@@ -6,12 +6,12 @@ label: 'Event'
 entity_type: node
 bundle: localgov_event
 fields:
-  title: {}
-  body: {}
-  localgov_event_date: {}
-  localgov_event_location: {}
-  localgov_event_categories: {}
-  localgov_event_image: {}
-  localgov_event_price: {}
-  localgov_event_call_to_action: {}
-  localgov_event_locality: {}
+  - title
+  - body
+  - localgov_event_date
+  - localgov_event_location
+  - localgov_event_categories
+  - localgov_event_image
+  - localgov_event_price
+  - localgov_event_call_to_action
+  - localgov_event_locality

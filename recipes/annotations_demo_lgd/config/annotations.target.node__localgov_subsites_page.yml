@@ -6,9 +6,9 @@ label: 'Subsite page'
 entity_type: node
 bundle: localgov_subsites_page
 fields:
-  title: {}
-  localgov_subsites_summary: {}
-  localgov_subsites_parent: {}
-  localgov_subsites_banner: {}
-  localgov_subsites_topic: {}
-  localgov_subsites_content: {}
+  - title
+  - localgov_subsites_summary
+  - localgov_subsites_parent
+  - localgov_subsites_banner
+  - localgov_subsites_topic
+  - localgov_subsites_content

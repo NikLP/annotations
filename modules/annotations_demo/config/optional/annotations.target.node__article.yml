@@ -6,7 +6,7 @@ label: 'Article'
 entity_type: node
 bundle: article
 fields:
-  body: {}
-  field_image: {}
-  field_tags: {}
-  title: {}
+  - body
+  - field_image
+  - field_tags
+  - title

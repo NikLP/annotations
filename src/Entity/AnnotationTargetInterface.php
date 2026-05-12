@@ -19,8 +19,8 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  * Annotation text is stored separately in annotation rows via
  * AnnotationStorageService.
  *
- * Field scope uses an inclusion map: fields listed in getFields() are in scope.
- * Fields absent from the map are excluded from scanning and annotation.
+ * Field scope uses an inclusion list: fields returned by getFields() are in scope.
+ * Fields absent from the list are excluded from scanning and annotation.
  */
 interface AnnotationTargetInterface extends ConfigEntityInterface {
 
@@ -42,13 +42,9 @@ interface AnnotationTargetInterface extends ConfigEntityInterface {
   public function getBundle(): string;
 
   /**
-   * Returns the fields in-scope map.
+   * Returns the list of field machine names in scope.
    *
-   * Keyed by field machine name. Values are empty arrays — presence means the
-   * field is in scope, absence means it is excluded. Annotation text is stored
-   * separately in annotation rows, not here.
-   *
-   * @return array<string, array>
+   * @return string[]
    */
   public function getFields(): array;
 
@@ -58,10 +54,10 @@ interface AnnotationTargetInterface extends ConfigEntityInterface {
   public function isFieldIncluded(string $field_name): bool;
 
   /**
-   * Replaces the entire fields in-scope map.
+   * Replaces the entire fields in-scope list.
    *
-   * @param array<string, array> $fields
-   *   Keyed by field machine name. Values should be empty arrays.
+   * @param string[] $fields
+   *   Field machine names to include in scope.
    */
   public function setFields(array $fields): static;
 
