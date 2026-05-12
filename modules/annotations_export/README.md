@@ -80,3 +80,26 @@ drush ann:ex --format=obsidian --output=/path/to/vault --ref-depth=1
 ```
 
 Import the output directory into Obsidian as a vault (or drop it into an existing vault folder) to get a navigable knowledge graph of your site's content architecture.
+
+---
+
+## Keeping a vault up to date
+
+Neither of these approaches is implemented yet. They are noted here as considered options if incremental vault updates become useful.
+
+### Diff-mode export
+
+A `--diff` flag could be added to `obsidian` format. `ObsidianVaultWriter` would generate the content for each target, compare it against the existing `.md` file on disk, and only write the file if the content has changed. Orphaned files (targets that no longer exist in scope) would be deleted. Because the writer produces deterministic output, a byte-for-byte or hash comparison would be sufficient.
+
+With diff-mode you could schedule a cron job that keeps an existing vault current without rewriting every file on each run:
+
+```bash
+# cron: run every few minutes
+drush ann:ex --format=obsidian --output=/path/to/vault --diff
+```
+
+### Hook-based live sync
+
+For a more immediate update cycle, a live-sync mode could hook into `annotation` entity save and delete events. When an annotation is saved or deleted, Drupal would re-export just the single affected target file to a pre-configured vault path stored in Drupal state. A new `ann:vault:path /path/to/vault` command would set the path, enabling automatic vault updates within the same request cycle without a cron schedule.
+
+The tradeoff: the vault must be on a filesystem the web process can write to. A vault on a developer's local machine (e.g. synced via a network share or Git) would not update automatically unless the export path points to a location accessible from the server.

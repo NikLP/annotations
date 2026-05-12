@@ -31,6 +31,18 @@ The Drush command is registered in `drush.services.yml` and injects `annotations
 
 Frontmatter uses `Yaml::dump($data, 2, 2)` — inline level 2 keeps scalars on one line.
 
+## Possible future features
+
+Neither of these is implemented. They are noted here as considered approaches if incremental vault updates become a requirement.
+
+### Diff-mode export (`--diff` flag)
+
+Would add a `--diff` flag to `ann:ex --format=obsidian`: generate content per target, compare with existing file on disk (byte or hash), only write if changed, delete orphaned files. `ObsidianVaultWriter` produces deterministic output so comparison is trivial. Would make cron-driven vault updates cheap.
+
+### Hook-based live sync
+
+Would hook `annotation` postsave/postdelete to re-export just the affected target file to a vault path stored in Drupal state. A new command (`ann:vault:path /path`) would set the path. Vault would stay current within the request cycle. Requires the vault path to be writable by the web process.
+
 ## Design notes
 
 `annotations_context` ships its own `ann:ctx` command for quick stdout inspection. `annotations_export` is the dedicated export layer:
