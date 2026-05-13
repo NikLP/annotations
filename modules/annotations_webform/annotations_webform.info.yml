@@ -1,0 +1,9 @@
+name: 'Annotations Webform'
+type: module
+description: 'Integrates the Annotations suite with Webform. Provides target plugins for webform config entities and webform submission forms, plus overlay support during form fill.'
+package: Annotations
+core_version_requirement: ^11
+dependencies:
+  - annotations:annotations
+  - annotations:annotations_overlay
+  - webform:webform

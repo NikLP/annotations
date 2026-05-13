@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: webform_submission__annotations_demo_onboarding
+  field_name:
+    -
+      value: work_email
+  value:
+    -
+      value: 'Use your organisational email address, not a personal one. Enrolment confirmations, module invitations, and completion certificates are all sent to this address. If you do not yet have a work email account, contact IT before submitting this form. Submissions with personal email addresses will be rejected and you will need to resubmit.'
+  revision_translation_affected:
+    -
+      value: true

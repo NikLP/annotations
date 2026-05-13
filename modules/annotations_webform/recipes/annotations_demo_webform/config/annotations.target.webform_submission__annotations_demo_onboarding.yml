@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {}
+id: webform_submission__annotations_demo_onboarding
+label: 'New Starter Onboarding (submission form)'
+entity_type: webform_submission
+bundle: annotations_demo_onboarding
+fields:
+  - full_name
+  - work_email
+  - department
+  - manager_name
+  - start_date

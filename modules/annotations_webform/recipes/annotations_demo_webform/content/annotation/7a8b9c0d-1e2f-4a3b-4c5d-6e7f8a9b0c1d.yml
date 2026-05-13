@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: webform__annotations_demo_onboarding
+  value:
+    -
+      value: 'Webform ID: annotations_demo_onboarding. Submissions are stored in the webform_submission table (results_disabled: false). No email handlers are configured by default — add a webform handler if you need confirmation emails, HR system integration, or a Zapier/webhook trigger. Access is open to anonymous and authenticated roles; restrict via the webform Access tab if the form should be staff-only.'
+  revision_translation_affected:
+    -
+      value: true

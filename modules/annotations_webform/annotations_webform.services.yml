@@ -1,0 +1,27 @@
+services:
+  # Target plugin: annotate webform config entities (bundle-level only, no fields).
+  annotations.target.webform:
+    class: Drupal\annotations_webform\Plugin\Target\WebformTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  # Target plugin: annotate webform submission forms with per-element triggers.
+  # Overrides GenericTarget for webform_submission — enumerates webform elements
+  # rather than the submission entity's base fields.
+  annotations.target.webform_submission:
+    class: Drupal\annotations_webform\Plugin\Target\WebformSubmissionTarget
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_type.bundle.info'
+      - '@entity_field.manager'
+    tags:
+      - { name: annotations.target }
+
+  annotations_webform.hooks:
+    class: Drupal\annotations_webform\Hook\AnnotationsWebformHooks
+    arguments:
+      - '@entity_type.manager'

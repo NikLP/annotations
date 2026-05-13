@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {}
+id: webform__annotations_demo_onboarding
+label: 'New Starter Onboarding (webform)'
+entity_type: webform
+bundle: annotations_demo_onboarding
+fields: []
