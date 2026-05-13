@@ -1,0 +1,57 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: dc8eb360-d7ed-4fd6-92ce-ee22b2ae0cec
+  bundle: product
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'ProGrip Tool Kit'
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_certifications:
+    -
+      value: CE
+    -
+      value: RoHS
+    -
+      value: ISO9001
+  field_description:
+    -
+      value: '78-piece professional tool kit in a moulded carry case. Includes metric and imperial sockets, a reversible ratchet, and a 3-year warranty.'
+  field_lead_time:
+    -
+      value: 12
+  field_origin:
+    -
+      value: CN
+  field_price:
+    -
+      value: '149.00'
+  field_product_status:
+    -
+      value: available
+  field_sku:
+    -
+      value: EU-TLS-0042

@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: ed565091-c01c-48b0-9374-553f3ab3c71c
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__collection
+  field_name:
+    -
+      value: field_season
+  value:
+    -
+      value: 'Season codes must follow the brand guide format: [2-letter season][2-digit year] — e.g. SS25, AW26. Do not invent new codes; check with the merchandising team if you are unsure.'
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

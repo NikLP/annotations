@@ -1,0 +1,49 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: 804aac4e-7d1b-48fe-bcc7-31d42b61183c
+  bundle: collection
+  default_langcode: en
+  depends:
+    dc8eb360-d7ed-4fd6-92ce-ee22b2ae0cec: node
+    8116c0b6-e013-48d8-aeb4-d02690227593: node
+    9d19e864-3f89-45a1-9509-9c2aaa409ca9: node
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Autumn / Winter 2025'
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_products:
+    -
+      entity: dc8eb360-d7ed-4fd6-92ce-ee22b2ae0cec
+    -
+      entity: 8116c0b6-e013-48d8-aeb4-d02690227593
+    -
+      entity: 9d19e864-3f89-45a1-9509-9c2aaa409ca9
+  field_season:
+    -
+      value: AW25
+  field_collection_active:
+    -
+      value: true

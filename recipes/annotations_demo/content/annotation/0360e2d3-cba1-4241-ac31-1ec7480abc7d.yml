@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 0360e2d3-cba1-4241-ac31-1ec7480abc7d
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  field_name:
+    -
+      value: field_description
+  value:
+    -
+      value: |-
+        Write in the active voice. Target 80–120 words. Tone: informative, not promotional. Avoid superlatives (best, unique, revolutionary).
+
+        Fill in the description before setting status to Available — an empty description displays as a blank block on the catalogue page.
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

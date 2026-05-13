@@ -1,0 +1,6 @@
+{
+  "name": "annotations/annotations_demo_types",
+  "description": "The three standard annotation types (editorial, technical, rules) used across all Annotations demo recipes.",
+  "type": "drupal-recipe",
+  "license": "GPL-2.0-or-later"
+}

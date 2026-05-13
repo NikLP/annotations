@@ -1,7 +1,0 @@
-langcode: en
-status: true
-dependencies: {}
-id: technical
-label: 'Technical'
-description: 'Field types, dependencies, workflow integration, and developer notes.'
-weight: 10

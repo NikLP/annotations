@@ -1,0 +1,30 @@
+uuid: c3a41369-84ab-4155-892b-ad6530c11935
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - options
+id: node.field_product_status
+field_name: field_product_status
+entity_type: node
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: available
+      label: Available
+    -
+      value: discontinued
+      label: Discontinued
+    -
+      value: coming_soon
+      label: 'Coming soon'
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,10 @@
+uuid: 5164e454-47e9-49d4-99e5-2e9de9f6657d
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: fuGmpblUPLQ7FRPBiS_EYPx9Fg1p3QWuz3grFH7_fao
+id: rules
+label: 'Business rules'
+description: 'Client-specific business logic and constraints.'
+weight: 20

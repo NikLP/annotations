@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 14cdf629-e590-45ec-9aed-5511b47026a4
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  field_name:
+    -
+      value: field_origin
+  value:
+    -
+      value: 'Supplier changed for most EU-prefixed SKUs in Q1 2025. Product descriptions referencing the previous manufacturer are pending update by the content team — flag any you find.'
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

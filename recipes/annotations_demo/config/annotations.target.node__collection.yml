@@ -1,0 +1,13 @@
+uuid: 4a5781d2-9a88-4560-ac14-dd3918165aa3
+langcode: en
+status: true
+dependencies: {  }
+id: node__collection
+label: Collection
+entity_type: node
+bundle: collection
+fields:
+  - title
+  - field_products
+  - field_season
+  - field_collection_active

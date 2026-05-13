@@ -25,3 +25,5 @@ services:
     class: Drupal\annotations_webform\Hook\AnnotationsWebformHooks
     arguments:
       - '@entity_type.manager'
+      - '@annotations_overlay.service'
+      - '@renderer'

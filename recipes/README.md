@@ -1,95 +1,41 @@
-# LocalGov Drupal Annotations Demo Recipe
+# Annotations Recipes
 
-## Installation steps
+Drupal recipes for the Annotations suite. Each recipe is self-contained and can be applied with `drush recipe <path>`.
 
-- [Install LGD](https://docs.localgovdrupal.org/devs/workflows/installing-and-deploying-lgd.html#_1-initial-installation)
-- [Install LGD demo](https://www.drupal.org/project/localgov_demo) which is
-present in the default LGD site install
-- Install the annotations module suite into your modules/contrib|custom folder:
-  - `git clone git@github.com:NikLP/annotations.git` until it's on d.o
-- Run the LGD demo recipe
+## Available recipes
 
-## What this does
+### [annotations_demo_types](annotations_demo_types/)
 
-The recipe will:
+The three standard annotation types: Editorial, Technical, and Business rules. This is the shared base — other demo recipes declare it as a dependency so it is applied automatically. You rarely need to apply it directly.
 
-- install the required modules
-- set up annotations targets & types pertinent to the demo
-- insert demo annotations
+```bash
+drush recipe web/modules/custom/annotations/recipes/annotations_demo_types
+```
 
-Bear in mind this is a work in progress; annotation content here was created by
-AI, and has no necessary bearing on reality.
+### [annotations_demo](annotations_demo/)
 
-## 'Cooking' the recipe
+Creates Product and Collection content types from scratch, wires them up as annotation targets, and populates them with 21 starter annotations and sample nodes. Depends on `annotations_demo_types`. Use on a fresh dev or evaluation install.
 
-Recipes in Drupal usually appear in the project root, ie outside of the webroot.
+```bash
+drush recipe web/modules/custom/annotations/recipes/annotations_demo
+```
 
-The foolproof approach is to *copy the recipe* from the annotations module into
-that directory and run it with: `drush recipe ../recipes/annotations_demo_lgd`.
+### [annotations_demo_lgd](annotations_demo_lgd/)
 
-Or you can simply run `drush recipe modules/contrib/annotations/recipes/annotations_demo_lgd`
+Bolt-on annotations for a LocalGov Drupal site. Targets existing LGD content types (Event, Subsite page) and paragraph types (Banner primary, Accordion) — does not create any content types. Requires a working LGD install.
 
-I offer two approaches here purely because annotations is a bit of a moveable
-feast at the moment, the directory names on your install may differ, etc etc.
+```bash
+drush recipe web/modules/custom/annotations/recipes/annotations_demo_lgd
+```
 
-## What did I get, here?
+### [annotations_demo_webform](annotations_demo_webform/)
 
-The recipe inserts:
+Bolt-on annotations for a standalone Webform. Creates the New Starter Onboarding form, registers `webform` and `webform_submission` as annotation target types, and imports 7 starter annotations with per-field overlay triggers. Depends on `annotations_demo_types`.
 
-- annotation types of:
-  - Editorial
-  - Technical
-  - Business rules
+```bash
+drush recipe web/modules/custom/annotations/recipes/annotations_demo_webform
+```
 
-- annotation target config *and* annotations for:
-  - Event content type
-  - Subsite page content type
-  - Banner primary paragraph type
-  - Accordion paragraph type
+## Recipe authoring
 
-## Where should I look to see this?
-
-Ok for this demo I only present field annotations on forms. The overlay module
-is an example of an annotations *consumer* module. This will show annotations
-on edit forms for the content types and paragraph types listed above. If you
-read the module's README pages, primarily the top-level one, you'll get a better
-understanding of what's what here.
-
-First let's add a new Event page, via `node/add/localgov_event`. You will see
-that the form has some new elements that look like (?) by the fields. These
-contain annotations. Click the (?) trigger and a modal will appear.
-
-Ok this is pretty cool, but let's add a subsite page
-(`node/add/localgov_subsites_page`). On this form we can see more of the same
-triggers, but this form also uses additional form mechanisms.
-
-Click Banner, and you'll see the banner paragraph type also has an annotation.
-Click Banner primary, and oh cool, we can use annotations inside paragraphs
-sub-forms!
-
-A little more? Click the following in order:
-
-- Page builder
-- Add section (inside Page content)
-- Any layout to add a section, then save
-- `+` button to add a component
-- Accordion
-
-Voila, this has annotations too, on this form within a form (within a form?)
-
-The overlay module also contains functionality for the front end. Let's enable
-that and show it working.
-
-- Navigate to the event page's manage fields section (`admin/structure/types/manage/localgov_event/display`).
-- Enable the annotations overlay by moving the field out of the disabled section
-into the active fields, setting the label to hidden.
-- Save
-
-Now create an Event, and you can see the annotations inserted into the page.
-
-You'll have read the module's README so you understand that different annotation
-types can be displayed to different roles, right? So annotations here could have
-been set up differently, you might have a set just for displaying to (front)
-end users. The annotation content here isn't really geared towards these folk.
-
-*There is more to it than this.*
+See the [root README](../README.md#recipe-authoring) for documentation on the `enableTargetType` and `enableTargetField` config action plugins, which are the building blocks for any recipe that wires up annotation scope on existing content types.

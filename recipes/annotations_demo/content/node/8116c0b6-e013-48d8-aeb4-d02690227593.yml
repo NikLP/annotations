@@ -1,0 +1,57 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: 8116c0b6-e013-48d8-aeb4-d02690227593
+  bundle: product
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'FlexCharge Station'
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_certifications:
+    -
+      value: CE
+    -
+      value: RoHS
+    -
+      value: FCC
+  field_description:
+    -
+      value: 'Six-port USB charging station with 65 W GaN output and intelligent current sharing. Compatible with all USB-A and USB-C devices.'
+  field_lead_time:
+    -
+      value: 3
+  field_origin:
+    -
+      value: TW
+  field_price:
+    -
+      value: '64.99'
+  field_product_status:
+    -
+      value: available
+  field_sku:
+    -
+      value: EU-ELC-0023

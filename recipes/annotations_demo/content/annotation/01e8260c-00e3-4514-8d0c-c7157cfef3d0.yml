@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 01e8260c-00e3-4514-8d0c-c7157cfef3d0
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  value:
+    -
+      value: |-
+        Product records drive the main catalogue. Entries require brand team sign-off before status is set to Available.
+
+        Do not create products directly in the CMS — all new SKUs must originate from an approved onboarding request.
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

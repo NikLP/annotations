@@ -1,0 +1,10 @@
+uuid: a956a71e-1584-4a5b-be33-7e06d951a5ad
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: t8AXPT_1Wbn92gm_TszRaS4rPaP7Rou26nQG6CA4Pfo
+id: technical
+label: Technical
+description: 'Field types, dependencies, workflow integration, and developer notes.'
+weight: 10

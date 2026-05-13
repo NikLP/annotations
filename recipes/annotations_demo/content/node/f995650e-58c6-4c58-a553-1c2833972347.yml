@@ -1,0 +1,55 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: f995650e-58c6-4c58-a553-1c2833972347
+  bundle: product
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Aero Desk Lamp'
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_certifications:
+    -
+      value: CE
+    -
+      value: RoHS
+  field_description:
+    -
+      value: 'Sleek adjustable LED desk lamp with three colour temperatures and a USB-A charging port. Designed for home office and professional workspaces.'
+  field_lead_time:
+    -
+      value: 5
+  field_origin:
+    -
+      value: DE
+  field_price:
+    -
+      value: '89.95'
+  field_product_status:
+    -
+      value: available
+  field_sku:
+    -
+      value: EU-LGT-0001

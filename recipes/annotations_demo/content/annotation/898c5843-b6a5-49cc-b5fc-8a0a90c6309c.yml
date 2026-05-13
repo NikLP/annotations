@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 898c5843-b6a5-49cc-b5fc-8a0a90c6309c
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  value:
+    -
+      value: |-
+        Products sync from the ERP nightly via a scheduled migration. Do not create or delete records manually outside of approved onboarding workflows.
+
+        The ERP is the system of record; changes made here without a matching ERP entry will be overwritten on the next sync.
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

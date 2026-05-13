@@ -1,6 +1,6 @@
 {
-  "name": "localgovdrupal/annotations-demo-lgd",
-  "description": "Demo annotation content for LocalGov Drupal — Event content type.",
+  "name": "annotations/annotations_demo_lgd",
+  "description": "Annotations demo content/config for LocalGov Drupal",
   "type": "drupal-recipe",
   "license": "GPL-2.0-or-later"
 }

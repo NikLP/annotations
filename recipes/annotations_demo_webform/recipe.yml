@@ -1,0 +1,18 @@
+name: 'Annotations Webform demo'
+description: 'Bolt-on demo: adds annotation overlays to a standalone onboarding webform. Creates the New Starter Onboarding webform, wires it as an annotation target, and imports 7 starter annotations.'
+type: 'Demo content'
+
+recipes:
+  - annotations_demo_types
+
+install:
+  - annotations_overlay
+  - annotations_webform
+  - webform
+
+config:
+  actions:
+    annotations.target_types:
+      enableTargetType:
+        - webform
+        - webform_submission

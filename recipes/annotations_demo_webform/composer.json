@@ -1,0 +1,6 @@
+{
+  "name": "annotations/annotations_demo_webform",
+  "description": "Bolt-on demo annotations for a standalone onboarding webform — per-field overlay triggers on the New Starter Onboarding form.",
+  "type": "drupal-recipe",
+  "license": "GPL-2.0-or-later"
+}

@@ -1,0 +1,27 @@
+name: 'Annotations demo (Product & Collection)'
+description: 'Creates Product and Collection content types with five product nodes and three collection nodes, annotation targets covering all fields, and 21 starter annotations. Designed for fresh dev/demo installs — field storages are marked strict and will conflict with pre-existing fields of the same name.'
+type: 'Demo content'
+
+recipes:
+  - annotations_demo_types
+
+install:
+  - annotations_overlay
+  - node
+
+config:
+  strict:
+    - field.storage.node.field_certifications
+    - field.storage.node.field_collection_active
+    - field.storage.node.field_description
+    - field.storage.node.field_lead_time
+    - field.storage.node.field_origin
+    - field.storage.node.field_price
+    - field.storage.node.field_product_status
+    - field.storage.node.field_products
+    - field.storage.node.field_season
+    - field.storage.node.field_sku
+  actions:
+    annotations.target_types:
+      enableTargetType:
+        - node

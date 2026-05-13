@@ -26,6 +26,14 @@ Shows `?` overlay triggers next to individual form elements while someone is fil
 4. Expand **Webform submissions** to opt in specific forms and configure which elements get `?` triggers
 5. Add annotation content via **Admin → Config → Annotations**
 
+## Demo recipe
+
+A demo recipe lives at [`recipes/annotations_demo_webform/`](../../recipes/annotations_demo_webform/). It creates a sample onboarding webform, wires both target types, and imports 7 starter annotations. The recipe declares `annotations_demo_types` as a dependency, so no prerequisite step is needed:
+
+```bash
+drush recipe web/modules/custom/annotations/recipes/annotations_demo_webform
+```
+
 ## Limitation
 
 Overlay triggers only appear for top-level form elements. Elements nested inside Webform containers, fieldsets, or wizard pages are not yet supported.

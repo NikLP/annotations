@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 736c7d7c-4a95-40d0-8a3d-6300ce825dc9
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  field_name:
+    -
+      value: field_product_status
+  value:
+    -
+      value: 'coming_soon triggers the pre-order landing page. Confirm with the dev team before setting this value — the pre-order flow requires a fulfilment date to be entered in the ERP first.'
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

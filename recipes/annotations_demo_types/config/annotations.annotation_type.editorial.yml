@@ -1,0 +1,10 @@
+uuid: cf72f732-841f-4898-b521-38648ff5ccc6
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: uAtwo5HEo3kr-J6SemhsKeR1LeScDJXf3WfnshTe2BU
+id: editorial
+label: Editorial
+description: 'What this target is and how editors use it. Written for non-technical users.'
+weight: 0

@@ -75,7 +75,7 @@ Install annotations base module; enable submodules as needed.
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
 | `annotations_scan` | Agency / dev | Stable | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
 | `annotations_ai_context` | — | Deprecated | Deprecated prototype. Superseded by `annotations_context_ccc`. Do not enable alongside it. |
-| `annotations_demo` | Dev / evaluation | Stable | Ships the default editorial/technical/rules annotation types, form displays, a sample target, and starter content. Install for dev or evaluation; omit for blank-slate production. |
+| `annotations_webform` | Dev / site builders | Stable | Webform and WebformSubmission target plugins and overlay field label resolver. |
 
 ---
 
@@ -106,7 +106,7 @@ Because every annotation type generates a `consume {type} annotations` permissio
 | Authenticated user | `consume rules annotations` | Mandatory compliance notes |
 | Administrator | (all permissions implicitly) | Everything |
 
-Annotations are authored against the same targets and fields regardless of type — the role determines which types are visible, not where the annotation lives. Types stack freely: grant multiple consume permissions to a role to combine audiences. The `annotations_demo` module ships `editorial`, `technical`, and `rules` types as a starting point.
+Annotations are authored against the same targets and fields regardless of type — the role determines which types are visible, not where the annotation lives. Types stack freely: grant multiple consume permissions to a role to combine audiences. The `annotations_demo_types` recipe ships `editorial`, `technical`, and `rules` types as a starting point.
 
 ### Overview annotation
 
@@ -256,6 +256,66 @@ Use the `drupal` script to export `annotation` entities as files in a recipe's `
 ```bash
 ddev php web/core/scripts/drupal content:export annotation --dir=recipes/myrecipe/content
 ```
+
+---
+
+## Recipe authoring
+
+The root module ships two config action plugins for wiring up annotation scope in a recipe without overwriting pre-existing config.
+
+### `enableTargetType`
+
+Appends one or more entity types to `annotations.target_types`. Idempotent — types already in the list are skipped.
+
+```yaml
+config:
+  actions:
+    annotations.target_types:
+      enableTargetType: node
+      # or a list:
+      # enableTargetType:
+      #   - node
+      #   - taxonomy_term
+```
+
+### `enableTargetField`
+
+Appends fields to an `annotation_target` entity's fields list. Idempotent — fields already registered are skipped. If the target does not yet exist it is created automatically, with its label sourced from Drupal's bundle info (e.g. `node.type.article` → "Article").
+
+```yaml
+config:
+  actions:
+    annotations.target.node__article:
+      enableTargetField:
+        - title
+        - body
+        - field_tags
+```
+
+### Bolt-on recipe pattern (targeting existing content types)
+
+```yaml
+install:
+  - annotations
+  - annotations_ui
+  - annotations_type_ui
+
+config:
+  actions:
+    annotations.target_types:
+      enableTargetType: node
+    annotations.target.node__article:
+      enableTargetField:
+        - title
+        - body
+        - field_tags
+```
+
+### New content type recipe pattern
+
+When a recipe creates its own content types, ship `annotations.target.{entity_type}__{bundle}.yml` directly in the recipe's `config/` directory alongside the node type, field, and display configs. Config import runs before config actions, so the target entity is already in place by the time any action fires. `enableTargetField` is not needed — the target YAML already carries the full fields list.
+
+See [recipes/annotations_demo/](recipes/annotations_demo/) for a worked example.
 
 ---
 

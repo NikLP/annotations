@@ -1,0 +1,21 @@
+uuid: 10cb6c29-51d7-495d-ac72-14cae6830043
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_collection_active
+    - node.type.collection
+id: node.collection.field_collection_active
+field_name: field_collection_active
+entity_type: node
+bundle: collection
+label: Active
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

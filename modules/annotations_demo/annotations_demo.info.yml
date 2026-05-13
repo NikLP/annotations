@@ -1,9 +1,0 @@
-name: 'Annotations Demo'
-type: module
-description: 'Ships three annotation types (editorial, technical, rules), two demo content types (Product and Collection), annotation targets covering all their fields, five product nodes, three collection nodes, and 21 starter annotations. Install for development and evaluation; omit for production deployments.'
-package: Annotations
-core_version_requirement: ^11
-dependencies:
-  - annotations:annotations
-  - annotations:annotations_ui
-  - annotations:annotations_type_ui

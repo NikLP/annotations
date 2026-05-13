@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 82789d6e-003e-4221-8c7b-f568e4751108
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  field_name:
+    -
+      value: field_lead_time
+  value:
+    -
+      value: 'Value in working days. Add 10 days for orders placed Nov–Jan (seasonal capacity reduction). Procurement will not honour the standard SLA during this window — communicate accordingly.'
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

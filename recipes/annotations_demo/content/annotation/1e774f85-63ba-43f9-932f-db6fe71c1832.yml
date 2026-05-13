@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 1e774f85-63ba-43f9-932f-db6fe71c1832
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__product
+  field_name:
+    -
+      value: field_certifications
+  value:
+    -
+      value: 'RoHS certification is mandatory for any product sold in the EU. If this field is empty the product must not be set to Available — raise a compliance ticket first.'
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

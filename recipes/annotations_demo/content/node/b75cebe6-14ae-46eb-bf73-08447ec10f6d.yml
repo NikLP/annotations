@@ -1,0 +1,53 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: b75cebe6-14ae-46eb-bf73-08447ec10f6d
+  bundle: product
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Summit Backpack 40L'
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_certifications:
+    -
+      value: CE
+  field_description:
+    -
+      value: 'Technical hiking pack with a 40-litre main compartment, hydration sleeve, and padded laptop section. Ships in three colourways.'
+  field_lead_time:
+    -
+      value: 8
+  field_origin:
+    -
+      value: PL
+  field_price:
+    -
+      value: '210.50'
+  field_product_status:
+    -
+      value: coming_soon
+  field_sku:
+    -
+      value: EU-BAG-0108

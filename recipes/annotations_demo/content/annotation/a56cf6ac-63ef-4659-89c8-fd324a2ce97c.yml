@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: a56cf6ac-63ef-4659-89c8-fd324a2ce97c
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__collection
+  value:
+    -
+      value: |-
+        Collections group products for campaign and seasonal pages. Each collection maps to one homepage carousel slot or landing page.
+
+        There should be no more than six active collections at any time. Archive by setting Active to false when a season ends — do not delete.
+  uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

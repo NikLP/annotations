@@ -1,0 +1,8 @@
+name: 'Annotations demo types'
+description: 'Installs the three standard annotation types used across all Annotations demo recipes: Editorial, Technical, and Business rules. Apply this first (or declare it as a recipe dependency) before applying any other Annotations demo recipe.'
+type: 'Demo content'
+
+install:
+  - annotations
+  - annotations_ui
+  - annotations_type_ui

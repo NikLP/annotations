@@ -6,17 +6,21 @@ Drupal module suite: reads site structure (content types, fields, roles, workflo
 
 ```text
 annotations/                ← root module (always required)
-└── modules/
-    ├── annotations_ui/             ← CLAUDE.md, README.md
-    ├── annotations_type_ui/        ← CLAUDE.md, README.md
-    ├── annotations_coverage/       ← CLAUDE.md, README.md
-    ├── annotations_context/        ← CLAUDE.md, README.md
-    ├── annotations_ai_context/     ← CLAUDE.md (deprecated prototype)
-    ├── annotations_context_ccc/    ← CLAUDE.md
-    ├── annotations_overlay/        ← CLAUDE.md, README.md
-    ├── annotations_workflows/      ← CLAUDE.md, README.md
-    ├── annotations_scan/           ← CLAUDE.md, README.md
-    └── annotations_demo/           ← default types, form displays, starter content
+├── modules/
+│   ├── annotations_ui/             ← CLAUDE.md, README.md
+│   ├── annotations_type_ui/        ← CLAUDE.md, README.md
+│   ├── annotations_coverage/       ← CLAUDE.md, README.md
+│   ├── annotations_context/        ← CLAUDE.md, README.md
+│   ├── annotations_ai_context/     ← CLAUDE.md (deprecated prototype)
+│   ├── annotations_context_ccc/    ← CLAUDE.md
+│   ├── annotations_overlay/        ← CLAUDE.md, README.md
+│   ├── annotations_workflows/      ← CLAUDE.md, README.md
+│   └── annotations_scan/           ← CLAUDE.md, README.md
+└── recipes/
+    ├── annotations_demo_types/     ← shared base: editorial/technical/rules annotation types; dependency of other demo recipes
+    ├── annotations_demo/           ← CLAUDE.md, README.md — standalone demo recipe (Product & Collection); depends on annotations_demo_types
+    ├── annotations_demo_lgd/       ← bolt-on recipe targeting LocalGov Drupal content types
+    └── annotations_demo_webform/   ← bolt-on recipe: onboarding webform with per-field overlay triggers; depends on annotations_demo_types
 ```
 
 Each submodule should have its own `CLAUDE.md` and `README.md`. These files cover the root module, cross-cutting conventions, the data model, and design decisions.
@@ -50,7 +54,7 @@ Each submodule should have its own `CLAUDE.md` and `README.md`. These files cove
 - `id`, `label`, `description`, `weight`
 - `getPermission()` → `edit {id} annotations`; `getConsumePermission()` → `consume {id} annotations`
 - Additional behaviors (`affects_coverage`, `in_ai_context`) are third-party settings owned by the submodule that uses them.
-- Ships no default types — `annotations_demo` ships editorial/technical/rules.
+- Ships no default types — the `annotations_demo_types` recipe ships editorial/technical/rules.
 
 ### `annotation_target` config entity — `annotations.target.*`
 
@@ -81,6 +85,9 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - Views field plugins: `AnnotationTargetLabelField`, `AnnotationFieldLabelField`, `AnnotationTypeLabelField`
 - Admin menu: Annotations top-level entry under Admin → Config
 - `AnnotationsCommands` (`src/Drush/Commands/`) — inspection commands: `annotations:targets`, `annotations:types`, `annotations:show`, `annotations:stats` (aliases `ann:targets`, `ann:types`, `ann:show`, `ann:stats`)
+- Config action plugins (`src/Plugin/ConfigAction/`) — Drupal recipe config actions for wiring up annotation scope declaratively:
+  - `enableTargetType` — appends an entity type to `annotations.target_types.enabled_target_types`; idempotent
+  - `enableTargetField` — appends fields to an `annotation_target` entity's fields list; creates the target from the bundle's existing Drupal label if it does not yet exist; idempotent
 
 ---
 
@@ -97,7 +104,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_context_ccc` | Injects annotations context into CCC (ai_context) agent system prompts via `BuildSystemPromptEvent` |
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
-| `annotations_demo` | editorial/technical/rules types, form displays, starter annotations; install for dev/eval |
+| `annotations_webform` | Webform and WebformSubmission target plugins and overlay field label resolver |
 
 ---
 
