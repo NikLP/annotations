@@ -105,6 +105,21 @@ Themes: `annotations_overlay_chooser` (description + items) and `annotations_ove
 
 **Chooser rendering:** HTML is built by `buildBundleAnnotationHtml()` — direct string construction from the `value` base field rather than via the render pipeline or a view mode. This is intentional: calling `renderInIsolation()` from inside `preprocessNodeAddList` nests a PHP Fiber inside Drupal's existing render Fiber, which overflows the stack on cold Twig cache. `buildBundleAnnotationRenderItems()` exists as the view-mode-capable alternative but cannot be called from a preprocess hook for this reason. The chooser works correctly as long as annotation content lives in the `value` field (the default). Edge case: if an annotation type stores its content in a separate field (e.g. a wysiwyg), the chooser will show nothing for that type — the view-mode path would be needed.
 
+## Extension point: hook_annotations_overlay_field_label_alter
+
+`AnnotationsOverlayService::resolveFieldLabel()` invokes `hook_annotations_overlay_field_label_alter(&$label, $entity_type_id, $bundle, $field_name)` after the `field_config` lookup. Use this to supply human-readable labels for "fields" that have no `field_config` entity — webform elements, computed properties, etc.
+
+```php
+#[Hook('annotations_overlay_field_label_alter')]
+public function annotationsOverlayFieldLabelAlter(string &$label, array $context): void {
+  // $context keys: entity_type_id, bundle, field_name.
+  // $label is already the machine name if no field_config was found.
+  // Replace it with a human-readable label when appropriate.
+}
+```
+
+`annotations_webform` uses this hook to resolve webform element `#title` values for `webform_submission` targets.
+
 ## Parked work
 
 - **Module split:** `AnnotationsOverlayService` is the natural shared dependency. The planned split is `annotations_overlay_edit` (form alter), `annotations_overlay_view` (view alter + Manage Display), and `annotations_field_group` (field_group bridge — see below). The service, library, and computed field would move to the base `annotations_overlay` module. Primary driver: edit overlays without view overlays (content editors only).

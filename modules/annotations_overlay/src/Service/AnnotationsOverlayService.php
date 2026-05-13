@@ -8,6 +8,7 @@ use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\AnnotationsGlyph;
 use Drupal\annotations\Entity\Annotation;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -24,6 +25,7 @@ class AnnotationsOverlayService {
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly AnnotationStorageService $annotationStorage,
     private readonly AccountProxyInterface $currentUser,
+    private readonly ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -200,7 +202,10 @@ class AnnotationsOverlayService {
     $config = $this->entityTypeManager
       ->getStorage('field_config')
       ->load($entity_type_id . '.' . $bundle . '.' . $field_name);
-    return $config !== NULL ? (string) $config->label() : $field_name;
+    $label = $config !== NULL ? (string) $config->label() : $field_name;
+    $context = ['entity_type_id' => $entity_type_id, 'bundle' => $bundle, 'field_name' => $field_name];
+    $this->moduleHandler->alter('annotations_overlay_field_label', $label, $context);
+    return $label;
   }
 
   /**

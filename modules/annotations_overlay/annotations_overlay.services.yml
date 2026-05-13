@@ -11,6 +11,7 @@ services:
       - '@entity_type.manager'
       - '@annotations.annotation_storage'
       - '@current_user'
+      - '@module_handler'
 
   annotations_overlay.hooks:
     class: Drupal\annotations_overlay\Hook\AnnotationsOverlayHooks
