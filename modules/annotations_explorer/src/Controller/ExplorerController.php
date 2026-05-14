@@ -13,6 +13,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\annotations\AnnotationDiscoveryService;
 use Drupal\annotations\AnnotationStorageService;
 use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -27,6 +28,7 @@ class ExplorerController extends ControllerBase {
   public function __construct(
     protected AnnotationStorageService $storageService,
     protected EntityFieldManagerInterface $fieldManager,
+    protected AnnotationDiscoveryService $discoveryService,
   ) {}
 
   /**
@@ -36,6 +38,7 @@ class ExplorerController extends ControllerBase {
     return new static(
       $container->get('annotations.annotation_storage'),
       $container->get('entity_field.manager'),
+      $container->get('annotations.discovery'),
     );
   }
 
@@ -116,64 +119,99 @@ class ExplorerController extends ControllerBase {
       ];
     }
 
+    // Group targets by entity type.
+    $groups = [];
+    foreach ($targets as $target) {
+      $groups[$target->getTargetEntityTypeId()][$target->id()] = $target;
+    }
+
+    uksort($groups, fn(string $a, string $b) => strnatcasecmp(
+      $this->getEntityTypeLabel($a),
+      $this->getEntityTypeLabel($b),
+    ));
+
     $nav_list = [
       '#type' => 'html_tag',
       '#tag' => 'ul',
       '#attributes' => ['class' => ['annotations-explorer__nav-list']],
     ];
 
-    foreach ($targets as $target) {
-      $is_active = $active && $target->id() === $active->id();
-
-      $details = [
-        '#type' => 'html_tag',
-        '#tag' => 'details',
-        '#attributes' => $is_active ? ['open' => TRUE] : [],
-        'summary' => [
-          '#type' => 'html_tag',
-          '#tag' => 'summary',
-          'link' => [
-            '#type' => 'link',
-            '#title' => $target->label(),
-            '#url' => Url::fromRoute('annotations_explorer.target', ['annotation_target' => $target->id()]),
-            '#attributes' => ['class' => ['use-ajax']],
-          ],
-        ],
-      ];
-
-      if ($is_active) {
-        $sections = $this->getVisibleSections($target, $types);
-        if (!empty($sections)) {
-          $fields_list = [
-            '#type' => 'html_tag',
-            '#tag' => 'ul',
-            '#attributes' => ['class' => ['annotations-explorer__fields-list']],
-          ];
-          foreach ($sections as $section_key => $section_label) {
-            $anchor = 'annotations-explorer-group-' . Html::cleanCssIdentifier($section_key);
-            $fields_list[] = [
-              '#type' => 'html_tag',
-              '#tag' => 'li',
-              'link' => [
-                '#type' => 'link',
-                '#title' => $section_label,
-                '#url' => Url::fromRoute('<none>', [], ['fragment' => $anchor]),
-              ],
-            ];
-          }
-          $details['fields'] = $fields_list;
-        }
-      }
-
+    foreach ($groups as $entity_type_id => $group_targets) {
       $nav_list[] = [
         '#type' => 'html_tag',
         '#tag' => 'li',
-        '#attributes' => ['class' => array_values(array_filter(['annotations-explorer__nav-item', $is_active ? 'is-active' : NULL]))],
-        'details' => $details,
+        '#value' => Html::escape($this->getEntityTypeLabel($entity_type_id)),
+        '#attributes' => ['class' => ['annotations-explorer__nav-group-heading'], 'aria-hidden' => 'true'],
       ];
+
+      foreach ($group_targets as $target) {
+        $is_active = $active && $target->id() === $active->id();
+
+        $details = [
+          '#type' => 'html_tag',
+          '#tag' => 'details',
+          '#attributes' => $is_active ? ['open' => TRUE] : [],
+          'summary' => [
+            '#type' => 'html_tag',
+            '#tag' => 'summary',
+            'link' => [
+              '#type' => 'link',
+              '#title' => $target->label(),
+              '#url' => Url::fromRoute('annotations_explorer.target', ['annotation_target' => $target->id()]),
+              '#attributes' => ['class' => ['use-ajax']],
+            ],
+          ],
+        ];
+
+        if ($is_active) {
+          $sections = $this->getVisibleSections($target, $types);
+          if (!empty($sections)) {
+            $fields_list = [
+              '#type' => 'html_tag',
+              '#tag' => 'ul',
+              '#attributes' => ['class' => ['annotations-explorer__fields-list']],
+            ];
+            foreach ($sections as $section_key => $section_label) {
+              $anchor = 'annotations-explorer-group-' . Html::cleanCssIdentifier($section_key);
+              $fields_list[] = [
+                '#type' => 'html_tag',
+                '#tag' => 'li',
+                'link' => [
+                  '#type' => 'link',
+                  '#title' => $section_label,
+                  '#url' => Url::fromRoute('<none>', [], ['fragment' => $anchor]),
+                ],
+              ];
+            }
+            $details['fields'] = $fields_list;
+          }
+        }
+
+        $nav_list[] = [
+          '#type' => 'html_tag',
+          '#tag' => 'li',
+          '#attributes' => ['class' => array_values(array_filter(['annotations-explorer__nav-item', $is_active ? 'is-active' : NULL]))],
+          'details' => $details,
+        ];
+      }
     }
 
     return $nav_list;
+  }
+
+  /**
+   * Returns the human-readable label for an entity type ID.
+   *
+   * Delegates to the target plugin so labels match the admin scope UI.
+   * Falls back to the entity type definition label, then the machine name.
+   */
+  private function getEntityTypeLabel(string $entity_type_id): string {
+    $plugins = $this->discoveryService->getPlugins();
+    if (isset($plugins[$entity_type_id])) {
+      return $plugins[$entity_type_id]->getLabel();
+    }
+    $definition = $this->entityTypeManager()->getDefinition($entity_type_id, FALSE);
+    return $definition ? (string) $definition->getLabel() : $entity_type_id;
   }
 
   /**

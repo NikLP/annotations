@@ -62,3 +62,14 @@
 .annotations-explorer__machine-name {
   display: block;
 }
+
+.annotations-explorer__nav-group-heading {
+  list-style: none;
+  margin-top: 1.25em;
+  font-weight: 600;
+  padding: 0 0 0.5em 0;
+}
+
+.annotations-explorer__nav-list > li.annotations-explorer__nav-group-heading:first-child {
+  margin-top: 0;
+}

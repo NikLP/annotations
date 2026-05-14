@@ -24,7 +24,9 @@ Consumer-facing: the page is gated on having at least one `consume {type} annota
 
 ## Nav structure
 
-Each target in the left nav is a `<details>` element. The `<summary>` is the target name (also the AJAX link). When a target is active (`open`), its sections (Overview + field names) appear as anchor links inside the details, pointing to the corresponding groups in the main panel.
+Targets are grouped by entity type. Each group is introduced by a muted heading `<li>` (`aria-hidden`) showing the entity type label (e.g. "Content", "Taxonomy term"). Within each group, targets are `<details>` elements; the `<summary>` is the target name and the AJAX link. When a target is active (`open`), its sections (Overview + field names) appear as anchor links inside the details, pointing to the corresponding groups in the main panel.
+
+Entity type labels are resolved via `EntityTypeManager::getDefinition()`, falling back to the machine name.
 
 ## Permissions
 
@@ -37,4 +39,5 @@ Custom access callback (`ExplorerController::access`) allows entry if the user h
 - [x] Target nav as `<details>/<summary>` with field anchor links; clicking the arrow navigates the same as clicking the link
 - [x] Field name resolution to human-readable labels via `EntityFieldManagerInterface`; machine name shown in `<small>` in main panel group headings only
 - [x] Edit link to `annotations_ui` per target (when installed), inline with the target heading
+- [x] Entity type grouping in nav (heading `<li>` per group)
 - [ ] Active-state URL sync (browser back/forward) — deferred
