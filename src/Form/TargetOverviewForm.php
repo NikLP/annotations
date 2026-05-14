@@ -234,7 +234,7 @@ class TargetOverviewForm extends FormBase {
 
     $storage = $this->entityTypeManager->getStorage('annotation_target');
     foreach ($to_create as $scope_key => $data) {
-      $fields = $this->buildDefaultFieldsMap($data['entity_type'], $data['bundle']);
+      $fields = $this->buildDefaultFields($data['entity_type'], $data['bundle']);
       $storage->create([
         'id' => $scope_key,
         'label' => $data['label'],
@@ -298,10 +298,10 @@ class TargetOverviewForm extends FormBase {
    * Pre-populates all available editorial fields so all fields are included by
    * default. The annotator can use "Configure" to adjust the selection.
    *
-   * @return array<string, array>
-   *   Fields map keyed by field machine name.
+   * @return string[]
+   *   Indexed list of field machine names.
    */
-  protected function buildDefaultFieldsMap(
+  protected function buildDefaultFields(
     string $entity_type_id,
     string $bundle_id,
   ): array {
@@ -319,7 +319,7 @@ class TargetOverviewForm extends FormBase {
       ) {
         continue;
       }
-      $fields[$field_name] = [];
+      $fields[] = $field_name;
     }
 
     return $fields;
