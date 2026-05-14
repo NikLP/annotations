@@ -31,50 +31,36 @@ class McpSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $key = $this->config('annotations_context.settings')->get('mcp_api_key') ?? '';
+    $form = parent::buildForm($form, $form_state);
 
     $form['mcp'] = [
-      '#type'  => 'fieldset',
-      '#title' => $this->t('MCP API key'),
+      '#type'   => 'fieldset',
+      '#title'  => $this->t('MCP API key'),
+      '#weight' => 0,
     ];
 
     $form['mcp']['description'] = [
       '#type'   => 'item',
-      '#markup' => '<p>' . $this->t('Use this key in the Authorization: Bearer header when calling POST /api/annotations/mcp from a local MCP client.') . '</p>'
-        . '<p>' . $this->t('This token grants access to all annotation types enabled for AI context, regardless of role. Treat it as a privileged API secret and store it outside version control (e.g. via the Key module).') . '</p>',
+      '#markup' => '<p>' . $this->t('Use this key when calling the MCP API from a local client. Generate a key here, then either Save it to configuration (testing) or copy it into a file for use via the Key module (production).') . '</p>',
     ];
 
-    if ($key !== '') {
-      $form['mcp']['key_display'] = [
-        '#type'        => 'textfield',
-        '#title'       => $this->t('Current key'),
-        '#value'       => $key,
-        '#attributes'  => ['readonly' => 'readonly', 'style' => 'font-family: monospace;'],
-        '#description' => $this->t('Copy this value into your MCP client configuration.'),
-      ];
+    $form['mcp']['mcp_api_key'] = [
+      '#type'          => 'textfield',
+      '#title'         => $this->t('API key'),
+      '#config_target' => 'annotations_context.settings:mcp_api_key',
+      '#attributes'    => ['style' => 'font-family: monospace;'],
+      '#description'   => $this->t('Generated MCP API key. Clear and save to remove.'),
+    ];
 
-      $form['mcp']['regenerate'] = [
-        '#type'                    => 'submit',
-        '#value'                   => $this->t('Regenerate key'),
-        '#submit'                  => ['::generateKey'],
-        '#limit_validation_errors' => [],
-        '#button_type'             => 'danger',
-      ];
-    }
-    else {
-      $form['mcp']['no_key'] = [
-        '#markup' => '<p><em>' . $this->t('No API key has been generated yet.') . '</em></p>',
-      ];
+    $form['mcp']['generate'] = [
+      '#type'                    => 'submit',
+      '#value'                   => $this->t('Generate key'),
+      '#submit'                  => ['::generateKey'],
+      '#limit_validation_errors' => [],
+    ];
 
-      $form['mcp']['generate'] = [
-        '#type'                    => 'submit',
-        '#value'                   => $this->t('Generate key'),
-        '#submit'                  => ['::generateKey'],
-        '#limit_validation_errors' => [],
-      ];
-    }
+    $form['actions']['#weight'] = 10;
 
-    // No parent::buildForm() — there is no general "Save" action on this form.
     return $form;
   }
 
@@ -82,19 +68,25 @@ class McpSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Intentionally empty — the only action is generateKey().
+    parent::submitForm($form, $form_state);
+
+    if ($form_state->getValue(['mcp', 'mcp_api_key'])) {
+      $this->messenger()->addWarning($this->t(
+        'The API key is stored in site configuration. If your site\'s configuration is exported as part of a deployment process, this key will be included in those files. For production environments, use the <a href=":key_url">Key module</a> to store the key outside your codebase instead.',
+        [':key_url' => 'https://www.drupal.org/project/key']
+      ));
+    }
   }
 
   /**
-   * Generates (or regenerates) the MCP API key and saves it to config.
+   * Generates a new random key and populates the field without saving.
    */
   public function generateKey(array &$form, FormStateInterface $form_state): void {
     $key = Crypt::randomBytesBase64(32);
-    $this->config('annotations_context.settings')
-      ->set('mcp_api_key', $key)
-      ->save();
-
-    $this->messenger()->addStatus($this->t('A new MCP API key has been generated. Copy it now — this page will show it in full until you regenerate.'));
+    $input = $form_state->getUserInput();
+    $input['mcp_api_key'] = $key;
+    $form_state->setUserInput($input);
+    $form_state->setRebuild();
   }
 
 }

@@ -4,6 +4,8 @@ Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project 
 
 Assembles annotation data into structured context payloads: HTML preview, markdown download, REST JSON, and MCP endpoint. AI integration is handled by `annotations_ai_context`.
 
+A Claude Code skill ships with this module at `.claude/skills/annotations-context/`. Copy it to your project's `.claude/skills/` directory to make it available in sessions. It covers MCP protocol usage, annotation interpretation, and a pre-flight checklist for schema changes.
+
 ## Services
 
 | Service ID | Class | Purpose |
