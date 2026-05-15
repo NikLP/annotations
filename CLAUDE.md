@@ -15,7 +15,9 @@ annotations/                ← root module (always required)
 │   ├── annotations_context_ccc/    ← CLAUDE.md
 │   ├── annotations_overlay/        ← CLAUDE.md, README.md
 │   ├── annotations_workflows/      ← CLAUDE.md, README.md
-│   └── annotations_scan/           ← CLAUDE.md, README.md
+│   ├── annotations_scan/           ← CLAUDE.md, README.md
+│   ├── annotations_explorer/       ← CLAUDE.md, README.md
+│   └── annotations_export/         ← CLAUDE.md, README.md
 └── recipes/
     ├── annotations_demo_types/     ← shared base: editorial/technical/rules annotation types; dependency of other demo recipes
     ├── annotations_demo/           ← CLAUDE.md, README.md — standalone demo recipe (Product & Collection); depends on annotations_demo_types
@@ -105,6 +107,8 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
 | `annotations_webform` | Webform and WebformSubmission target plugins and overlay field label resolver |
+| `annotations_explorer` | Read-only two-panel browser at `/annotations/explorer`; consume-permission filtered; AJAX target switching |
+| `annotations_export` | Drush-only export to markdown or Obsidian vault; no web UI; delegates to `annotations_context` for assembly |
 
 ---
 
