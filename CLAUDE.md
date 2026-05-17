@@ -19,10 +19,11 @@ annotations/                ← root module (always required)
 │   ├── annotations_explorer/       ← CLAUDE.md, README.md
 │   └── annotations_export/         ← CLAUDE.md, README.md
 └── recipes/
-    ├── annotations_demo_types/     ← shared base: editorial/technical/rules annotation types; dependency of other demo recipes
+    ├── annotations_demo_types/     ← CLAUDE.md, README.md — shared base: editorial/technical/rules annotation types; dependency of other demo recipes
     ├── annotations_demo/           ← CLAUDE.md, README.md — standalone demo recipe (Product & Collection); depends on annotations_demo_types
-    ├── annotations_demo_lgd/       ← bolt-on recipe targeting LocalGov Drupal content types
-    └── annotations_demo_webform/   ← bolt-on recipe: onboarding webform with per-field overlay triggers; depends on annotations_demo_types
+    ├── annotations_demo_lgd/       ← CLAUDE.md, README.md — bolt-on recipe targeting LocalGov Drupal content types
+    ├── annotations_demo_umami/     ← CLAUDE.md, README.md — bolt-on recipe for Umami demo profile; adds Cookbook type + 4 targets
+    └── annotations_demo_webform/   ← CLAUDE.md, README.md — bolt-on recipe: onboarding webform with per-field overlay triggers
 ```
 
 Each submodule should have its own `CLAUDE.md` and `README.md`. These files cover the root module, cross-cutting conventions, the data model, and design decisions.
