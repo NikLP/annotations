@@ -1,0 +1,6 @@
+services:
+  annotations_profile.hooks:
+    class: Drupal\annotations_profile\Hook\AnnotationsProfileHooks
+    arguments:
+      - '@current_user'
+      - '@annotations_overlay.service'
