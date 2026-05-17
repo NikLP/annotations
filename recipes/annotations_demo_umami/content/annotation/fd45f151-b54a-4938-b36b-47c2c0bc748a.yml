@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: fd45f151-b54a-4938-b36b-47c2c0bc748a
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__cookbook
+  value:
+    -
+      value: 'A cookbook must contain a minimum of three recipes before it can be published. The description field is required. Cookbooks should not duplicate a category listing — if the grouping is identical to an existing recipe_category term, use the category page instead. All referenced recipes must themselves be published before the cookbook goes live.'
+  revision_translation_affected:
+    -
+      value: true

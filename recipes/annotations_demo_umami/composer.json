@@ -1,0 +1,6 @@
+{
+  "name": "annotations/annotations_demo_umami",
+  "description": "Annotations demo content/config for Drupal Umami",
+  "type": "drupal-recipe",
+  "license": "GPL-2.0-or-later"
+}

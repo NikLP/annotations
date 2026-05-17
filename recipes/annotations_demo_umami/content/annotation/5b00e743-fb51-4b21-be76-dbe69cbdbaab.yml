@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 5b00e743-fb51-4b21-be76-dbe69cbdbaab
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_difficulty
+  value:
+    -
+      value: 'Difficulty must always be set — do not leave it blank. The recipe filter depends on this field being populated on every published recipe. If a recipe is contested between two levels, default to the harder one. Review and update the difficulty rating whenever the recipe instructions are substantially revised.'
+  revision_translation_affected:
+    -
+      value: true

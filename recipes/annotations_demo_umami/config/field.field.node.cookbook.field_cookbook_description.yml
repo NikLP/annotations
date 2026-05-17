@@ -1,0 +1,22 @@
+uuid: 1fdb4721-c68a-4d6c-bcf8-6cbbed61ce65
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_cookbook_description
+    - node.type.cookbook
+  module:
+    - node
+    - text
+id: node.cookbook.field_cookbook_description
+field_name: field_cookbook_description
+entity_type: node
+bundle: cookbook
+label: Description
+description: 'An overview of this cookbook and its theme.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

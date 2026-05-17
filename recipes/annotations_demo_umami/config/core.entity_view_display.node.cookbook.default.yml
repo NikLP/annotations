@@ -1,0 +1,47 @@
+uuid: 8525056e-5a3b-4f4a-902a-f6f39a892935
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.cookbook.field_cookbook_description
+    - field.field.node.cookbook.field_cookbook_recipes
+    - node.type.cookbook
+  module:
+    - annotations_overlay
+    - node
+    - text
+    - user
+id: node.cookbook.default
+targetEntityType: node
+bundle: cookbook
+mode: default
+content:
+  annotations_overlay:
+    type: annotations_overlay
+    label: hidden
+    settings:
+      annotation_view_mode: overlay
+    third_party_settings: {  }
+    weight: 100
+    region: content
+  field_cookbook_description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_cookbook_recipes:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden: {  }

@@ -1,0 +1,19 @@
+uuid: 26e05ec0-9c23-4d56-beda-57abb6fd8f75
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_cookbook_recipes
+field_name: field_cookbook_recipes
+entity_type: node
+type: entity_reference
+settings:
+  target_type: node
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

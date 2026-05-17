@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 89453700-0af4-421f-97cd-ed5ce46225f3
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__cookbook
+  field_name:
+    -
+      value: title
+  value:
+    -
+      value: "The cookbook title as it appears in navigation and feature blocks. Keep it concise and thematic — it should communicate the collection's angle at a glance. Use title case. Avoid generic names (Good Recipes, Our Favourites) in favour of something specific and searchable (Quick Weeknight Dinners, Baking for Beginners)."
+  revision_translation_affected:
+    -
+      value: true

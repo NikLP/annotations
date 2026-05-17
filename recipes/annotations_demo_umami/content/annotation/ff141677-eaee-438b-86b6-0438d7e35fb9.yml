@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: ff141677-eaee-438b-86b6-0438d7e35fb9
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  value:
+    -
+      value: 'Recipe entries are the primary content type on an Umami site. Every recipe should be complete — all fields filled, ingredient quantities precise, and step counts verified — before the status is set to Published. Use the summary field to hook the reader in a single short paragraph; the full instruction set goes in the instructions field. A recipe that lacks a category, difficulty rating, or accurate timing is not ready to publish.'
+  revision_translation_affected:
+    -
+      value: true

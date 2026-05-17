@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 595a2725-68ff-4ef7-9c1b-f8833c71612b
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: title
+  value:
+    -
+      value: "The dish name as it should appear in listings and page headings. Write it in title case with no trailing punctuation. Use the common English name (Spaghetti Carbonara, not Pasta alla Carbonara) unless the recipe is specifically regional and the local name is part of its identity. Do not include servings, difficulty, or timing in the title — those fields handle that context."
+  revision_translation_affected:
+    -
+      value: true

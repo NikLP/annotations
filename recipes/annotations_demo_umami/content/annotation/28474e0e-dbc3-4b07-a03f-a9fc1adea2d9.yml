@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 28474e0e-dbc3-4b07-a03f-a9fc1adea2d9
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_number_of_servings
+  value:
+    -
+      value: 'The number of portions the recipe produces as written. Express as a whole number. If the recipe is typically measured per item (cookies, muffins), give the yield count. Do not write ranges — pick the middle and round down. The servings figure appears prominently in the recipe header and influences how readers scale quantities mentally.'
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 65a72d21-4723-4430-a78d-2cb523c7fa14
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: taxonomy_term__recipe_category
+  value:
+    -
+      value: 'New category terms require editorial sign-off before use. Check existing terms before adding a new one — the vocabulary should stay manageable (aim for under 20 top-level terms). Do not create terms that duplicate or overlap heavily with existing ones. Category names should be pluralised nouns (Soups not Soup, Desserts not Dessert).'
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 235d51e1-a498-4c95-88d8-8d1bfe44382b
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_difficulty
+  value:
+    -
+      value: "Set this to the realistic difficulty for a home cook with basic skills. Easy: no complex techniques, common equipment, under 30 minutes total. Medium: requires some timing coordination or specific technique (knife skills, emulsification, pastry). Hard: advanced technique, specialist equipment, or extended timing. When in doubt, rate one level higher — readers trust a recipe that turns out easier than advertised more than one that surprised them with complexity."
+  revision_translation_affected:
+    -
+      value: true

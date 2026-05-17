@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 7bf3137d-66a3-4b07-9b08-8ec835499de4
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_ingredients
+  value:
+    -
+      value: "List one ingredient per line, quantity first, then unit, then ingredient name (e.g. '200g plain flour', '3 large eggs'). Use metric quantities for all new recipes. Group by stage if the recipe has distinct phases using a plain label on its own line. Do not include method notes here — preparation instructions (finely chopped, softened to room temperature) belong in the recipe instructions field, not here."
+  revision_translation_affected:
+    -
+      value: true

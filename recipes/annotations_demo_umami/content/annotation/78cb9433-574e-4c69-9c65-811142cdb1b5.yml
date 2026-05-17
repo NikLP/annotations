@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 78cb9433-574e-4c69-9c65-811142cdb1b5
+  bundle: rules
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  value:
+    -
+      value: "All four time and quantity fields (cooking time, preparation time, number of servings, difficulty) must be populated before a recipe can go live. Images are required — a recipe without a hero image should not be published. Ingredient quantities must use consistent units: metric for all new content, imperial only when the recipe source uses it and conversion would be inaccurate. Do not duplicate recipes across categories; use the tags field for cross-cutting classification instead."
+  revision_translation_affected:
+    -
+      value: true

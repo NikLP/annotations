@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 63baea7f-1a39-4768-b258-476cbe854cb4
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_tags
+  value:
+    -
+      value: 'Free-tagging vocabulary for cross-cutting classification not covered by category (e.g. gluten-free, batch-cook, student-friendly). Add tags that a reader might search for beyond the category. Do not duplicate the category name as a tag. Tags are shared across the whole site, so check existing tags before creating new ones — prefer an existing tag over a near-synonym.'
+  revision_translation_affected:
+    -
+      value: true

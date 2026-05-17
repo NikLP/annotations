@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: c6e0049d-9ec0-4ef5-9131-1482cb116106
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: taxonomy_term__recipe_category
+  field_name:
+    -
+      value: name
+  value:
+    -
+      value: 'The category label as it appears in recipe filters, breadcrumbs, and category landing pages. Use plural nouns in title case (Breakfasts, Main Courses, Baked Goods). Keep names short. The name feeds directly into URLs and filter UI, so changing it after recipes have been categorised requires a redirect update.'
+  revision_translation_affected:
+    -
+      value: true

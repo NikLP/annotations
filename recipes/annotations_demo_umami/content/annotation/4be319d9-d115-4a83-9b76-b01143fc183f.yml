@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 4be319d9-d115-4a83-9b76-b01143fc183f
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  value:
+    -
+      value: "Bundle: recipe (machine name). Provided by the demo_umami install profile. Stores structured culinary content: preparation and cooking time as integers (minutes), servings as integer, difficulty as a list string (easy/medium/hard), ingredients as plain text, recipe instructions as formatted long text, category as entity reference to recipe_category taxonomy, and tags as entity reference to the tags vocabulary. The cookbook relationship is owned by node__cookbook via field_cookbook_recipes — there is no back-reference field on recipe itself."
+  revision_translation_affected:
+    -
+      value: true

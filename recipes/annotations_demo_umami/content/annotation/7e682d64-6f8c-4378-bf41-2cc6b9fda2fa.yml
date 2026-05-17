@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 7e682d64-6f8c-4378-bf41-2cc6b9fda2fa
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_cooking_time
+  value:
+    -
+      value: "Stored as an integer representing minutes. Covers cooking time only — time the food is actively being cooked, not total time including preparation. Rendered via a formatDuration filter in Twig which converts to 'X hr Y min' for values over 60. Minimum value enforced in validation is 1. Used by the recipe search API to support 'cook in under X minutes' filtering."
+  revision_translation_affected:
+    -
+      value: true

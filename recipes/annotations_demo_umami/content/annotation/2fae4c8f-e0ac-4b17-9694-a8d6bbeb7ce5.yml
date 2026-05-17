@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 2fae4c8f-e0ac-4b17-9694-a8d6bbeb7ce5
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_recipe_category
+  value:
+    -
+      value: 'Select the single most specific category that applies. If no exact match exists, use the closest parent category rather than creating a new one — new categories require editorial approval. Do not select more than one category. The category drives the primary recipe filter and category landing pages, so accuracy matters for discoverability.'
+  revision_translation_affected:
+    -
+      value: true

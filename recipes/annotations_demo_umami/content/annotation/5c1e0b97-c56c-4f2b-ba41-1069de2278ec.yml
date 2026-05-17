@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 5c1e0b97-c56c-4f2b-ba41-1069de2278ec
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_preparation_time
+  value:
+    -
+      value: 'Integer, minutes. Covers all preparation steps before cooking begins: chopping, marinating, resting dough, bringing ingredients to room temperature. Does not include cooking time. The two time fields are summed in the Twig template to display a total time figure. If a recipe has no meaningful preparation phase, set this to 0 rather than leaving it blank.'
+  revision_translation_affected:
+    -
+      value: true

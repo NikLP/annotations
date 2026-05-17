@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 5d40defc-05cb-4c4f-bac8-a938fefee53c
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__cookbook
+  field_name:
+    -
+      value: field_cookbook_description
+  value:
+    -
+      value: "An overview paragraph introducing the cookbook's theme, intended audience, or editorial angle. Two to four sentences. This text appears as the introduction on the cookbook page and in feature blocks. Write in a welcoming, second-person voice. Do not list individual recipe names here — the recipe list below the description handles that."
+  revision_translation_affected:
+    -
+      value: true

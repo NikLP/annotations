@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 283e5c00-f0f5-44a5-9ecc-f6dd3b8f9abe
+  bundle: technical
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__cookbook
+  field_name:
+    -
+      value: field_cookbook_recipes
+  value:
+    -
+      value: "Entity reference field (cardinality: unlimited) targeting node:recipe bundles. Rendered on the cookbook page as a teaser list using the recipe teaser view mode. The ordering in the field is preserved in output — there is no automatic sorting. Back-reference: there is no field_cookbook field on node__recipe; to find which cookbook(s) a recipe belongs to, query cookbook nodes by field_cookbook_recipes value."
+  revision_translation_affected:
+    -
+      value: true

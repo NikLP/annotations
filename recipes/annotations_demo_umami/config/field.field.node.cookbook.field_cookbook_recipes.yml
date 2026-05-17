@@ -1,0 +1,30 @@
+uuid: 40008b92-a2b6-4a9e-8f17-2a3b63689c73
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_cookbook_recipes
+    - node.type.cookbook
+    - node.type.recipe
+  module:
+    - node
+id: node.cookbook.field_cookbook_recipes
+field_name: field_cookbook_recipes
+entity_type: node
+bundle: cookbook
+label: Recipes
+description: 'The recipes included in this cookbook.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      recipe: recipe
+    sort:
+      field: _none
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

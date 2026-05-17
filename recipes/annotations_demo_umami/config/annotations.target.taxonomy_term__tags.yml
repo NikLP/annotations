@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {  }
+id: taxonomy_term__tags
+label: Tags
+entity_type: taxonomy_term
+bundle: tags
+fields:
+  - name
+  - description

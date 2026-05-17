@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {  }
+id: taxonomy_term__recipe_category
+label: 'Recipe category'
+entity_type: taxonomy_term
+bundle: recipe_category
+fields:
+  - name
+  - description

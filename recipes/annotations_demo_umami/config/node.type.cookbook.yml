@@ -1,0 +1,11 @@
+uuid: 3eff9437-cfdc-4a0f-a822-ba6b7d979461
+langcode: en
+status: true
+dependencies: {  }
+name: Cookbook
+type: cookbook
+description: 'A thematic collection of recipes. Created by the Annotations Umami demo.'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: true

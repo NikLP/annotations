@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies: {  }
+id: node__recipe
+label: Recipe
+entity_type: node
+bundle: recipe
+fields:
+  - title
+  - field_summary
+  - field_difficulty
+  - field_cooking_time
+  - field_preparation_time
+  - field_number_of_servings
+  - field_ingredients
+  - field_recipe_instruction
+  - field_recipe_category
+  - field_tags
+  - field_media_image

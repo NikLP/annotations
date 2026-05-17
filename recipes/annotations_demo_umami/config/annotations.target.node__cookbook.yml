@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies: {  }
+id: node__cookbook
+label: Cookbook
+entity_type: node
+bundle: cookbook
+fields:
+  - title
+  - field_cookbook_description
+  - field_cookbook_recipes

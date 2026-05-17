@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 143840c5-1a66-40dc-a215-73597593c090
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: taxonomy_term__tags
+  value:
+    -
+      value: 'Tags provide free-form, cross-cutting classification for recipes beyond the primary category. They are used for search refinement and related-recipes logic. Unlike categories, tags do not have landing pages and are not curated to a fixed list. Good tags describe attributes a reader might filter by: dietary requirements, cooking method, season, occasion.'
+  revision_translation_affected:
+    -
+      value: true

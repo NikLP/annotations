@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 9e2f67d9-609f-49eb-bdc3-07612338acd7
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_summary
+  value:
+    -
+      value: 'A one- to two-sentence introduction to the recipe, used as a teaser in listing pages and as the introductory paragraph on the recipe page. It should describe the dish in appetising terms and give the reader a reason to follow the recipe. Write in second person or descriptive prose — never as a list or set of instructions. This field is output without the full body, so it must stand alone.'
+  revision_translation_affected:
+    -
+      value: true
