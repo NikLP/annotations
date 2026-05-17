@@ -77,16 +77,9 @@ class TargetOverviewForm extends FormBase {
       return $form;
     }
 
-    $form['description'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#value' => $this->t(
-        'Select targets for inclusion in annotation. For targets with configurable fields, select/save, then use <em>Configure</em> to choose which are included.'
-      ),
-    ];
-
     $open_section = $this->getRequest()->query->get('open', '');
     $exclusive = (bool) $this->configFactory()->get('annotations.settings')->get('use_accordion_single');
+    $has_sections = FALSE;
 
     foreach ($plugins as $entity_type_id => $plugin) {
       if (!$plugin->isAvailable()) {
@@ -97,6 +90,8 @@ class TargetOverviewForm extends FormBase {
       if (empty($targets)) {
         continue;
       }
+
+      $has_sections = TRUE;
 
       $selected_in_group = count(array_filter(
         array_keys($targets),
@@ -186,6 +181,26 @@ class TargetOverviewForm extends FormBase {
         ];
       }
     }
+
+    if (!$has_sections) {
+      $form['empty'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $this->t('No bundles are available for the targeted entity types. <a href=":url">Review target entity type settings</a> or ensure the relevant content types, vocabularies, or other bundles exist.', [
+          ':url' => Url::fromRoute('annotations.configure')->toString(),
+        ]),
+      ];
+      return $form;
+    }
+
+    $form['description'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t(
+        'Select targets for inclusion in annotation. For targets with configurable fields, select/save, then use <em>Configure</em> to choose which are included.'
+      ),
+      '#weight' => -10,
+    ];
 
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
