@@ -15,7 +15,7 @@ Replaces the former `dot_report` module. The split is conceptual: coverage is a 
 - `AnnotationsCoverageHooks` — `hook_theme` (gap section template) + `hook_form_annotation_type_form_alter` (injects the affects_coverage checkbox into the type edit form)
 - `CoverageController` — coverage report page at `/admin/reports/annotation-coverage`
 - `CoverageFilterForm` — GET-based entity type + status filter form
-- Template: `annotations-coverage-gap-section.html.twig`
+- Templates: `annotations-coverage-gap-section.html.twig`, `annotations-coverage-gap-details.html.twig`
 
 ## CoverageService — public API
 
@@ -100,9 +100,8 @@ Annotations does not ship any enforcement implementations. The service API is st
 - [x] `CoverageController` — score banner, filter form, expandable gap rows
 - [x] `CoverageFilterForm`
 - [x] Workflow-aware coverage (published-only when annotations_workflows installed)
+- [x] `CoverageController::buildGapCell()` uses `annotations_coverage_gap_details` theme + Twig template
 - [ ] Cron-driven result caching (deferred until target counts become large)
-- [ ] `CoverageController::buildGapCell()` uses `#prefix`/`#suffix` raw HTML for the `<details><summary>` wrapper — should be a theme function + Twig template for consistency with `annotations-coverage-gap-section.html.twig`
-- [ ] Edge coverage dimension — edge annotations (stored with target_id `{source}__{field}__{dest}`) are not yet factored into coverage. When implemented, add `edge_total` / `edge_annotated` keys to the `getScore()` return and a separate edge gap section to `CoverageController`. Defer until the edge annotation UI exists and there is data to report.
 
 ## Performance concern — N+1 query problem
 

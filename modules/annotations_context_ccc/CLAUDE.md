@@ -66,6 +66,8 @@ Our implementation would replace the event subscriber with an `#[AiContextProvid
 
 Contribution footprint: new plugin type + manager in `ai_context`, ~15 lines added to CCC's subscriber. Worth proposing to CCC maintainers.
 
+This section is intentionally a proposal-level design sketch — enough to open a conversation with CCC maintainers. Actual implementation detail (specific file changes in `ai_context`) requires reading that module's code; it is not documented here.
+
 ### Per-agent opt-out: not needed
 
 The `annotations_context.in_ai_context` flag on annotation types already gates injection per type. An agent that should not receive certain documentation simply has no opted-in types covering that content. Per-agent opt-out would only add value for "type X to agent A but not agent B" — a cross-product that the type-level flag handles adequately.
