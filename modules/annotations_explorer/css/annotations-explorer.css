@@ -9,6 +9,10 @@
   overflow-y: auto;
 }
 
+.annotations-explorer__nav-list details {
+  border: none;
+}
+
 .annotations-explorer__nav-list,
 .annotations-explorer__fields-list {
   margin: 0;

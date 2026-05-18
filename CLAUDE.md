@@ -32,7 +32,7 @@ Each submodule should have its own `CLAUDE.md` and `README.md`. These files cove
 
 ## Caching — cross-cutting requirement
 
-- Every new controller page reading annotation data **must declare `#cache`** at build time: tags (`annotation_list`, `annotation_target_list`, `annotation_type_list`) and contexts (`languages:language_interface`, `user.permissions`, plus any query-arg/route contexts). Always include `languages:language_interface`. Guard `languages:content` with `$this->languageManager()->isMultilingual()` — it throws `RuntimeException` when the `language` module is absent.
+- Every new controller page reading annotation data **must declare `#cache`** at build time: tags (`annotation_list`, `annotation_target_list`, `annotation_type_list`) and contexts (`languages:language_interface`, `user.permissions`, plus any query-arg/route contexts). Always include `languages:language_interface`. Guard `languages:language_content` with `$this->languageManager()->isMultilingual()` — it throws `RuntimeException` when the `language_content` type is not configured (i.e. content language negotiation is absent).
 - `hook_entity_view_alter` must merge cache metadata via `CacheableMetadata::createFromRenderArray($build)->addCacheTags([...])->addCacheContexts([...])->applyTo($build)`. Never replace `$build['#cache']` directly.
 - `EntityStorageBase` invalidates `{entity_type}_list` tags on every save/delete — no manual `Cache::invalidateTags()` calls needed.
 - Extension point providers must contribute `CacheableMetadata` alongside their payload slice.

@@ -499,7 +499,7 @@ class AnnotationsOverlayHooks {
     $cache->addCacheTags(['annotation_list', 'annotation_target_list', 'annotation_type_list']);
     $contexts = ['user.permissions', 'languages:language_interface'];
     if ($this->languageManager->isMultilingual()) {
-      $contexts[] = 'languages:content';
+      $contexts[] = 'languages:language_content';
     }
     $cache->addCacheContexts($contexts);
     $cache->applyTo($build);

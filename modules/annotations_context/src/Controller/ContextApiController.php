@@ -73,7 +73,7 @@ class ContextApiController extends ControllerBase {
     $meta->addCacheTags(['annotation_list', 'annotation_target_list', 'annotation_type_list']);
     $meta->addCacheContexts(array_merge(
       ['languages:language_interface', 'url.query_args', 'user.permissions'],
-      $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
+      $this->languageManager()->isMultilingual() ? ['languages:language_content'] : [],
     ));
     // Fold in cache metadata contributed by hook_annotations_context_alter().
     $meta = $meta->merge($this->assembler->getLastCacheableMetadata());

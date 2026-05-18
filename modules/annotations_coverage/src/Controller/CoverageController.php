@@ -93,7 +93,7 @@ class CoverageController extends ControllerBase {
       'tracked' => [
         '#type' => 'html_tag',
         '#tag' => 'span',
-        '#value' => $this->t('@filled/@total tracked types complete', [
+        '#value' => $this->t('@filled/@total tracked targets complete', [
           '@filled' => $score['filled_tracked'],
           '@total'  => $score['total_tracked'],
         ]),
@@ -102,7 +102,7 @@ class CoverageController extends ControllerBase {
       'optional' => $score['total_optional'] > 0 ? [
         '#type' => 'html_tag',
         '#tag' => 'span',
-        '#value' => $this->t('@filled/@total optional types complete', [
+        '#value' => $this->t('@filled/@total optional targets complete', [
           '@filled' => $score['filled_optional'],
           '@total'  => $score['total_optional'],
         ]),
@@ -160,7 +160,7 @@ class CoverageController extends ControllerBase {
         'tags'     => ['annotation_list', 'annotation_target_list', 'annotation_type_list'],
         'contexts' => array_merge(
           ['languages:language_interface', 'url.query_args', 'user.permissions'],
-          $this->languageManager()->isMultilingual() ? ['languages:content'] : [],
+          $this->languageManager()->isMultilingual() ? ['languages:language_content'] : [],
         ),
       ],
       'header' => [

@@ -116,6 +116,7 @@ class AnnotationsUiHooks {
   public function entityTypeAlter(array &$entity_types): void {
     if (isset($entity_types['annotation'])) {
       $entity_types['annotation']
+        ->setFormClass('default', 'Drupal\annotations_ui\Form\AnnotationEditForm')
         ->setFormClass('edit', 'Drupal\annotations_ui\Form\AnnotationEditForm')
         ->setFormClass('delete', 'Drupal\annotations_ui\Form\AnnotationDeleteForm')
         ->setFormClass('revision-revert', RevisionRevertForm::class)

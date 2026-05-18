@@ -88,6 +88,10 @@ One save on `AnnotationEditForm` = one revision = value change + state change to
 
 `annotation` has `translatable = TRUE` in its entity annotation. The four-table schema (`annotation`, `annotation_field_data`, `annotation_revision`, `annotation_field_revision`) is always in place regardless of whether `content_translation` is installed. `AnnotationStorageService` is language-aware: all read methods accept an optional `$langcode` parameter, falling back to the current content language, falling back to the default translation.
 
+`entityTypeAlter()` registers `default` form class (alongside `edit`) pointing to `AnnotationEditForm`. Both must be present: `content_translation` calls `getFormObject('default')` when rendering the "Add translation" form — without it the entity throws `InvalidPluginDefinitionException`.
+
+The full multilingual round-trip (English fallback on Spanish routes, per-language annotation authoring via the Translate tab, cache context `languages:language_content`) was verified against the Umami demo profile in May 2026.
+
 ## Views integration
 
 The `annotations_target` view (shipped by this module) lists annotations per target at `/admin/content/annotations/{target_id}/annotate`.
