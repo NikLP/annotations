@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {  }
+id: block_content__basic
+label: 'Basic block'
+entity_type: block_content
+bundle: basic
+fields:
+  - info
+  - field_body

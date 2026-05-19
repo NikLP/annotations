@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: fd7c8598-60e0-4eac-b34c-ea4ae896d436
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__footer_promo_block
+  field_name:
+    -
+      value: field_summary
+  value:
+    -
+      value: 'One sentence of supporting text beneath the promo heading. Set reader expectations about what they will find if they follow the link. Keep it under 15 words — footer space is constrained and the text displays at a smaller size than a banner summary.'
+  revision_translation_affected:
+    -
+      value: true

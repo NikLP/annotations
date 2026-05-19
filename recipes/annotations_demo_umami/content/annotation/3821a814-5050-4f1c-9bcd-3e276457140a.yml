@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 3821a814-5050-4f1c-9bcd-3e276457140a
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__banner_block
+  field_name:
+    -
+      value: field_title
+  value:
+    -
+      value: 'The headline displayed prominently in the banner. Write in title case, 5 to 8 words. This is the first text a visitor reads in the hero area — it should communicate the subject or call to action immediately. Do not repeat the page title. Avoid vague phrases such as "Welcome" or "Discover more".'
+  revision_translation_affected:
+    -
+      value: true

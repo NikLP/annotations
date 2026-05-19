@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 3391aad2-d437-4a12-b757-8f4d6f92a574
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_cooking_time
+  value:
+    -
+      value: "Active cooking time in minutes: the period the food is on heat, in the oven, or being actively worked. Do not include preparation time here. Be accurate rather than optimistic — a reader who finds the recipe takes longer than stated loses trust. Round to the nearest 5 minutes for recipes over 30 minutes. If the recipe has multiple cooking phases, sum them."
+  revision_translation_affected:
+    -
+      value: true

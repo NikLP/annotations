@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: d9dbf723-5f63-43d3-9cc8-c2cfaea4b081
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__banner_block
+  field_name:
+    -
+      value: field_media_image
+  value:
+    -
+      value: 'Hero image displayed behind or alongside the banner text. Use a high-resolution photograph suited to full-width display. The image must remain legible when the title overlay is applied — avoid images with text, faces near the crop boundary, or busy patterns that compete with the heading. Alt text is set on the media item itself, not here.'
+  revision_translation_affected:
+    -
+      value: true

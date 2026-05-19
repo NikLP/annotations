@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 0c878294-282a-4836-a809-12e183ba9ead
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__banner_block
+  field_name:
+    -
+      value: info
+  value:
+    -
+      value: 'The admin label for this block, visible only in the block library and layout UI. Use a descriptive, unique name that identifies the purpose and placement of this specific banner, for example "Homepage hero — autumn campaign". Editors placing or swapping blocks rely on this label to pick the right one from a list.'
+  revision_translation_affected:
+    -
+      value: true

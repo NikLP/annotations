@@ -1,6 +1,6 @@
 # Annotations Demo (Umami) Recipe
 
-Demo recipe for sites running Drupal's [Umami demo install profile](https://www.drupal.org/project/demo_umami). Creates a Cookbook content type that entity-references Recipe nodes, wires annotation targets onto four bundles, and imports 25 starter annotations.
+Demo recipe for sites running Drupal's [Umami demo install profile](https://www.drupal.org/project/demo_umami). Creates a Cookbook content type that entity-references Recipe nodes, wires annotation targets onto four bundles, and imports 30 starter annotations.
 
 ## What you get
 
@@ -21,7 +21,7 @@ Demo recipe for sites running Drupal's [Umami demo install profile](https://www.
 
 **Annotation types:** Editorial, Technical, Rules (from `annotations_demo_types` dependency)
 
-**Starter annotations:** 25 — covering all four targets
+**Starter annotations:** 30 — covering all four targets
 
 ## Requirements
 

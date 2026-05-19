@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: e114a7d8-f1bd-41dc-967f-bbe809c074fa
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__banner_block
+  field_name:
+    -
+      value: field_content_link
+  value:
+    -
+      value: 'The call-to-action link for the banner. Link text should be a short verb phrase describing the action (Browse recipes, See the collection). Do not use generic text such as "Click here" or "Read more". The URL should be an internal site path wherever possible. Verify the destination is live before saving.'
+  revision_translation_affected:
+    -
+      value: true

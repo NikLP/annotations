@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: f2b7ed34-86d8-4785-8015-38f73fb0edf5
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: taxonomy_term__tags
+  field_name:
+    -
+      value: description
+  value:
+    -
+      value: "Optional description for the tag term page. For widely understood tags (gluten-free, vegan) a description is unnecessary. Use descriptions to clarify tags that could be ambiguous — for example, distinguishing a dietary tag from a cuisine tag with the same word — or to note which recipes should and should not carry the tag. Keep it to one sentence."
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: d13f8fb9-54a3-45f4-b174-df66efc962d5
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__disclaimer_block
+  field_name:
+    -
+      value: info
+  value:
+    -
+      value: 'Admin label for this disclaimer block. Use a name that distinguishes it from other footer blocks, for example "Footer disclaimer — EN" or "Copyright notice 2025". Editors and site builders rely on this label to select the correct block from the library.'
+  revision_translation_affected:
+    -
+      value: true

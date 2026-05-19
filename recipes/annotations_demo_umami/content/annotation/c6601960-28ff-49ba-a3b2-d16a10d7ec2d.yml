@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: c6601960-28ff-49ba-a3b2-d16a10d7ec2d
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__disclaimer_block
+  value:
+    -
+      value: 'Disclaimer blocks carry legal or regulatory notices in the site footer. Content is typically set once and rarely changed. Any update to copyright or disclaimer text must be reviewed by the appropriate stakeholder before publishing — the wording must accurately reflect the current legal position of the site owner.'
+  revision_translation_affected:
+    -
+      value: true

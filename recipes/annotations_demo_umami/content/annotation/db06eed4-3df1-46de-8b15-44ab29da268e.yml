@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: db06eed4-3df1-46de-8b15-44ab29da268e
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__footer_promo_block
+  field_name:
+    -
+      value: field_media_image
+  value:
+    -
+      value: 'Supporting image for the footer promo. Displayed smaller than banner images — choose something that reads clearly at around 400px wide. A food close-up or textured background works better than a wide landscape scene. Alt text is set on the media item itself.'
+  revision_translation_affected:
+    -
+      value: true

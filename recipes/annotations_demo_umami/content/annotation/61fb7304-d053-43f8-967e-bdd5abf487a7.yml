@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 61fb7304-d053-43f8-967e-bdd5abf487a7
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__footer_promo_block
+  field_name:
+    -
+      value: field_title
+  value:
+    -
+      value: 'Heading for the footer promo. Should be shorter than a banner headline — two to five words in title case. Avoid repeating text already prominent on the page. The footer is smaller real estate, so concision matters more here than on a hero banner.'
+  revision_translation_affected:
+    -
+      value: true

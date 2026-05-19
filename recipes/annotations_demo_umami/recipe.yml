@@ -1,5 +1,5 @@
 name: 'Annotations demo (Umami)'
-description: 'Demo annotations targeting Umami content types. Creates a Cookbook content type that entity-references Recipes, annotation targets for node__recipe, node__cookbook, taxonomy_term__recipe_category, and taxonomy_term__tags, and ~25 starter annotations covering all fields. Apply to a site running the demo_umami install profile.'
+description: 'Demo annotations targeting Umami content types. Creates a Cookbook content type that entity-references Recipes, annotation targets for node__recipe, node__cookbook, taxonomy_term__recipe_category, taxonomy_term__tags, and all four block_content bundles, and ~50 starter annotations covering all fields. Apply to a site running the demo_umami install profile.'
 type: 'Demo content'
 
 recipes:
@@ -18,3 +18,4 @@ config:
       enableTargetType:
         - node
         - taxonomy_term
+        - block_content

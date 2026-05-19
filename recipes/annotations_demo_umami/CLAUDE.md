@@ -4,16 +4,20 @@ Demo recipe layered on the Umami demo install profile. See [../../CLAUDE.md](../
 
 ## What this recipe does
 
-Creates a Cookbook content type (which entity-references Recipe nodes), wires four annotation targets (two node bundles, two taxonomy bundles), and imports 25 starter annotations.
+Creates a Cookbook content type (which entity-references Recipe nodes), wires four annotation targets (two node bundles, two taxonomy bundles), and imports ~50 starter annotations.
 
 Targets:
 
 | ID | Entity type | Bundle | Fields |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `node__cookbook` | node | cookbook | 3 fields |
 | `node__recipe` | node | recipe | 11 fields |
 | `taxonomy_term__recipe_category` | taxonomy_term | recipe_category | 2 fields |
 | `taxonomy_term__tags` | taxonomy_term | tags | 2 fields |
+| `block_content__banner_block` | block_content | banner_block | 5 fields |
+| `block_content__basic` | block_content | basic | 2 fields |
+| `block_content__disclaimer_block` | block_content | disclaimer_block | 3 fields |
+| `block_content__footer_promo_block` | block_content | footer_promo_block | 5 fields |
 
 ## Recipe structure
 
@@ -33,7 +37,7 @@ annotations_demo_umami/
     annotations.target.taxonomy_term__recipe_category.yml
     annotations.target.taxonomy_term__tags.yml
   content/
-    annotation/*.yml                             ← 25 annotation entities
+    annotation/*.yml                             ← 30 annotation entities
 ```
 
 ## Strict field storages

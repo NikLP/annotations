@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 3fc8b798-44e5-40ab-b856-6b1da4945a23
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__footer_promo_block
+  field_name:
+    -
+      value: field_content_link
+  value:
+    -
+      value: 'Destination link for the footer promo. Point to a specific internal page — a collection, a category, or a featured recipe — rather than a top-level listing or the homepage. Link text should be an active verb phrase (Explore the collection, Browse quick dinners). Verify the destination is live before saving.'
+  revision_translation_affected:
+    -
+      value: true

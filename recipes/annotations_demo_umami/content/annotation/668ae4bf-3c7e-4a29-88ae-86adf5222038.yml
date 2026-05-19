@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 668ae4bf-3c7e-4a29-88ae-86adf5222038
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__basic
+  field_name:
+    -
+      value: info
+  value:
+    -
+      value: 'Admin label visible only in the block library and layout tools. Use a clear, unique name that identifies purpose and placement, for example "About Umami sidebar text" or "Allergen notice — footer". Avoid generic names such as "Text block 1" — editors need to identify the right block from a list without previewing each one.'
+  revision_translation_affected:
+    -
+      value: true

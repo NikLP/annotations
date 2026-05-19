@@ -1,0 +1,19 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: c40e916a-ff14-4817-aea2-636164ec8b33
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__basic
+  value:
+    -
+      value: 'Basic blocks are general-purpose reusable text areas for editorial passages that do not require structured fields. Keep each basic block focused on a single topic. If the content needs an image, a link, or a heading separate from the body, use a more specific block type instead.'
+  revision_translation_affected:
+    -
+      value: true

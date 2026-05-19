@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies: {  }
+id: block_content__disclaimer_block
+label: 'Disclaimer block'
+entity_type: block_content
+bundle: disclaimer_block
+fields:
+  - info
+  - field_copyright
+  - field_disclaimer

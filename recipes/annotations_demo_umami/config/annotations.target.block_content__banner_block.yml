@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {  }
+id: block_content__banner_block
+label: 'Banner block'
+entity_type: block_content
+bundle: banner_block
+fields:
+  - info
+  - field_title
+  - field_summary
+  - field_media_image
+  - field_content_link

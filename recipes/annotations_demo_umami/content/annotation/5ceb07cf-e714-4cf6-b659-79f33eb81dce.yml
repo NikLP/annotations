@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: 5ceb07cf-e714-4cf6-b659-79f33eb81dce
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: node__recipe
+  field_name:
+    -
+      value: field_media_image
+  value:
+    -
+      value: "Hero image for the recipe. Use a photograph of the finished dish, well lit and styled for appetite appeal. Landscape orientation is preferred for consistent grid and card layouts across the site. Avoid using mid-process or raw-ingredient shots as the primary image — readers are deciding whether to cook the dish, so show the result. Alt text is set on the media item itself and should describe the dish shown, not the composition."
+  revision_translation_affected:
+    -
+      value: true

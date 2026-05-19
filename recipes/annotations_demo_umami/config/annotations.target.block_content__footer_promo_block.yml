@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {  }
+id: block_content__footer_promo_block
+label: 'Footer promo block'
+entity_type: block_content
+bundle: footer_promo_block
+fields:
+  - info
+  - field_title
+  - field_summary
+  - field_media_image
+  - field_content_link

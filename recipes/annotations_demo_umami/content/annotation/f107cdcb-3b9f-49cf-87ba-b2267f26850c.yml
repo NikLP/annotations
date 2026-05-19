@@ -1,0 +1,22 @@
+_meta:
+  version: '1.0'
+  entity_type: annotation
+  uuid: f107cdcb-3b9f-49cf-87ba-b2267f26850c
+  bundle: editorial
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  target_id:
+    -
+      value: block_content__footer_promo_block
+  field_name:
+    -
+      value: info
+  value:
+    -
+      value: 'Admin label for this footer promo block, visible only in the block library and layout tools. Use a name that identifies the campaign or purpose, for example "Footer promo — autumn cookbooks" or "Footer CTA — quick dinners". Avoid generic names.'
+  revision_translation_affected:
+    -
+      value: true
