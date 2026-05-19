@@ -470,7 +470,7 @@ class AnnotationsOverlayHooks {
       if ($html === NULL) {
         continue;
       }
-      $variables['bundles'][$bundle_id]['description'] = Markup::create($html);
+      $variables['bundles'][$bundle_id]['description'] = ['#markup' => $html];
       $modified = TRUE;
     }
 
