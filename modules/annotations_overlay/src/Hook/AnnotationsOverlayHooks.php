@@ -7,6 +7,7 @@ namespace Drupal\annotations_overlay\Hook;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityDescriptionInterface;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -404,25 +405,29 @@ class AnnotationsOverlayHooks {
     // because this preprocess runs deep inside Drupal's render pipeline. Calling
     // renderInIsolation at that depth exhausts the PHP call stack when Twig
     // compiles templates for the first time (e.g. after drush cr).
+    //
+    // $built collects the computed HTML per type so loop 2 can reuse it without
+    // re-running buildBundleAnnotationHtml or reading a mutated entity.
+    $built = [];
     foreach ($variables['content'] ?? [] as $type) {
       $html = $this->buildBundleAnnotationHtml('node__' . $type->id(), $visible_types, $type->getDescription() ?? '');
       if ($html === NULL) {
         continue;
       }
       $type->set('description', Markup::create($html));
+      $built[$type->id()] = $html;
       $modified = TRUE;
     }
 
     // Also update $variables['types'] for themes (non-Claro/Gin) that read the
     // 'types' key directly from the core node_add_list preprocess output.
+    // Reuse $built so descriptions come from the entity objects above rather
+    // than from $variables['types'] which may have been shaped differently.
     foreach (array_keys($variables['types'] ?? []) as $type_id) {
-      $existing_description = $variables['types'][$type_id]['description'] ?? '';
-      $html = $this->buildBundleAnnotationHtml('node__' . $type_id, $visible_types, is_string($existing_description) ? $existing_description : '');
-      if ($html === NULL) {
+      if (!isset($built[$type_id])) {
         continue;
       }
-      $variables['types'][$type_id]['description'] = Markup::create($html);
-      $modified = TRUE;
+      $variables['types'][$type_id]['description'] = Markup::create($built[$type_id]);
     }
 
     if ($modified) {
@@ -463,10 +468,22 @@ class AnnotationsOverlayHooks {
       return;
     }
 
+    // Load descriptions from the bundle entities — the authoritative source —
+    // rather than reading back from $variables['bundles'], which by this point
+    // has already been wrapped into render arrays by the initial preprocess.
+    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id, FALSE);
+    $bundle_entity_type_id = $entity_type?->getBundleEntityType();
+    $bundle_entities = $bundle_entity_type_id
+      ? $this->entityTypeManager->getStorage($bundle_entity_type_id)->loadMultiple(array_keys($variables['bundles'] ?? []))
+      : [];
+
     $modified = FALSE;
     foreach (array_keys($variables['bundles'] ?? []) as $bundle_id) {
-      $existing = $variables['bundles'][$bundle_id]['description'] ?? '';
-      $html = $this->buildBundleAnnotationHtml($entity_type_id . '__' . $bundle_id, $visible_types, is_string($existing) ? $existing : '');
+      $bundle_entity = $bundle_entities[$bundle_id] ?? NULL;
+      $existing = ($bundle_entity instanceof EntityDescriptionInterface)
+        ? ((string) $bundle_entity->getDescription())
+        : '';
+      $html = $this->buildBundleAnnotationHtml($entity_type_id . '__' . $bundle_id, $visible_types, $existing);
       if ($html === NULL) {
         continue;
       }
