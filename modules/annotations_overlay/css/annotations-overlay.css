@@ -114,3 +114,7 @@
 .annotations-chooser-item {
   margin-top: 1rem;
 }
+
+.annotations-chooser-item__type {
+  font-style: italic;
+}
