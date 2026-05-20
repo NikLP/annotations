@@ -54,5 +54,8 @@ Recipes are one-way. To start fresh, reinstall Drupal or manually delete the con
 ## See also
 
 - [Root module README](../../README.md) — full suite overview, permissions, API
-- [annotations_demo module](../../modules/annotations_demo/) — the equivalent `hook_install` approach, useful as a reference for programmatic setup
-- [annotations_demo_lgd recipe](../annotations_demo_lgd/) — bolt-on annotations for a LocalGov Drupal site
+- [annotations_demo_types recipe](../annotations_demo_types/) — shared annotation types dependency
+- [annotations_demo_lgd recipe](../annotations_demo_lgd/) — LocalGov Drupal bolt-on
+- [annotations_demo_umami recipe](../annotations_demo_umami/) — Umami demo profile bolt-on
+- [annotations_demo_webform recipe](../annotations_demo_webform/) — onboarding webform bolt-on
+- [annotations_demo module](../../modules/annotations_demo/) — equivalent `hook_install` approach, useful as a reference for programmatic setup

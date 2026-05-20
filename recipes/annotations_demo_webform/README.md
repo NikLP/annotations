@@ -40,7 +40,7 @@ After applying the recipe:
 
 - **Webform:** Admin → Structure → Webforms → New Starter Onboarding
 - **Annotation targets:** Admin → Config → Annotations → Targets
-- **Annotations UI:** open a webform submission for editing — field-level `?` triggers appear on each annotated element (requires `annotations_overlay`)
+- **Annotations UI:** open a webform submission for editing — field-level `?` triggers appear on each annotated element (`annotations_overlay` is installed automatically by this recipe)
 
 ## Teardown
 
@@ -49,5 +49,8 @@ Recipes are one-way. Delete the webform, the two annotation targets, and the imp
 ## See also
 
 - [Root module README](../../README.md) — full suite overview
-- [`annotations_webform` sub-module](../../modules/annotations_webform/) — target plugins for webform and webform_submission entity types
 - [annotations_demo_types recipe](../annotations_demo_types/) — shared annotation types dependency
+- [annotations_demo recipe](../annotations_demo/) — standalone Product & Collection demo
+- [annotations_demo_lgd recipe](../annotations_demo_lgd/) — LocalGov Drupal bolt-on
+- [annotations_demo_umami recipe](../annotations_demo_umami/) — Umami demo profile bolt-on
+- [`annotations_webform` sub-module](../../modules/annotations_webform/) — target plugins for webform and webform_submission entity types

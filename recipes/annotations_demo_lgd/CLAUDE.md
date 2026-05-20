@@ -37,4 +37,11 @@ Unlike `annotations_demo`, this recipe does not use `enableTargetType` — the t
 
 ## LocalGov bundle assumptions
 
-The recipe assumes `localgov_event`, `localgov_subsites_page`, `localgov_accordion`, and `localgov_banner_primary` bundles already exist (provided by the `localgov_events` and `localgov_subsites` feature modules). Applying to a site without these bundles will import orphaned annotation targets — Drupal does not validate that annotation targets reference real bundles.
+The recipe installs `localgov_demo`, which brings in `localgov_events` and `localgov_subsites` as dependencies — these provide the `localgov_event`, `localgov_subsites_page`, `localgov_accordion`, and `localgov_banner_primary` bundles the targets reference. On a site where `localgov_demo` (or those feature modules directly) is already installed, the targets import cleanly. If this recipe is somehow applied without those modules, Drupal will import orphaned annotation targets silently — it does not validate that annotation targets reference real bundles.
+
+## Related recipes
+
+- [annotations_demo](../annotations_demo/CLAUDE.md) — standalone Product & Collection demo
+- [annotations_demo_types](../annotations_demo_types/CLAUDE.md) — shared annotation types dependency
+- [annotations_demo_umami](../annotations_demo_umami/CLAUDE.md) — Umami demo profile bolt-on
+- [annotations_demo_webform](../annotations_demo_webform/CLAUDE.md) — onboarding webform bolt-on

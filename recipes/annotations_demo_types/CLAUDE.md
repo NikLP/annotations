@@ -32,3 +32,10 @@ Apply it standalone only if you want the three annotation types without any demo
 ## No strict config
 
 Unlike `annotations_demo` and `annotations_demo_umami`, this recipe ships no field storages and no content types — nothing that would conflict with an existing site. It is safe to apply to any Drupal 11 install running the Annotations suite.
+
+## Related recipes
+
+- [annotations_demo](../annotations_demo/CLAUDE.md) — standalone Product & Collection demo
+- [annotations_demo_lgd](../annotations_demo_lgd/CLAUDE.md) — LocalGov Drupal bolt-on
+- [annotations_demo_umami](../annotations_demo_umami/CLAUDE.md) — Umami demo profile bolt-on
+- [annotations_demo_webform](../annotations_demo_webform/CLAUDE.md) — onboarding webform bolt-on

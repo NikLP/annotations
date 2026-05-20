@@ -34,6 +34,13 @@ annotations_demo_webform/
 
 `enableTargetType: [webform, webform_submission]` registers both entity types in `annotations.target_types` without overwriting existing config.
 
+## Related recipes
+
+- [annotations_demo](../annotations_demo/CLAUDE.md) — standalone Product & Collection demo
+- [annotations_demo_types](../annotations_demo_types/CLAUDE.md) — shared annotation types dependency
+- [annotations_demo_lgd](../annotations_demo_lgd/CLAUDE.md) — LocalGov Drupal bolt-on
+- [annotations_demo_umami](../annotations_demo_umami/CLAUDE.md) — Umami demo profile bolt-on
+
 ## Module dependencies
 
 `annotations_webform` (provides target plugins for webform entity types), `annotations_overlay` (field-level `?` trigger UI), and `webform` are all in the `install:` list.

@@ -42,7 +42,7 @@ After applying the recipe:
 
 - **Content types:** Admin → Structure → Content types → Cookbook
 - **Annotation targets:** Admin → Config → Annotations → Targets
-- **Annotations UI:** open any Recipe or Cookbook node for editing — field-level `?` triggers appear on each annotated field (requires `annotations_overlay`)
+- **Annotations UI:** open any Recipe or Cookbook node for editing — field-level `?` triggers appear on each annotated field (`annotations_overlay` is installed automatically by this recipe)
 
 ## Teardown
 
@@ -53,3 +53,5 @@ Recipes are one-way. To remove, delete the Cookbook content type, the four annot
 - [Root module README](../../README.md) — full suite overview
 - [annotations_demo_types recipe](../annotations_demo_types/) — shared annotation types dependency
 - [annotations_demo recipe](../annotations_demo/) — equivalent standalone demo for fresh installs
+- [annotations_demo_lgd recipe](../annotations_demo_lgd/) — LocalGov Drupal bolt-on
+- [annotations_demo_webform recipe](../annotations_demo_webform/) — onboarding webform bolt-on

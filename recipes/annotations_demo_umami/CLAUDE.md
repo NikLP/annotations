@@ -48,6 +48,13 @@ annotations_demo_umami/
 
 `enableTargetType: [node, taxonomy_term]` registers both entity types in `annotations.target_types` without overwriting whatever is already in the list.
 
+## Related recipes
+
+- [annotations_demo](../annotations_demo/CLAUDE.md) — standalone Product & Collection demo
+- [annotations_demo_types](../annotations_demo_types/CLAUDE.md) — shared annotation types dependency
+- [annotations_demo_lgd](../annotations_demo_lgd/CLAUDE.md) — LocalGov Drupal bolt-on
+- [annotations_demo_webform](../annotations_demo_webform/CLAUDE.md) — onboarding webform bolt-on
+
 ## Umami bundle assumptions
 
 `node__recipe`, `taxonomy_term__recipe_category`, and `taxonomy_term__tags` bundles are assumed to exist (shipped by the Umami profile). Annotation targets for these are imported as plain config YAML and will create orphaned targets if applied to a non-Umami site.

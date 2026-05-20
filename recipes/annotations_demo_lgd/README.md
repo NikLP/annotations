@@ -20,7 +20,7 @@ Bolt-on demo recipe for [LocalGov Drupal](https://localgovdrupal.org/) sites. Wi
 ## Requirements
 
 - Drupal 11 / PHP 8.3+
-- [LocalGov Drupal](https://localgovdrupal.org/) — the `localgov_events` and `localgov_subsites` feature modules for the targeted bundles to exist
+- `localgov_demo` and `annotations_overlay` are installed automatically by this recipe; `localgov_demo` brings in `localgov_events` and `localgov_subsites` which provide the targeted bundles
 
 ## Installation
 
@@ -34,7 +34,7 @@ drush cr
 After applying the recipe:
 
 - **Annotation targets:** Admin → Config → Annotations → Targets
-- **Annotations UI:** open any Event or Subsite page node for editing — field-level `?` triggers appear on each annotated field (requires `annotations_overlay`)
+- **Annotations UI:** open any Event or Subsite page node for editing — field-level `?` triggers appear on each annotated field (`annotations_overlay` is installed automatically by this recipe)
 
 ## Teardown
 
@@ -45,3 +45,5 @@ Recipes are one-way. Delete the four annotation targets and the imported annotat
 - [Root module README](../../README.md) — full suite overview
 - [annotations_demo_types recipe](../annotations_demo_types/) — shared annotation types dependency
 - [annotations_demo recipe](../annotations_demo/) — standalone demo for fresh installs
+- [annotations_demo_umami recipe](../annotations_demo_umami/) — Umami demo profile bolt-on
+- [annotations_demo_webform recipe](../annotations_demo_webform/) — onboarding webform bolt-on

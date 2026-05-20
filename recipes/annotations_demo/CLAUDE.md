@@ -56,6 +56,13 @@ ddev exec "cd /var/www/html/web && php core/scripts/drupal content:export node -
 
 Then copy the output files into `config/` and `content/` as appropriate.
 
+## Related recipes
+
+- [annotations_demo_types](../annotations_demo_types/CLAUDE.md) — shared annotation types dependency
+- [annotations_demo_lgd](../annotations_demo_lgd/CLAUDE.md) — LocalGov Drupal bolt-on
+- [annotations_demo_umami](../annotations_demo_umami/CLAUDE.md) — Umami demo profile bolt-on
+- [annotations_demo_webform](../annotations_demo_webform/CLAUDE.md) — onboarding webform bolt-on
+
 ## Config action plugins
 
 Both plugins live in the root `annotations` module at `src/Plugin/ConfigAction/`.
