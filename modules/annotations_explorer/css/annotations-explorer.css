@@ -57,6 +57,7 @@
 
 .annotations-explorer__type-label {
   display: block;
+  font-style: italic;
 }
 
 .annotations-explorer__annotation-value {
@@ -65,6 +66,7 @@
 
 .annotations-explorer__machine-name {
   display: block;
+  font-size: small;
 }
 
 .annotations-explorer__nav-group-heading {
