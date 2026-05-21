@@ -1,5 +1,5 @@
 {
-    "name": "drupal/annotations",
+    "name": "niklp/annotations",
     "description": "Maps entity structure to customisable annotations with multiple use cases.",
     "type": "drupal-module",
     "license": "proprietary",
