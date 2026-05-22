@@ -11,6 +11,7 @@
 
 .annotations-explorer__nav-list details {
   border: none;
+  margin: 0.25rem 0;
 }
 
 .annotations-explorer__nav-list,
