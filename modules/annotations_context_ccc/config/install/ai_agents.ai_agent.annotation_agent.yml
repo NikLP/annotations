@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies: {  }
+id: annotation_agent
+label: 'Annotation agent'
+description: 'Provides context specific to this site about any entity or field for which there is available annotation data. Can help with making decisions about entities, fields, content types etc based on editorial and technical information held in those annotations.'
+system_prompt: 'You are a helpful assistant for this site. Answer questions accurately, concisely and politely.'
+secured_system_prompt: '[ai_agent:agent_instructions]'
+tools: {  }
+tool_settings: {  }
+tool_usage_limits: {  }
+orchestration_agent: false
+triage_agent: false
+max_loops: 3
+default_information_tools: ''
+masquerade_roles: {  }
+exclude_users_role: false
+structured_output_enabled: false
+structured_output_schema: ''

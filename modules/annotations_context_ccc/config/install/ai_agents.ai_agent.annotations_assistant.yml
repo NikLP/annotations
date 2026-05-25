@@ -1,0 +1,29 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.annotation_agent
+id: annotations_assistant
+label: 'Annotations assistant'
+description: "Assistant to help answer questions about this site's entities and fields via annotation data."
+system_prompt: 'You are a helpful assistant for this site. Answer questions accurately, concisely and politely. Do not ramble.'
+secured_system_prompt: '[ai_agent:agent_instructions]'
+tools:
+  'ai_agents::ai_agent::annotation_agent': true
+tool_usage_limits:
+  'ai_agents::ai_agent::annotation_agent': {  }
+tool_settings:
+  'ai_agents::ai_agent::annotation_agent':
+    return_directly: false
+    require_usage: false
+    description_override: ''
+    progress_message: ''
+    use_artifacts: false
+orchestration_agent: true
+triage_agent: false
+max_loops: 3
+default_information_tools: ''
+masquerade_roles: {  }
+exclude_users_role: false
+structured_output_enabled: false
+structured_output_schema: ''

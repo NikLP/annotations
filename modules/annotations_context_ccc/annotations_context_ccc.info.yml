@@ -8,3 +8,4 @@ dependencies:
   - annotations:annotations_context
   - ai_agents:ai_agents
   - ai_context:ai_context
+  - ai:ai_assistant_api

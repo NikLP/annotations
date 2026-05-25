@@ -1,0 +1,32 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.annotations_assistant
+id: annotations_assistant
+label: 'Annotations assistant'
+description: "Assistant to help answer questions about this site's entities and fields via annotation data."
+allow_history: session
+history_context_length: 2
+pre_action_prompt: ''
+system_prompt: ''
+instructions: 'You are a helpful assistant for this site. Answer questions accurately, concisely and politely. Do not ramble.'
+actions_enabled: {  }
+error_message: 'I am sorry, something went terribly wrong. Please try to ask me again.'
+specific_error_messages:
+  AiBadRequestException: ''
+  AiRateLimitException: ''
+  AiQuotaException: ''
+  AiSetupFailureException: ''
+  AiRequestErrorException: ''
+llm_provider: __default__
+llm_model: ''
+llm_configuration: {  }
+roles:
+  administrator: administrator
+  author: author
+  anonymous: '0'
+  authenticated: '0'
+  editor: '0'
+use_function_calling: false
+ai_agent: annotations_assistant

@@ -7,6 +7,7 @@ Bridges the [Annotations](../../README.md) module suite into [AI Context (CCC)](
 - `annotations:annotations_context`
 - `ai_agents:ai_agents`
 - `ai_context:ai_context`
+- `ai:ai_assistant_api`
 
 ## Installation
 
@@ -22,13 +23,21 @@ If `annotations_ai_context` is enabled, disable it — these two modules serve t
 drush pmu annotations_ai_context
 ```
 
+## Bundled chatbot
+
+Enabling this module installs two AI agents and an AI assistant out of the box:
+
+- **Annotation agent** (`annotation_agent`) — the worker agent; receives annotation context via CCC injection.
+- **Annotations assistant** (`annotations_assistant`) — an orchestration agent that routes to the annotation agent.
+- **Annotations assistant** (`annotations_assistant`, `ai_assistant`) — the chatbot wrapper; uses the site default LLM provider.
+
+To expose the chatbot, place the **AI Chatbot** block via **Admin > Structure > Block layout** and select the `Annotations assistant` assistant. No further agent or assistant configuration is needed.
+
 ## Configuration
 
 Opt annotation types into injection on their edit form: **Admin > Config > Annotations > Annotation Types > [edit type] > Include in AI context**.
 
 Types without this flag are never injected regardless of this module being enabled.
-
-No other configuration is required. The module fires automatically whenever any AI agent builds its system prompt.
 
 ## How it works
 
@@ -39,6 +48,8 @@ Subscribes to `BuildSystemPromptEvent` at priority 50 (after CCC's own subscribe
 3. If an entity is found and a matching `annotation_target` exists, scopes the payload to that target only. Falls back to all opted-in targets otherwise.
 4. Assembles via `ContextAssembler`, renders to markdown via `ContextRenderer`.
 5. Appends under `## Site Documentation` in the system prompt. Skips if output is empty.
+
+The module also ships an `AiContextProvider` plugin for tighter CCC integration, but this requires a local patch to `ai_context` that has not yet been accepted upstream. See CLAUDE.md for details.
 
 ## Scope control
 
