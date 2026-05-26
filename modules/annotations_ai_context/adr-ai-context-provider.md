@@ -1,14 +1,14 @@
 # ADR: Upstream AiContextProvider plugin type for ai_context
 
 **Status:** Proposed — pending hands-on validation and upstream discussion  
-**Module affected:** `annotations_context_ccc`  
+**Module affected:** `annotations_ai_context`  
 **Upstream target:** [drupal.org/project/ai_context](https://www.drupal.org/project/ai_context)
 
 ---
 
 ## Context
 
-`ai_context` (CCC) manages curated, admin-authored context items and delivers them
+`ai_context` manages curated, admin-authored context items and delivers them
 into agent system prompts via its `AiContextSystemPromptSubscriber`. It has an
 `AiContextScope` plugin type for filtering which items apply to a given request.
 
@@ -16,21 +16,21 @@ into agent system prompts via its `AiContextSystemPromptSubscriber`. It has an
 entities; it cannot inject content that does not already exist as an entity.
 Modules with dynamically-generated context (assembled from database state, the
 current entity, user permissions, etc.) have no native integration point. The only
-option is a direct `BuildSystemPromptEvent` subscriber that operates outside CCC's
-model: invisible in the admin UI, not subject to CCC's loop-aware token
-optimisation, and not weight-ordered relative to CCC's own output.
+option is a direct `BuildSystemPromptEvent` subscriber that operates outside AI
+Context's model: invisible in the admin UI, not subject to its loop-aware token
+optimisation, and not weight-ordered relative to its own output.
 
-`annotations_context_ccc` is currently in this position. Its subscriber appends
-annotations documentation to the prompt correctly at runtime, but CCC has no
+`annotations_ai_context` is currently in this position. Its subscriber appends
+annotations documentation to the prompt correctly at runtime, but AI Context has no
 visibility into it.
 
 ## Decision
 
 Propose a new `AiContextProvider` plugin type to the `ai_context` maintainers.
-Providers contribute dynamic content into the same assembled block as CCC's own
+Providers contribute dynamic content into the same assembled block as AI Context's own
 items, making them genuine participants in the pipeline rather than bolt-ons.
 
-Once accepted upstream, replace `AnnotationsContextCccSubscriber` with an
+Once accepted upstream, replace `AnnotationsAiContextSubscriber` with an
 `AnnotationsContextProvider` plugin — identical logic, different ownership.
 
 ## Proposed interface
@@ -109,17 +109,17 @@ No schema changes, no new entities, no breaking changes.
 )]
 class AnnotationsContextProvider implements AiContextProviderInterface {
   // Entity detection, target scoping, markdown rendering —
-  // identical to AnnotationsContextCccSubscriber, different class shape.
+  // identical to AnnotationsAiContextSubscriber, different class shape.
 }
 ```
 
-`annotations_context_ccc.services.yml` drops the event subscriber entry entirely.
+`annotations_ai_context.services.yml` drops the event subscriber entry entirely.
 
 ## Before posting the upstream issue
 
-- [ ] Enable ai_agents, ai_context, and annotations_context_ccc in DDEV
-- [ ] Create AiContextItem entities via the CCC admin UI; observe what it manages
+- [ ] Enable ai_agents, ai_context, and annotations_ai_context in DDEV
+- [ ] Create AiContextItem entities via the AI Context admin UI; observe what it manages
 - [ ] Trigger an agent session; inspect the assembled system prompt
-- [ ] Confirm annotations content appears but is absent from CCC's admin UI
-- [ ] Verify subscriber change handles the empty-CCC-items / non-empty-provider case
+- [ ] Confirm annotations content appears but is absent from AI Context's admin UI
+- [ ] Verify subscriber change handles the empty-items / non-empty-provider case
 - [ ] Confirm return type of `getContent()` — string is proposed; consider whether CacheableMetadata is needed

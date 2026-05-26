@@ -1,6 +1,6 @@
-# Annotations Context CCC
+# Annotations AI Context
 
-Bridges the [Annotations](../../README.md) module suite into [AI Context (CCC)](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts.
+Bridges the [Annotations](../../README.md) module suite into [AI Context](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts.
 
 ## Requirements
 
@@ -14,20 +14,14 @@ Bridges the [Annotations](../../README.md) module suite into [AI Context (CCC)](
 Enable the module:
 
 ```bash
-drush en annotations_context_ccc
-```
-
-If `annotations_ai_context` is enabled, disable it — these two modules serve the same purpose and should not run together:
-
-```bash
-drush pmu annotations_ai_context
+drush en annotations_ai_context
 ```
 
 ## Bundled chatbot
 
 Enabling this module installs two AI agents and an AI assistant out of the box:
 
-- **Annotation agent** (`annotation_agent`) — the worker agent; receives annotation context via CCC injection.
+- **Annotation agent** (`annotation_agent`) — the worker agent; receives annotation context via AI Context injection.
 - **Annotations assistant** (`annotations_assistant`) — an orchestration agent that routes to the annotation agent.
 - **Annotations assistant** (`annotations_assistant`, `ai_assistant`) — the chatbot wrapper; uses the site default LLM provider.
 
@@ -41,7 +35,7 @@ Types without this flag are never injected regardless of this module being enabl
 
 ## How it works
 
-Subscribes to `BuildSystemPromptEvent` at priority 50 (after CCC's own subscriber at 100):
+Subscribes to `BuildSystemPromptEvent` at priority 50 (after AI Context's own subscriber at 100):
 
 1. Loads annotation types with `in_ai_context = TRUE`. Skips if none.
 2. Detects a content entity from the current route or event tokens (supports Canvas AI's `entity_type` + `entity_id` token pair).
@@ -49,7 +43,7 @@ Subscribes to `BuildSystemPromptEvent` at priority 50 (after CCC's own subscribe
 4. Assembles via `ContextAssembler`, renders to markdown via `ContextRenderer`.
 5. Appends under `## Site Documentation` in the system prompt. Skips if output is empty.
 
-The module also ships an `AiContextProvider` plugin for tighter CCC integration, but this requires a local patch to `ai_context` that has not yet been accepted upstream. See CLAUDE.md for details.
+The module also ships an `AiContextProvider` plugin for tighter AI Context integration, but this requires a local patch to `ai_context` that has not yet been accepted upstream. See CLAUDE.md for details.
 
 ## Scope control
 

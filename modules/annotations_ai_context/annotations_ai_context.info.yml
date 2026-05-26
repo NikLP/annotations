@@ -1,13 +1,11 @@
-name: 'Annotations AI Context (Deprecated)'
+name: 'Annotations AI Context'
 type: module
-description: 'Injects annotations context into an AI assistant system prompt for site-specific chat.'
+description: 'Injects annotations context into AI Context agent system prompts.'
 package: Annotations
 core_version_requirement: ^11
 dependencies:
   - annotations:annotations
   - annotations:annotations_context
-  - drupal:path_alias
-  - ai:ai
-  - ai:ai_assistant_api
-  - ai:ai_chatbot
   - ai_agents:ai_agents
+  - ai_context:ai_context
+  - ai:ai_assistant_api

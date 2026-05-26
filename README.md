@@ -69,12 +69,11 @@ Install annotations base module; enable submodules as needed.
 | `annotations_type_ui` | Agency / dev only | Stable | Browser CRUD for annotation types. Site-building tool only — use during initial setup, not for ongoing production use. |
 | `annotations_ui` | Agency + editors | Stable | Annotation editing UI with revision history and moderation controls. The primary authoring interface. |
 | `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
-| `annotations_context` | Agency / dev | Stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, Drush export (`drush ann:ex`, provided by `annotations_export`), JSON API endpoint, and the shared payload consumed by `annotations_context_ccc`. |
-| `annotations_context_ccc` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context (CCC)](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. Supersedes `annotations_ai_context`. |
+| `annotations_context` | Agency / dev | Stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, Drush export (`drush ann:ex`, provided by `annotations_export`), JSON API endpoint, and the shared payload consumed by `annotations_ai_context`. |
+| `annotations_ai_context` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. |
 | `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
 | `annotations_scan` | Agency / dev | Stable | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
-| `annotations_ai_context` | — | Deprecated | Deprecated prototype. Superseded by `annotations_context_ccc`. Do not enable alongside it. |
 | `annotations_webform` | Dev / site builders | Stable | Webform and WebformSubmission target plugins and overlay field label resolver. |
 
 ---

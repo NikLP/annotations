@@ -7,23 +7,21 @@ Drupal module suite: reads site structure (content types, fields, roles, workflo
 ```text
 annotations/                ← root module (always required)
 ├── modules/
-│   ├── annotations_ui/             ← CLAUDE.md, README.md
-│   ├── annotations_type_ui/        ← CLAUDE.md, README.md
-│   ├── annotations_coverage/       ← CLAUDE.md, README.md
-│   ├── annotations_context/        ← CLAUDE.md, README.md
-│   ├── annotations_ai_context/     ← CLAUDE.md (deprecated prototype)
-│   ├── annotations_context_ccc/    ← CLAUDE.md
-│   ├── annotations_overlay/        ← CLAUDE.md, README.md
-│   ├── annotations_workflows/      ← CLAUDE.md, README.md
-│   ├── annotations_scan/           ← CLAUDE.md, README.md
-│   ├── annotations_explorer/       ← CLAUDE.md, README.md
-│   └── annotations_export/         ← CLAUDE.md, README.md
+│   ├── annotations_ui/
+│   ├── annotations_type_ui/
+│   ├── annotations_coverage/
+│   ├── annotations_context/
+│   ├── annotations_ai_context/
+│   ├── annotations_overlay/
+│   ├── annotations_workflows/
+│   ├── annotations_scan/
+│   ├── annotations_explorer/
+│   └── annotations_export/
 └── recipes/
-    ├── annotations_demo_types/     ← CLAUDE.md, README.md — shared base: editorial/technical/rules annotation types; dependency of other demo recipes
-    ├── annotations_demo/           ← CLAUDE.md, README.md — standalone demo recipe (Product & Collection); depends on annotations_demo_types
-    ├── annotations_demo_lgd/       ← CLAUDE.md, README.md — bolt-on recipe targeting LocalGov Drupal content types
-    ├── annotations_demo_umami/     ← CLAUDE.md, README.md — bolt-on recipe for Umami demo profile; adds Cookbook type + 4 targets
-    └── annotations_demo_webform/   ← CLAUDE.md, README.md — bolt-on recipe: onboarding webform with per-field overlay triggers
+    ├── annotations_demo_types/     ← shared base: editorial/technical/rules annotation types; dependency of other demo recipes
+    ├── annotations_demo_lgd/       ← bolt-on recipe targeting LocalGov Drupal content types
+    ├── annotations_demo_umami/     ← bolt-on recipe for Umami demo profile; adds Cookbook type + 4 targets
+    └── annotations_demo_webform/   ← bolt-on recipe: onboarding webform with per-field overlay triggers
 ```
 
 Each submodule should have its own `CLAUDE.md` and `README.md`. These files cover the root module, cross-cutting conventions, the data model, and design decisions.
@@ -73,7 +71,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 
 **Sentinel:** `field_name = ''` is bundle-level. Drupal's `StringItem::isEmpty()` treats `''` as NULL, so queries must use `IS NULL`.
 
-**⚠️ Raw storage:** `value` is stored unfiltered. Any code rendering annotations outside the admin UI — including `annotations_context`, `annotations_ai_context`, any end-user output — **must** escape with `Html::escape()` wrapped in `Markup::create()`, or use `#plain_text`.
+**⚠️ Raw storage:** `value` is stored unfiltered. Any code rendering annotations outside the admin UI — including `annotations_context`, `annotations_ai_context`, and any end-user output — **must** escape with `Html::escape()` wrapped in `Markup::create()`, or use `#plain_text`.
 
 ---
 
@@ -103,8 +101,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_type_ui` | Browser CRUD for annotation types |
 | `annotations_coverage` | Coverage tracking; `CoverageService` API; status rollup |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI |
-| `annotations_ai_context` | *Deprecated prototype.* AI chat via `ai` module suite; superseded by `annotations_context_ccc` |
-| `annotations_context_ccc` | Injects annotations context into CCC (ai_context) agent system prompts via `BuildSystemPromptEvent` |
+| `annotations_ai_context` | Bridges `annotations_context` into Context Control Center (CCC / `ai_context` module); injects assembled annotations documentation into agent system prompts via `BuildSystemPromptEvent` |
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
 | `annotations_webform` | Webform and WebformSubmission target plugins and overlay field label resolver |
@@ -120,6 +117,6 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - **Split storage:** Scope in Drupal config (cex/cim); annotation text in `annotation` content entity (never config sync). Different lifecycles, different owners.
 - **Plugin system in `annotations`:** Target plugins live in root module, not `annotations_scan`. `GenericTarget` only covers fieldable types — non-fieldable always need a dedicated plugin.
 - **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the consuming submodule.
-- **`annotations_context` is the payload API:** `annotations_context_ccc` is the CCC consumer; `annotations_ai_context` is a deprecated prototype.
+- **`annotations_context` is the payload API:** `annotations_ai_context` is the AI Context consumer.
 - **Permissions:** `edit {type} annotations` (write + create per type), `delete {type} annotations` (delete per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `administer annotation targets`, `edit any annotation`, `delete any annotation`, `access annotation collection`, `view annotation revisions`, `view annotations context`, `administer annotation types`. Entity-level access is enforced by `AnnotationAccessControlHandler`; `hook_entity_access` in `annotations_ui` handles revision-only operations.
 - **No multivalue types:** All values are plain strings; `rules` type uses markdown in a textarea.

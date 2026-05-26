@@ -2,124 +2,98 @@
 
 Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
 
-> **This module is an old demo/prototype and will be replaced.** Do not build on it or extend it. Its replacement will own the AI chat integration and consume the `in_ai_context` third-party setting from `annotations_context`. The `GetSiteContext` plugin's `in_ai_context` filtering pattern (reading `annotations_ai_context.in_ai_context` as a third-party setting key) is superseded — the canonical key is now `annotations_context.in_ai_context`, set via the annotation type edit form.
+Bridges `annotations_context` into AI Context (`ai_context` module) by appending assembled annotations documentation to agent system prompts.
 
-## What this module does
+## What it does
 
-Connects annotations context to the site's AI chatbot. Provides a `GetSiteContext` function call tool that the LLM agent invokes to retrieve site-specific documentation, and an `AnnotationsChatBlock` to place the pre-configured chat UI on any page.
+When an agent fires, annotations documentation is injected into the system prompt:
 
-Depends on `annotations_context` for payload assembly and rendering. Depends on `ai`, `ai_assistant_api`, `ai_chatbot`, and `ai_agents` for the chatbot infrastructure.
+1. Loads all annotation types with `annotations_context.in_ai_context = TRUE`.
+2. If the current route or event tokens expose a content entity, resolves its `entity_type__bundle` to an `annotation_target` ID and scopes the payload to that target only.
+3. Falls back to all opted-in targets when no entity context is detectable.
+4. Renders via `ContextRenderer` (markdown) and appends under `## Site Documentation`.
+5. Skips entirely if no types are opted in or the rendered output is empty.
 
-## What it owns
+## Dependencies
 
-### Plugins
+- `annotations:annotations_context` — `ContextAssembler` + `ContextRenderer`
+- `ai_agents:ai_agents` — `BuildSystemPromptEvent`
+- `ai_context:ai_context` — gates installation on the `ai_context` module being available
+- `ai:ai_assistant_api` — provides the `ai_assistant` config entity type shipped in `config/install`
 
-| Plugin | Type | Purpose |
+## Bundled config
+
+`config/install/` ships three config entities installed automatically when the module is enabled:
+
+| File | Entity | Role |
 | --- | --- | --- |
-| `GetSiteContext` | `AiFunctionCall` | Assembles annotations context scoped to the current page and returns it as text for the LLM |
-| `AnnotationsChatBlock` | `Block` | Pre-configured DeepChat block wired to the Annotations assistant |
+| `ai_agents.ai_agent.annotation_agent.yml` | AI Agent | Worker agent; receives annotation context via AI Context injection |
+| `ai_agents.ai_agent.annotations_assistant.yml` | AI Agent | Orchestration agent; routes to `annotation_agent` as a tool |
+| `ai_assistant_api.ai_assistant.annotations_assistant.yml` | AI Assistant | Chatbot wrapper; uses `__default__` provider; exposes via AI Chatbot block |
 
-### Shipped config
+The assistant uses the site default LLM provider (`__default__`) so it works regardless of which provider is configured. Roles `administrator` and `author` have access by default — adjust on the assistant edit form as needed.
 
-`config/install/ai_agents.ai_agent.annotations.yml` — the orchestrating `AiAgent` entity:
+To expose the chatbot after enabling the module, place the **AI Chatbot** block and select `Annotations assistant`.
 
-- `system_prompt` — combined persona, routing rules, and tone/format instructions
-- `tools: annotations_ai_context:get_site_context` — the function call tool
-- `max_loops: 3`, `allow_history: session`
+## Enabling annotation types for injection
 
-`config/install/ai_assistant_api.ai_assistant.annotations.yml` — the `AiAssistant` entity:
+On the annotation type edit form, check **Include in AI context** (the `annotations_context.in_ai_context` third-party setting). Types with this off are never injected regardless of this module being enabled.
 
-- `ai_agent: annotations` — delegates entirely to the AiAgent entity above
-- `llm_provider: __default__` / `llm_model: __default__` — uses the admin-configured default provider
+## Two mechanisms — both present, one universal
 
-Both are editable via `/admin/config/ai/agents`.
+This module ships two implementations of the same injection logic. The subscriber is the shipped default; the plugin only activates on environments where the upstream patch has been applied.
 
-## How it works
+### Shipped default: `AnnotationsAiContextSubscriber`
 
-```text
-User types → AiAssistant (annotations) → AiAgent (annotations)
-  LLM sees system_prompt + tool description
-  LLM calls GetSiteContext tool
-    → reads contexts.current_route from request body
-    → detects entity type/bundle from URL pattern
-    → calls ContextAssembler::assemble(['types' => $aiTypes, ...])
-    → renders to markdown, strips headings
-    → returns documentation text to LLM
-  LLM answers using only that documentation
-```
+`src/EventSubscriber/AnnotationsAiContextSubscriber.php` — a direct `BuildSystemPromptEvent` subscriber at priority 50 (after AI Context's own subscriber at 100). Registered in `annotations_ai_context.services.yml` and active on all environments.
 
-## GetSiteContext
+This works without any changes to `ai_context` but is not a formal AI Context citizen: no admin UI visibility, no weight ordering relative to other providers.
 
-`src/Plugin/AiFunctionCall/GetSiteContext.php`
+### Patch-only: `AnnotationsContextProvider` plugin
 
-Function call plugin — the LLM invokes this tool automatically before answering. No parameters: it reads the current route from the AJAX request body (set by `DeepChatFormBlock`).
+`src/Plugin/AiContextProvider/AnnotationsContextProvider.php` — an `#[AiContextProvider]` plugin auto-discovered by `AiContextProviderManager`. Only active on environments where the local `ai_context` patch has been applied (see below). On those environments both mechanisms fire, injecting the same content twice — this is acceptable while the patch remains a local-only development tool.
 
-**Entity detection patterns:**
+This is the correct long-term integration shape: annotations context becomes a proper AI Context citizen, visible in the admin UI and sortable by weight alongside other providers. Once the patch is accepted upstream and the plugin type ships in a released version of `ai_context`, the subscriber can be removed.
 
-| URL pattern | Entity type |
+---
+
+## The `ai_context` patch
+
+The `AiContextProvider` plugin type does not exist in `ai_context` 1.0.0-beta2 (the current Packagist release). It has been added locally as an unmanaged patch to the installed copy of the module.
+
+**Modified files in `web/modules/contrib/ai_context/` vs 1.0.0-beta2:**
+
+| File | Change |
 | --- | --- |
-| `/node/{id}` | `node` |
-| `/taxonomy/term/{id}` | `taxonomy_term` |
-| `/media/{id}` | `media` |
-| `/user/{id}` | `user` |
-| `/node/add/{bundle}` | `node` (create form) |
-| `/media/add/{bundle}` | `media` (create form) |
+| `ai_context.services.yml` | Registers `AiContextProviderManager` as a service |
+| `src/EventSubscriber/AiContextSystemPromptSubscriber.php` | Injects the manager and calls `getProvidersSortedByWeight()` after item assembly |
 
-Action suffixes (`/edit`, `/revisions`, `/delete`, etc.) are stripped before matching. Falls back to full site context if no entity is detected or no matching `annotation_target` exists.
+**Untracked additions (new files):**
 
-## AnnotationsChatBlock
+- `src/AiContextProviderManager.php`
+- `src/Attribute/AiContextProvider.php`
+- `src/Plugin/AiContextProvider/AiContextProviderInterface.php`
 
-`src/Plugin/Block/AnnotationsChatBlock.php`
+---
 
-Extends `DeepChatFormBlock`. Hardwires `ai_assistant: annotations` — no assistant selection in the block config form. Sets `verbose_mode: FALSE` by default (verbose is for developers, not end users).
+## Architectural position
 
-## AI instructions
+Annotations adheres to AI Context rather than the other way around. AI Context is the primary system for context delivery into agent prompts.
 
-The `AiAgent` entity's `system_prompt` (editable at `/admin/config/ai/agents/annotations/edit`) explicitly:
+### Why not a scope plugin
 
-- Requires the LLM to call the `get_site_context` tool before answering anything
-- Prevents answering from general Drupal knowledge
-- Falls back to "I don't have specific information about that yet" rather than guessing
+AI Context's `AiContextScope` plugin type is for matching `AiContextItem` entities to the current request context — it is not a content-source API. A scope plugin cannot inject external content; it only filters existing entities. A direct event subscriber (or the `AiContextProvider` plugin type once merged) is the correct integration shape.
 
-## Setup
+### Per-agent opt-out: not needed
 
-1. Configure a default Chat provider at `/admin/config/ai/providers`
-2. Place the **Annotations Site Assistant** block (Annotations category) in any region
-3. Done — no further configuration required
+The `annotations_context.in_ai_context` flag on annotation types already gates injection per type. An agent that should not receive certain documentation simply has no opted-in types covering that content. Per-agent opt-out would only add value for "type X to agent A but not agent B" — a cross-product that the type-level flag handles adequately.
 
-## Deferred
+---
 
-### REST endpoint for decoupled editors (`annotations_context` or `annotations_ai_context`)
+## Status
 
-A lightweight `/api/annotations/{target_id}` endpoint returning JSON annotation data. Needed for any editing interface that bypasses the Drupal form pipeline and cannot use `hook_form_alter` — Drupal CMS Canvas being the primary example, but also any headless/decoupled front end.
-
-**Design notes:**
-
-- Simple `JsonResponse` controller, no JSON:API or REST contrib required. Route in `annotations_ai_context.routing.yml` (or `annotations_context` if it makes more sense to keep non-AI consumers separate).
-- `{target_id}` maps directly to `annotation_target` machine name (e.g. `node__article`). Controller loads the target, checks it exists, then calls `AnnotationStorageService::getForTarget()`.
-- Permission check: `view annotations overlay` gates access (same permission as the form overlay). Per-type `view {type} annotations` filtering applied server-side before returning.
-- Response shape mirrors what `buildPanel()` already produces internally — array of `{type_id: {label, value}}` per field key, plus `_bundle` for the bundle-level overview.
-- Cache tags: `annotation_list` + the specific `annotation_target` config entity cache tag so responses invalidate when annotations are saved.
-
-**Canvas integration path** (future `annotations_canvas` submodule or Canvas plugin):
-
-Canvas is a decoupled React frontend using JSON:API for content but extensible with custom React plugins. An `annotations_canvas` plugin would:
-
-1. Read the current entity type/bundle from the Canvas editing context
-2. Call `/api/annotations/{target_id}` on load
-3. Render the response as a collapsible panel in the Canvas sidebar
-
-This is viable but Canvas's plugin API is still stabilising (as of early 2026). The endpoint should be built first — it serves as the integration contract regardless of which decoupled editor calls it. Mercury Editor could use it too if the `hook_form_alter` approach proves unreliable in its AJAX context.
-
-**The key proviso for Canvas/DCMS:** Even without the overlay UX, `annotations_ai_context` already works in any editing environment. The Annotations chat assistant has full site context regardless of whether the editor is standard Drupal forms, Mercury Editor, or Canvas. The endpoint/overlay work is purely about surfacing annotations inline while editing — the AI value is not blocked by any of this.
-
-## Current status
-
-- [x] `GetSiteContext` function call plugin — entity detection, context assembly, tool output
-- [x] `AnnotationsChatBlock` plugin — pre-configured, verbose off
-- [x] Shipped `ai_agents.ai_agent.annotations` config entity
-- [x] Shipped `ai_assistant_api.ai_assistant.annotations` config entity
-- [x] Role-based context filtering — `account` option passed to `ContextAssembler`; filters to types the current user can view via their combined role permissions
-- [ ] Query logging — deferred; use `ai` module suite logging rather than a custom module
-- [ ] `/api/annotations/{target_id}` endpoint — needed for Canvas and other decoupled editors
-- [ ] Canvas panel plugin (`annotations_canvas`) — blocked on Canvas plugin API stability and endpoint above
+- [x] `AnnotationsAiContextSubscriber` — active; registered in `services.yml`; works on all environments
+- [x] `AnnotationsContextProvider` plugin — active on patched environments only; duplicates injection there but harmlessly
+- [ ] Formalise `ai_context` patch via `composer-patches` so it survives `composer update`
+- [ ] Open upstream MR/issue on drupal.org for `AiContextProvider` plugin type
+- [ ] Remove subscriber once upstream patch is accepted and released

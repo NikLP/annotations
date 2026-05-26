@@ -2,54 +2,82 @@
 
 declare(strict_types=1);
 
-namespace Drupal\annotations_context_ccc\EventSubscriber;
+namespace Drupal\annotations_ai_context\Plugin\AiContextProvider;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
+use Drupal\ai_context\Attribute\AiContextProvider;
+use Drupal\ai_context\Plugin\AiContextProvider\AiContextProviderInterface;
 use Drupal\annotations_context\ContextAssembler;
 use Drupal\annotations_context\ContextRenderer;
+use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Appends annotations context to AI agent system prompts.
+ * Contributes annotation documentation to agent system prompts.
  *
- * Fires after CCC's own subscriber (priority 50 vs 100) so annotations
- * documentation follows curated CCC context items in the prompt.
- *
- * Only injects types with the annotations_context.in_ai_context third-party
- * setting enabled. When an entity is detectable from the current route or
- * event tokens, injection is scoped to the matching annotation_target;
- * otherwise all opted-in targets are included.
+ * Injects markdown-rendered annotation content for annotation types that have
+ * the annotations_context.in_ai_context third-party setting enabled. When an
+ * entity is detectable from the current route or event tokens, injection is
+ * scoped to the matching annotation_target; otherwise all opted-in targets
+ * are included.
  */
-final class AnnotationsContextCccSubscriber implements EventSubscriberInterface {
+#[AiContextProvider(
+  id: 'annotations_context',
+  label: new TranslatableMarkup('Annotations'),
+  description: new TranslatableMarkup('Injects annotation documentation for opted-in annotation types into agent system prompts.'),
+  weight: 50,
+)]
+class AnnotationsContextProvider extends PluginBase implements AiContextProviderInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
+    array $configuration,
+    string $plugin_id,
+    mixed $plugin_definition,
     private readonly ContextAssembler $assembler,
     private readonly ContextRenderer $renderer,
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly RouteMatchInterface $routeMatch,
     private readonly AccountProxyInterface $currentUser,
-  ) {}
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents(): array {
-    return [
-      BuildSystemPromptEvent::EVENT_NAME => ['onBuildSystemPrompt', 50],
-    ];
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('annotations_context.assembler'),
+      $container->get('annotations_context.renderer'),
+      $container->get('entity_type.manager'),
+      $container->get('current_route_match'),
+      $container->get('current_user'),
+    );
   }
 
   /**
-   * Appends annotations context to the agent system prompt.
+   * {@inheritdoc}
    */
-  public function onBuildSystemPrompt(BuildSystemPromptEvent $event): void {
+  public function isApplicable(BuildSystemPromptEvent $event): bool {
+    return !empty($this->getAiContextTypeIds());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent(BuildSystemPromptEvent $event): string {
     $types = $this->getAiContextTypeIds();
     if (empty($types)) {
-      return;
+      return '';
     }
 
     $options = ['types' => $types, 'account' => $this->currentUser];
@@ -62,19 +90,23 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
     $payload = $this->assembler->assemble($options);
     $markdown = $this->renderer->render($payload);
     if (trim($markdown) === '') {
-      return;
+      return '';
     }
 
-    $event->setSystemPrompt(
-      $event->getSystemPrompt() . "\n\n## Site Documentation\n\n" . $markdown,
-    );
+    return "## Site Documentation\n\n" . $markdown;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getWeight(): int {
+    return $this->pluginDefinition['weight'];
   }
 
   /**
    * Returns IDs of annotation types opted in to AI context injection.
    *
    * @return string[]
-   *   Annotation type machine names opted in to AI context injection.
    */
   private function getAiContextTypeIds(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all */
@@ -85,15 +117,15 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
         $types[] = $id;
       }
     }
-
     return $types;
   }
 
   /**
    * Resolves an annotation_target ID from the current request context.
    *
-   * Returns NULL when no entity is detectable or no annotation_target exists
-   * for the detected entity type + bundle, falling back to all targets.
+   * Checks the current route first, then falls back to event tokens. Returns
+   * NULL when no entity is detectable or no annotation_target exists for the
+   * detected entity type + bundle, falling back to all opted-in targets.
    */
   private function resolveTargetId(array $tokens): ?string {
     $entity = $this->getEntityFromRoute() ?? $this->getEntityFromTokens($tokens);
@@ -102,7 +134,6 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
     }
 
     $target_id = $entity->getEntityTypeId() . '__' . $entity->bundle();
-
     return $this->entityTypeManager->getStorage('annotation_target')->load($target_id) !== NULL
       ? $target_id
       : NULL;
@@ -117,7 +148,6 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
         return $value;
       }
     }
-    
     return NULL;
   }
 
@@ -137,7 +167,6 @@ final class AnnotationsContextCccSubscriber implements EventSubscriberInterface 
     if (!empty($tokens['entity_type']) && !empty($tokens['entity_id'])
         && is_string($tokens['entity_type']) && is_numeric($tokens['entity_id'])
         && $this->entityTypeManager->hasDefinition($tokens['entity_type'])) {
-
       $entity = $this->entityTypeManager->getStorage($tokens['entity_type'])->load($tokens['entity_id']);
       if ($entity instanceof EntityInterface && $entity->access('view')) {
         return $entity;
