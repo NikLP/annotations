@@ -54,6 +54,7 @@ class ScanRunForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $result = $this->scanner->scan();
     $this->scanner->saveSnapshot($result);
+    $this->scanner->clearPendingDiff();
 
     $this->messenger()->addStatus(
       $this->t('Scan complete. @count targets discovered. Snapshot saved.', ['@count' => count($result)])

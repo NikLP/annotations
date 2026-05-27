@@ -8,6 +8,7 @@ use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\annotations_scan\ScanService;
+use Psr\Log\LoggerInterface;
 
 /**
  * Hook implementations for the annotations_scan module.
@@ -18,6 +19,7 @@ class AnnotationsScanHooks {
 
   public function __construct(
     private readonly ScanService $scanner,
+    private readonly LoggerInterface $logger,
   ) {}
 
   /**
@@ -39,7 +41,15 @@ class AnnotationsScanHooks {
    */
   #[Hook('cron')]
   public function cron(): void {
+    $stored = $this->scanner->loadSnapshot();
     $result = $this->scanner->scan();
+    $diff = $this->scanner->computeDiff($result, $stored);
+    if ($this->scanner->diffHasChanges($diff)) {
+      $this->scanner->storePendingDiff($diff);
+      $this->logger->warning('Annotations Scan: site structure has changed since the last accepted scan. Visit the <a href=":url">scanner page</a> to review.', [
+        ':url' => '/admin/config/annotations/scanner',
+      ]);
+    }
     $this->scanner->saveSnapshot($result);
   }
 

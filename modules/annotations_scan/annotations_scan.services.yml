@@ -3,6 +3,7 @@ services:
     class: Drupal\annotations_scan\Hook\AnnotationsScanHooks
     arguments:
       - '@annotations_scan.scanner'
+      - '@logger.channel.annotations_scan'
 
   annotations_scan.scanner:
     class: Drupal\annotations_scan\ScanService
@@ -11,6 +12,7 @@ services:
       - '@logger.channel.annotations_scan'
       - '@annotations.discovery'
       - '@database'
+      - '@state'
 
   Drupal\annotations_scan\ScanService:
     alias: annotations_scan.scanner

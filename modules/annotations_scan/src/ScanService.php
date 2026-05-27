@@ -6,6 +6,7 @@ namespace Drupal\annotations_scan;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\annotations\AnnotationDiscoveryService;
 use Psr\Log\LoggerInterface;
 
@@ -31,6 +32,7 @@ class ScanService {
     protected LoggerInterface $logger,
     protected AnnotationDiscoveryService $discovery,
     protected Connection $database,
+    protected StateInterface $state,
   ) {}
 
   /**
@@ -211,12 +213,44 @@ class ScanService {
   }
 
   /**
+   * Stores a pending diff in state for display on the scanner admin page.
+   *
+   * Overwrites any previously stored pending diff — the stored value always
+   * reflects the last cron run that detected changes.
+   */
+  public function storePendingDiff(array $diff): void {
+    $this->state->set('annotations_scan.pending_diff', [
+      'diff' => $diff,
+      'detected' => time(),
+    ]);
+  }
+
+  /**
+   * Returns the stored pending diff, or NULL if none exists.
+   *
+   * @return array{diff: array, detected: int}|null
+   */
+  public function getPendingDiff(): ?array {
+    return $this->state->get('annotations_scan.pending_diff');
+  }
+
+  /**
+   * Clears the stored pending diff.
+   *
+   * Call after a manual scan so the admin page no longer shows the warning.
+   */
+  public function clearPendingDiff(): void {
+    $this->state->delete('annotations_scan.pending_diff');
+  }
+
+  /**
    * Loads annotation_target entities, keyed by "{entity_type}__{bundle}".
    *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
    *   All opted-in targets, keyed by "{entity_type}__{bundle}".
    */
   protected function loadScopes(): array {
+    /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $scopes */
     $scopes = $this->entityTypeManager
       ->getStorage('annotation_target')
       ->loadMultiple();

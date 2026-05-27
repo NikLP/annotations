@@ -39,6 +39,54 @@ class ScanController extends ControllerBase {
 
     $build = [];
 
+    if ($pending = $this->scanner->getPendingDiff()) {
+      $diff = $pending['diff'];
+      $items = [];
+
+      foreach (array_keys($diff['added'] ?? []) as $target_id) {
+        $items[] = $this->t('Added: @target', ['@target' => $target_id]);
+      }
+
+      foreach (array_keys($diff['removed'] ?? []) as $target_id) {
+        $items[] = $this->t('Removed: @target', ['@target' => $target_id]);
+      }
+
+      foreach ($diff['changed'] ?? [] as $target_id => $changes) {
+        $parts = [];
+        if ($changes['fields_added']) {
+          $parts[] = $this->t('@n field(s) added', ['@n' => count($changes['fields_added'])]);
+        }
+
+        if ($changes['fields_removed']) {
+          $parts[] = $this->t('@n field(s) removed', ['@n' => count($changes['fields_removed'])]);
+        }
+
+        if ($changes['fields_changed']) {
+          $parts[] = $this->t('@n field(s) changed', ['@n' => count($changes['fields_changed'])]);
+        }
+        
+        $items[] = $this->t('Changed: @target (@changes)', [
+          '@target' => $target_id,
+          '@changes' => implode(', ', $parts),
+        ]);
+      }
+
+      $build['pending_diff'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['messages', 'messages--warning']],
+        '#cache' => ['max-age' => 0],
+        'intro' => [
+          '#markup' => $this->t('Site structure changes detected by cron on @time. Run a scan below to accept the current structure and dismiss this notice.', [
+            '@time' => $this->dateFormatter->format($pending['detected'], 'short'),
+          ]),
+        ],
+        'changes' => [
+          '#theme' => 'item_list',
+          '#items' => $items,
+        ],
+      ];
+    }
+
     $build['status'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
