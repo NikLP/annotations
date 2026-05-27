@@ -93,16 +93,6 @@ Annotations does not ship any enforcement implementations. The service API is st
 
 `getCoverage()` and `getCoverageForTarget()` pass `published = TRUE` to `AnnotationStorageService::getForTarget()`. When `annotations_workflows` is installed, only published annotations count as filled — draft and needs-review annotations appear as gaps. When `annotations_workflows` is not installed the filter is a no-op and all non-empty annotations count.
 
-## Current status
-
-- [x] `CoverageService` — tiered severity, status rollup, score calculation
-- [x] `affects_coverage` third-party setting + form injection
-- [x] `CoverageController` — score banner, filter form, expandable gap rows
-- [x] `CoverageFilterForm`
-- [x] Workflow-aware coverage (published-only when annotations_workflows installed)
-- [x] `CoverageController::buildGapCell()` uses `annotations_coverage_gap_details` theme + Twig template
-- [ ] Cron-driven result caching (deferred until target counts become large)
-
 ## Performance concern — N+1 query problem
 
 `getCoverage()` executes **1 DB query per target** via `AnnotationStorageService::getForTarget()`. At 10 targets this is imperceptible. At 100+ targets it becomes a significant page load problem on every visit to `/admin/reports/annotation-coverage`. `getScore()` also calls `loadAnnotationTypes()` independently, adding a second annotation-type query on top of the one already issued by `getCoverage()`.

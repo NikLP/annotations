@@ -32,12 +32,6 @@ Entity type labels are resolved via `EntityTypeManager::getDefinition()`, fallin
 
 Custom access callback (`ExplorerController::access`) allows entry if the user has at least one `consume {type} annotations` permission. No admin permission required — this is a consumer-facing route.
 
-## Current status
+## Deferred
 
-- [x] Two-panel layout with AJAX target switching
-- [x] Consume-permission filtering on annotation types
-- [x] Target nav as `<details>/<summary>` with field anchor links; clicking the arrow navigates the same as clicking the link
-- [x] Field name resolution to human-readable labels via `EntityFieldManagerInterface`; machine name shown in `<small>` in main panel group headings only
-- [x] Edit link to `annotations_ui` per target (when installed), inline with the target heading
-- [x] Entity type grouping in nav (heading `<li>` per group)
-- [ ] Active-state URL sync (browser back/forward) — deferred
+- Active-state URL sync (browser back/forward)

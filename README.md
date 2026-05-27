@@ -2,12 +2,7 @@
 
 Annotations reads a Drupal site's structure — content types, fields, taxonomies, user roles, anything that's an entity — and maps that to a structured annotation system.
 
-Annotations can be consumed in several ways:
-
-AI:
-
-- scoped input for an AI agent - returns component-specific human-curated context
-- MCP-compliant JSON endpoint for pulling context info into other 'applications' (WIP!)
+## Annotations can be consumed in several ways
 
 User onboarding / Editing:
 
@@ -15,12 +10,17 @@ User onboarding / Editing:
 - same for when viewing content - help text on learning materials or new user orientation
 - annotation insertion into entity select screens - additional help text on e.g. /node/add to assist with selection
 
+AI:
+
+- scoped input for an AI agent - returns component-specific human-curated context
+- MCP-compliant JSON endpoint for pulling context info into other 'applications' (WIP!)
+
 Product documentation:
 
-- export your annotations and ship them with your product! - export annotations in default content, only core module plus a consumer reqd.
-- human- or machine-readable documentation export - provides drush commands to get (optionally scoped) annotations on the CLI
+- export your annotations and ship them with your module/product! - exported as default content, only core module plus a consumer reqd.
+- human- or machine-readable documentation export - provides drush commands to get scoped annotations on the CLI
 
-Annotations entities support:
+## Annotation entities support
 
 - multiple, fieldable annotation types
 - revisions (`diff` support provided)
@@ -29,14 +29,14 @@ Annotations entities support:
 - translation (via language switcher)
 - dynamic permissions system for edit/consume annotations
 
-Annotation type entities support:
+## Annotation type entities support
 
-- 'behaviors' driven by third party settings for interfacing with other modules. (see: Extending annotation types with custom behaviors)
+- 'behaviors' driven by third party settings for interfacing with other modules. (see [DEVELOPING.md](DEVELOPING.md))
 
-Annotation target entities:
+## Annotation target entities
 
-- can be created on any entity target that exposes a plugin via the extensible system provided. (see: Adding a custom Target plugin)
-- target plugins already provided: [generic], paragraphs, media, node, view, user, taxonomy, etc. Obvious future targets: webform
+- can be created on any entity target that exposes a plugin via the extensible system provided. (see [DEVELOPING.md](DEVELOPING.md))
+- target plugins already provided: [generic], paragraphs, media, node, view, user, taxonomy, etc. Additional modules provide interoperability with webform, profile.
 
 ---
 
@@ -52,6 +52,8 @@ Submodules may require contributed modules — see each module's README for deta
 `annotations_webform` requires the contributed `webform` module.
 `annotations_profile` requires the contributed `profile` module.
 
+Annotations is optimised slightly for the Gin theme, given that the expectation is this will be the core admin theme from Drupal 12 moving forwards.
+
 ---
 
 ## Installation
@@ -62,43 +64,47 @@ Install annotations base module; enable submodules as needed.
 
 ## The module suite
 
-*All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core], _ui, _type_ui```.
+*All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core]`, `_ui`,`_type_ui`.
 
 | Module | Who it is for | Status | Purpose |
 | --- | --- | --- | --- |
 | `annotations` | All | Stable | Core — entities, plugin system, scope UI. Always required. |
-| `annotations_type_ui` | Agency / dev only | Stable | Browser CRUD for annotation types. Site-building tool only — use during initial setup, not for ongoing production use. |
+| `annotations_type_ui` | Agency / setup only | Stable | Browser-based CRUD for annotation types. Site-building tool only — use during initial setup; not for general production use. |
 | `annotations_ui` | Agency + editors | Stable | Annotation editing UI with revision history and moderation controls. The primary authoring interface. |
-| `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
 | `annotations_context` | Agency / dev | Stable | Assembles annotations into a structured payload. Provides an admin preview, markdown export, Drush export (`drush ann:ex`, provided by `annotations_export`), JSON API endpoint, and the shared payload consumed by `annotations_ai_context`. |
-| `annotations_ai_context` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context](https://www.drupal.org/project/ai_context) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. |
-| `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
-| `annotations_scan` | Agency / dev | Stable | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
-| `annotations_webform` | Dev / site builders | Stable | Webform and WebformSubmission target plugins and overlay field label resolver. Requires the contributed `webform` module. |
-| `annotations_explorer` | Agency + editors | Stable | Read-only two-panel browser at `/annotations/explorer`. Consume-permission filtered; targets with no visible content are hidden from the nav. |
-| `annotations_export` | Agency / dev | Stable | Drush-only export to markdown or Obsidian vault. No web UI; delegates to `annotations_context` for assembly. |
-| `annotations_profile` | Dev / site builders | Stable | Injects overlay triggers into Profile fields embedded in user account edit and registration forms. Requires the contributed `profile` module. |
+| `annotations_explorer` | Agency + editors | Stable | Read-only two-panel browser at (by default) `/annotations/explorer`. Consume-permission filtered; targets with no visible content are hidden from the nav. |
+| `annotations_export` | Agency / dev | Stable | **Drush-only** export to markdown or Obsidian vault. No web UI; delegates to `annotations_context` for assembly. |
+| `annotations_ai_context` | Agency / dev | WIP | Bridges `annotations_context` into [AI Context](https://www.drupal.org/project/ai_context) (CCC) by injecting assembled annotations documentation into AI agent system prompts. Opt annotation types in via their edit form. Currently requires patched version of the AI Context. |
+| `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. NB - any `content_moderation` workflow can be attached manually instead. |
+| `annotations_webform` | Dev / site builders | Stable | Webform compatibility for the `overlay` module. Requires the contributed `webform` module. |
+| `annotations_profile` | Dev / site builders | Stable | Profile compatibility for the `overlay` module, in user account edit and registration forms. Requires the contributed `profile` module. |
+| `annotations_scan` | Agency / dev | Stable | Crawls targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
+| `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
 
 ---
 
 ## Core concepts
 
-### annotation_target
+### Annotation targets
 
-One `annotation_target` config entity per annotatable unit — one per content type, taxonomy vocabulary, user role, etc. Defines *scope* (which entity types and which fields are included). Deployed by config management.
+One annotation target per annotatable unit — one per content type, taxonomy vocabulary, user role, etc. Defines which entity types and which fields are in scope for annotation.
 
-### annotation
+### Annotation content
 
-Stores all annotation text as content entity rows. Edited via `annotations_ui`.
+Annotation content is stored per target and per field. Each annotation belongs to a type. Annotations are created and edited via `annotations_ui`.
 
-### Annotation types (AnnotationType)
+### Annotation types
 
-Define type of annotation - editorial guidance, tech notes, etc. Types are config entities — add, rename, or remove via config management or the `annotations_type_ui` browser UI.
+Define the category of annotation — editorial guidance, tech notes, compliance rules, etc. Add, rename, or remove types via the `annotations_type_ui` browser interface.
+
+### Overview annotation
+
+Every annotation target has one implicit bundle-level slot: the **overview**. This is an annotation about the target as a whole - what the content type, role, or entity is for - rather than any specific field. It surfaces as the first row in the add-new table in `annotations_ui`, as a bundle-level trigger at the top of entity forms and view pages in `annotations_overlay`, and as the opening description in context output from `annotations_context`.
 
 ### Role-based type layering
 
-Because every annotation type generates a `consume {type} annotations` permission, you can author once and serve role-appropriate context automatically. Assign consume permissions to different roles to control which types surface in overlays, context payloads, and AI prompts for each audience.
+Because every annotation type generates a `consume {type} annotations` permission, you can author once and serve role-appropriate context automatically. Assign `consume` permissions to different roles to control which types surface in overlays, context payloads, and AI prompts for each audience.
 
 **Example:** With three types — `editorial`, `technical`, and `rules`:
 
@@ -109,216 +115,17 @@ Because every annotation type generates a `consume {type} annotations` permissio
 | Authenticated user | `consume rules annotations` | Mandatory compliance notes |
 | Administrator | (all permissions implicitly) | Everything |
 
-Annotations are authored against the same targets and fields regardless of type — the role determines which types are visible, not where the annotation lives. Types stack freely: grant multiple consume permissions to a role to combine audiences. The `annotations_demo_types` recipe ships `editorial`, `technical`, and `rules` types as a starting point.
-
-### Overview annotation
-
-Every annotation target has one implicit bundle-level slot: the **overview**. This is an annotation about the target as a whole — what the content type, role, or entity is for — rather than any specific field. In storage it is an `annotation` entity with `field_name` set to the empty string. It surfaces as the first row (labeled "Overview") in the add-new table in `annotations_ui`, as a bundle-level trigger at the top of entity forms and view pages in `annotations_overlay`, and as the opening description in context output from `annotations_context`. See the API example in the Developer API section for how to read it: `$all['']['editorial']`.
+Annotations are authored against the same targets and fields regardless of type - the role determines which types are visible, not where the annotation lives. Types stack freely: grant multiple consume permissions to a role to combine audiences. The `annotations_demo_types` recipe ships `editorial`, `technical`, and `rules` types as a starting point.
 
 ---
 
 ## Scope management
 
-Navigate to **Admin → Config → Annotations → Targets** (`/admin/config/annotations/targets`).
+Entity types that you wish to target can be added and removed via Manage target types at `/admin/config/annotations/targets`.
+
+Individual fields can be selected as targets via Manage targets at `/admin/config/annotations/targets`.
 
 Each Drupal entity type appears as an accordion section. Select (check) a row to bring a bundle into scope — this creates an `annotation_target` config entity with all available fields pre-included. Use **Configure** to adjust which fields are included.
-
----
-
-## Drush commands
-
-### Inspection (root `annotations` module)
-
-Commands for querying the live state of targets, types, and annotation content. No submodules required.
-
-```bash
-# List all annotation_target config entities (field count + live annotation count)
-drush ann:targets
-drush ann:targets node            # filter by entity type
-drush ann:targets --format=json
-
-# List all annotation_type config entities (sorted by weight)
-drush ann:types
-drush ann:types --format=json
-
-# Show stored annotation content
-drush ann:show                              # all annotations (default limit 50)
-drush ann:show node__article               # single target
-drush ann:show --entity-type=node          # all node targets
-drush ann:show node__article --type=editorial
-drush ann:show node__article --field=body  # specific field
-drush ann:show node__article --field=      # bundle-level only
-drush ann:show --limit=200 --format=json
-
-# Coverage stats: annotation counts per target broken down by type
-drush ann:stats
-drush ann:stats --entity-type=node
-drush ann:stats --format=yaml
-```
-
-Use `drush list --filter=annotations` to see all registered annotations commands. Use `drush help ann:show` for full option docs.
-
-### Scan (`annotations_scan`)
-
-See [modules/annotations_scan/README.md](modules/annotations_scan/README.md) for `ann:scan` (`--diff`, `--strict`, `--fields`).
-
-### Export (`annotations_export`)
-
-See [modules/annotations_export/README.md](modules/annotations_export/README.md) for `ann:ex` (markdown and Obsidian vault export).
-
----
-
-## Developer API
-
-### AnnotationStorageService (`annotations.annotation_storage`)
-
-Central service for all annotation CRUD. Inject `annotations.annotation_storage`.
-
-```php
-use Drupal\annotations\AnnotationStorageService;
-
-// Load all annotations for a target.
-// Returns: array<field_name, array<type_id, value>>
-// Bundle-level annotations use '' as field_name.
-$all = $annotationStorage->getForTarget('node__article');
-
-// Bundle-level overview annotation.
-$editorial = $all['']['editorial'] ?? '';
-
-// Field-level annotation.
-$body_technical = $all['body']['technical'] ?? '';
-
-// Save site-wide annotations.
-$annotationStorage->saveSiteAnnotations(['site_purpose' => '...']);
-
-// Check whether a target has any annotation data.
-$hasData = $annotationStorage->hasAnnotationData('node__article');
-
-// Delete all annotation data for a target.
-$annotationStorage->deleteForTarget('node__article');
-```
-
-### DiscoveryService (`annotations.discovery`)
-
-Returns all registered Target plugins, including auto-discovered generic plugins for unclaimed fieldable entity types. Inject `annotations.discovery`.
-
-```php
-$plugins = $discoveryService->getPlugins();
-// Returns: array<entity_type_id, TargetInterface>
-
-foreach ($plugins as $entity_type_id => $plugin) {
-  if (!$plugin->isAvailable()) continue;
-  $label  = $plugin->getLabel();   // e.g. "Content types"
-  $bundles = $plugin->getBundles(); // array<bundle_key, label>
-  $hasFields = $plugin->hasFields();
-}
-```
-
-### Extending annotation types with custom behaviors
-
-`AnnotationType` implements `ThirdPartySettingsInterface`. See [annotations_type_ui/README.md](modules/annotations_type_ui/README.md) for the full pattern.
-
----
-
-### Adding a custom Target plugin
-
-Tag a service with `annotations.target` and implement `TargetInterface` (extend `TargetBase`):
-
-```yaml
-# mymodule.services.yml
-services:
-  mymodule.target.custom:
-    class: Drupal\mymodule\Plugin\Target\CustomTarget
-    arguments:
-      - '@entity_type.manager'
-    tags:
-      - { name: annotations.target }
-```
-
-```php
-use Drupal\annotations\Plugin\Target\TargetBase;
-
-class CustomTarget extends TargetBase {
-  public function getEntityTypeId(): string { return 'my_entity'; }
-  public function getLabel(): string { return 'My entities'; }
-  public function isAvailable(): bool { return $this->entityTypeManager->hasDefinition('my_entity'); }
-  public function getBundles(): array { /* return [key => label] */ }
-  public function hasFields(): bool { return true; }
-  public function discover(string $bundle): array { /* return structured snapshot */ }
-}
-```
-
-No changes to `annotations` module are needed. The plugin is picked up automatically.
-
----
-
-## Shipping default annotations
-
-Use the `drupal` script to export `annotation` entities as files in a recipe's `content/` directory. This is the mechanism for shipping a starter annotation set with a profile or recipe.
-
-```bash
-ddev php web/core/scripts/drupal content:export annotation --dir=recipes/myrecipe/content
-```
-
----
-
-## Recipe authoring
-
-The root module ships two config action plugins for wiring up annotation scope in a recipe without overwriting pre-existing config.
-
-### `enableTargetType`
-
-Appends one or more entity types to `annotations.target_types`. Idempotent — types already in the list are skipped.
-
-```yaml
-config:
-  actions:
-    annotations.target_types:
-      enableTargetType: node
-      # or a list:
-      # enableTargetType:
-      #   - node
-      #   - taxonomy_term
-```
-
-### `enableTargetField`
-
-Appends fields to an `annotation_target` entity's fields list. Idempotent — fields already registered are skipped. If the target does not yet exist it is created automatically, with its label sourced from Drupal's bundle info (e.g. `node.type.article` → "Article").
-
-```yaml
-config:
-  actions:
-    annotations.target.node__article:
-      enableTargetField:
-        - title
-        - body
-        - field_tags
-```
-
-### Bolt-on recipe pattern (targeting existing content types)
-
-```yaml
-install:
-  - annotations
-  - annotations_ui
-  - annotations_type_ui
-
-config:
-  actions:
-    annotations.target_types:
-      enableTargetType: node
-    annotations.target.node__article:
-      enableTargetField:
-        - title
-        - body
-        - field_tags
-```
-
-### New content type recipe pattern
-
-When a recipe creates its own content types, ship `annotations.target.{entity_type}__{bundle}.yml` directly in the recipe's `config/` directory alongside the node type, field, and display configs. Config import runs before config actions, so the target entity is already in place by the time any action fires. `enableTargetField` is not needed — the target YAML already carries the full fields list.
-
-See [recipes/annotations_demo/](recipes/annotations_demo/) for a worked example.
 
 ---
 
@@ -332,46 +139,17 @@ The permission model maps to a non-standard CRUD because annotations are editori
 
 | Permission | Defined in | Notes |
 | --- | --- | --- |
+| `administer annotation types` | `annotations_type_ui` | CRUD access for annotation type config entities. Site-building tool; `restrict access: true`. |
 | `administer annotations` | `annotations` | Full admin. `restrict access: true`. |
 | `administer annotation targets` | `annotations` | Manage opted-in targets and field scope. `restrict access: true`. |
+| `consume {type} annotations` | `annotations` | Per annotation type; controls which types appear in context output and overlays for a given role. |
 | `edit {type} annotations` | `annotations_ui` | Per annotation type; write and create access. Generated dynamically. |
 | `delete {type} annotations` | `annotations_ui` | Per annotation type; delete access. Generated dynamically. |
-| `consume {type} annotations` | `annotations` | Per annotation type; controls which types appear in context output and overlays for a given role. |
-| `administer annotation types` | `annotations_type_ui` | CRUD access for annotation type config entities. Site-building tool; `restrict access: true`. |
 | `edit any annotation` | `annotations_ui` | Supersedes all per-type edit permissions. `restrict access: true`. |
 | `delete any annotation` | `annotations_ui` | Supersedes all per-type delete permissions. Gates bulk-delete routes. `restrict access: true`. |
 | `access annotation collection` | `annotations_ui` | Read access to `/admin/content/annotations` and the add-type picker. |
 | `view annotation revisions` | `annotations_ui` | View revision history and individual revision pages. Does not grant revert or delete. |
-| `view annotations overlay` | `annotations_overlay` | See field-level "?" triggers, dialog panels, and bundle chooser descriptions. Grant to editor roles. |
-| `view annotations context` | `annotations_context` | Access the context preview, markdown export, and JSON API endpoint. Not `restrict access` — can be granted to non-admin roles. |
-| `administer annotations scanner` | `annotations_scan` | Run scans and view scan results. `restrict access: true`. |
 
 Dynamic permissions (`edit {type} annotations`, `delete {type} annotations`, `consume {type} annotations`) require a cache rebuild after new annotation types are created.
 
-### Workflow transition permissions (annotations_workflows)
-
-When `annotations_workflows` is installed, `content_moderation` automatically generates one permission per transition:
-
-| Permission | Intended for |
-| --- | --- |
-| `use annotations transition create_new_draft` | Annotator roles |
-| `use annotations transition submit_for_review` | Annotator roles |
-| `use annotations transition publish` | Reviewer roles |
-| `use annotations transition reject` | Reviewer roles |
-
-These are standard Drupal `content_moderation` permissions and are assigned via the Drupal roles UI or config.
-
-If you use a custom workflow instead of the one shipped by `annotations_workflows`, `content_moderation` generates equivalent permissions for your workflow's transitions.
-
----
-
-## Config management
-
-Scope config (`annotation_target`, `annotation_type`) is managed via standard config sync.
-Annotation text lives in the database and is never touched by config management tools.
-
----
-
-## Notes
-
-Views listed use a `text` variable instead of `value` in the filter criteria because that was a reserved name: `admin/structure/views/view/annotations_target`, `admin/structure/views/view/annotations`
+Each submodule documents its own permissions — see the relevant module's README.

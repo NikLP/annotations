@@ -90,10 +90,8 @@ The `annotations_context.in_ai_context` flag on annotation types already gates i
 
 ---
 
-## Status
+## Deferred
 
-- [x] `AnnotationsAiContextSubscriber` — active; registered in `services.yml`; works on all environments
-- [x] `AnnotationsContextProvider` plugin — active on patched environments only; duplicates injection there but harmlessly
-- [ ] Formalise `ai_context` patch via `composer-patches` so it survives `composer update`
-- [ ] Open upstream MR/issue on drupal.org for `AiContextProvider` plugin type
-- [ ] Remove subscriber once upstream patch is accepted and released
+- Formalise `ai_context` patch via `composer-patches` so it survives `composer update`
+- Open upstream MR/issue on drupal.org for `AiContextProvider` plugin type
+- Remove `AnnotationsAiContextSubscriber` once upstream patch is accepted and released

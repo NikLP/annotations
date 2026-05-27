@@ -83,14 +83,15 @@ This pattern is appropriate when the contributing module owns the full lifecycle
 
 ---
 
+## Permissions
+
+| Permission | Notes |
+| --- | --- |
+| `administer annotation types` | CRUD access for annotation type config entities. Site-building tool; `restrict access: true`. |
+
 ## Permissions cache rebuild
 
-When a new `AnnotationType` is created via this UI, its dynamically-generated permissions (`edit {type} annotations`, `delete {type} annotations`, `consume {type} annotations`) **will not appear in People → Permissions** until caches are rebuilt:
-
-```bash
-ddev drush cr
-```
-
+When a new `AnnotationType` is created via this UI, its dynamically-generated permissions (`edit {type} annotations`, `delete {type} annotations`, `consume {type} annotations`) will not appear in People > Permissions until caches are rebuilt.
 The type itself works immediately in annotation forms. Only permission assignment is deferred.
 
 ---

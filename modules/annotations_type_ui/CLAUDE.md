@@ -26,10 +26,3 @@ Types and sections created via this UI exist only in the active config store (DB
 ## On deletion and annotation data
 
 The delete form calls `AnnotationStorageService::deleteForType($type_id)` before removing the config entity — removes all `annotation` rows with that `type_id` across all targets. This is permanent.
-
-## Current status
-
-- [x] Full CRUD for `AnnotationType`: list, add, edit, delete (with DB cleanup)
-- [x] `DraggableListBuilder` implementation with weight ordering
-- [x] Routing, menu links, action links
-- [x] `administer annotation types` permission — gates all 4 CRUD routes (collection / add / edit / delete)
