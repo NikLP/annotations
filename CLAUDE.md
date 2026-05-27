@@ -116,10 +116,10 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 ## Key Design Decisions
 
 - **Single config entity for scope:** `annotation_target` unifies what-to-scan and what-to-annotate.
-- **Fields map = inclusion list:** Presence in `fields` = included. No `excluded_fields` list.
-- **Split storage:** Scope in Drupal config (cex/cim); annotation text in `annotation` content entity (never config sync). Different lifecycles, different owners.
-- **Plugin system in `annotations`:** Target plugins live in root module, not `annotations_scan`. `GenericTarget` only covers fieldable types — non-fieldable always need a dedicated plugin.
-- **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the consuming submodule.
+- **Fields map = inclusion list:** Presence in `fields` = target is included.
+- **Split storage:** Scope in Drupal config (cex/cim); annotation text in `annotation` content entity.
+- **Plugin system in `annotations`:** Target plugins live in root module. `GenericTarget` only covers fieldable types — non-fieldable always need a dedicated plugin.
+- **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the submodule that consumes them.
 - **`annotations_context` is the payload API:** `annotations_ai_context` is the AI Context consumer.
 - **Permissions:** `edit {type} annotations` (write + create per type), `delete {type} annotations` (delete per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `administer annotation targets`, `edit any annotation`, `delete any annotation`, `access annotation collection`, `view annotation revisions`, `view annotations context`, `administer annotation types`. Entity-level access is enforced by `AnnotationAccessControlHandler`; `hook_entity_access` in `annotations_ui` handles revision-only operations.
-- **No multivalue types:** All values are plain strings; `rules` type uses markdown in a textarea.
+
