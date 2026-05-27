@@ -15,6 +15,8 @@ annotations/                ← root module (always required)
 │   ├── annotations_overlay/
 │   ├── annotations_workflows/
 │   ├── annotations_scan/
+│   ├── annotations_webform/
+│   ├── annotations_profile/
 │   ├── annotations_explorer/
 │   └── annotations_export/
 └── recipes/
@@ -105,6 +107,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |
 | `annotations_workflows` | Ships default content moderation workflow config |
 | `annotations_webform` | Webform and WebformSubmission target plugins and overlay field label resolver |
+| `annotations_profile` | Injects annotation overlay triggers into Profile fields embedded in user account edit and registration forms; requires the contributed `profile` module |
 | `annotations_explorer` | Read-only two-panel browser at `/annotations/explorer`; consume-permission filtered; AJAX target switching |
 | `annotations_export` | Drush-only export to markdown or Obsidian vault; no web UI; delegates to `annotations_context` for assembly |
 

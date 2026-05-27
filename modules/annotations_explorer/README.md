@@ -6,12 +6,12 @@ Provides a read-only viewer for browsing annotations at `/annotations/explorer`.
 
 Access requires at least one `consume {type} annotations` permission — no admin role needed. Annotation types are filtered by the current user's consume permissions. Targets with no visible content are hidden from the nav entirely.
 
-When `annotations_ui` is installed, an "Edit annotations" button appears inline with the target heading.
+When `annotations_ui` is installed, an "Edit annotations" button appears inline with the target heading (where permitted).
 
 ## Requirements
 
 - `annotations` (core module)
-- `annotations_ui` (optional — enables the "Edit annotations" button)
+- `annotations_ui` (optional — enables "Edit" button where applicable)
 
 ## Installation
 

@@ -1,4 +1,4 @@
-`<?php
+<?php
 
 declare(strict_types=1);
 
@@ -163,6 +163,7 @@ class AnnotationsProfileHooks {
           if (!isset($item['entity'][$profile_field_name])) {
             continue;
           }
+
           $field_label = $this->overlayService->resolveFieldLabel('profile', $bundle, $profile_field_name);
           $item['entity'][$profile_field_name]['#attributes']['data-annotations-field'] = $prefix . $profile_field_name;
           $item['entity'][$profile_field_name]['annotations_overlay_trigger'] = [

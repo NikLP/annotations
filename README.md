@@ -45,11 +45,12 @@ Annotation target entities:
 - Drupal 11
 - PHP 8.3+
 
-No contributed module dependencies for any of the `annotations` modules
-provided here.
+The core `annotations` module suite has no contributed module dependencies.
+Submodules may require contributed modules — see each module's README for details.
 
-`annotations_workflows` requires the core `content_moderation` module, which optionally
-requires the contributed `diff` module.
+`annotations_workflows` requires the core `content_moderation` module, which optionally requires the contributed `diff` module.
+`annotations_webform` requires the contributed `webform` module.
+`annotations_profile` requires the contributed `profile` module.
 
 ---
 
@@ -61,7 +62,7 @@ Install annotations base module; enable submodules as needed.
 
 ## The module suite
 
-*All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core], _ui, _type_ui, _workflows`.
+*All* modules should be considered a work in progress at this time! That said, the core suite has undergone the most scrutiny, that is: `[core], _ui, _type_ui```.
 
 | Module | Who it is for | Status | Purpose |
 | --- | --- | --- | --- |
@@ -74,7 +75,10 @@ Install annotations base module; enable submodules as needed.
 | `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. Optional — any `content_moderation` workflow can be attached manually instead. |
 | `annotations_overlay` | Editors / end users | Largely stable | In-context help overlays: field-level and bundle-level "?" triggers on entity edit forms, opt-in view-page overlays (via Manage Display), bundle chooser page descriptions, and paragraph subform support. |
 | `annotations_scan` | Agency / dev | Stable | Crawls opted-in targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
-| `annotations_webform` | Dev / site builders | Stable | Webform and WebformSubmission target plugins and overlay field label resolver. |
+| `annotations_webform` | Dev / site builders | Stable | Webform and WebformSubmission target plugins and overlay field label resolver. Requires the contributed `webform` module. |
+| `annotations_explorer` | Agency + editors | Stable | Read-only two-panel browser at `/annotations/explorer`. Consume-permission filtered; targets with no visible content are hidden from the nav. |
+| `annotations_export` | Agency / dev | Stable | Drush-only export to markdown or Obsidian vault. No web UI; delegates to `annotations_context` for assembly. |
+| `annotations_profile` | Dev / site builders | Stable | Injects overlay triggers into Profile fields embedded in user account edit and registration forms. Requires the contributed `profile` module. |
 
 ---
 
