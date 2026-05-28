@@ -21,7 +21,7 @@ class AnnotationsUiPermissions {
   /**
    * Returns per-type edit permissions.
    *
-   * @return array<string, array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, restrict access: bool}>
+   * @return array<string, array{title: \Drupal\Core\StringTranslation\TranslatableMarkup}>
    *   Permission definitions keyed by permission name.
    */
   public static function permissions(): array {
@@ -36,11 +36,9 @@ class AnnotationsUiPermissions {
     foreach ($storage->loadMultiple() as $type) {
       $permissions[$type->getEditPermission()] = [
         'title' => t('%label: edit annotations', ['%label' => $type->label()]),
-        'restrict access' => TRUE,
       ];
       $permissions[$type->getDeletePermission()] = [
         'title' => t('%label: delete annotations', ['%label' => $type->label()]),
-        'restrict access' => TRUE,
       ];
     }
 

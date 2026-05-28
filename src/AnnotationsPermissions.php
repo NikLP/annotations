@@ -26,7 +26,7 @@ class AnnotationsPermissions {
   /**
    * Returns per-type consume permissions.
    *
-   * @return array<string, array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, restrict access: bool}>
+   * @return array<string, array{title: \Drupal\Core\StringTranslation\TranslatableMarkup}>
    */
   public static function permissions(): array {
     $permissions = [];
