@@ -1,9 +1,7 @@
 view annotations form overlay:
   title: 'View annotations overlay on forms'
-  description: 'Show annotations on edit/add forms and bundle chooser pages.'
   restrict access: false
 
 view annotations view overlay:
   title: 'View annotations overlay on entity view displays'
-  description: 'Show annotations on entity view displays.'
   restrict access: false
