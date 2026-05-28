@@ -13,7 +13,7 @@ Surfaces annotation content while users work. Field-level `?` triggers on entity
 - `AnnotationsOverlayItem` / `AnnotationsOverlayFormatter` (`src/Plugin/Field/`) — computed field (`no_ui: TRUE`); formatter exposes `annotation_view_mode` setting in Manage Display UI
 - Templates: `annotations-overlay-wrapper.html.twig`, `annotations-overlay-item.html.twig`, `annotations-overlay-chooser.html.twig`, `annotations-overlay-chooser-item.html.twig`
 - Library: `annotations_overlay/overlay` — `js/annotations-overlay.js`, `css/annotations-overlay.css`
-- Permission: `view annotations overlay`
+- Permissions: `view annotations form overlay`, `view annotations view overlay`
 
 ## Service: AnnotationsOverlayService
 
@@ -68,7 +68,7 @@ Plain IIFE, no jQuery, no Drupal.behaviors. All content is server-rendered insid
 
 ## Annotation visibility
 
-Overlays are injected when: (1) user has `view annotations overlay`, (2) form implements `EntityFormInterface` or has `getParagraph()`, (3) an `annotation_target` exists for the entity type + bundle, (4) at least one annotation is non-empty for a type the user can `consume`.
+Form overlays are injected when: (1) user has `view annotations form overlay`, (2) form implements `EntityFormInterface` or has `getParagraph()`, (3) an `annotation_target` exists for the entity type + bundle, (4) at least one annotation is non-empty for a type the user can `consume`. View overlays use `view annotations view overlay` instead of (1).
 
 **`single_type`:** `isSingleType()` checks the full visible annotation set across the page — bundle annotations and field annotations. When only one type appears, `single_type = TRUE` suppresses per-item type headings.
 
@@ -76,7 +76,8 @@ Overlays are injected when: (1) user has `view annotations overlay`, (2) form im
 
 | Permission | What it gates |
 | --- | --- |
-| `view annotations overlay` | `?` triggers and panels |
+| `view annotations form overlay` | `?` triggers and panels on edit/add forms and bundle chooser pages |
+| `view annotations view overlay` | `?` triggers and panels on entity view pages |
 | `consume {type} annotations` | Which types appear inside panels |
 
 ## Paragraph support
@@ -97,7 +98,7 @@ Caching: tags `annotation_list`, `annotation_target_list`, `annotation_type_list
 
 ## Bundle chooser pages
 
-`hook_preprocess_node_add_list` / `hook_preprocess_entity_add_list` inject bundle-level annotation text on `/node/add` etc. as supplementary descriptions. Gated by `view annotations overlay` + `consume {type}`.
+`hook_preprocess_node_add_list` / `hook_preprocess_entity_add_list` inject bundle-level annotation text on `/node/add` etc. as supplementary descriptions. Gated by `view annotations form overlay` + `consume {type}`.
 
 Themes: `annotations_overlay_chooser` (description + items) and `annotations_overlay_chooser_item` (type label + rendered entity). Separate hooks from dialog hooks because variable signatures differ.
 
@@ -122,7 +123,6 @@ public function annotationsOverlayFieldLabelAlter(string &$label, array $context
 
 ## Parked work
 
-- **Module split:** `AnnotationsOverlayService` is the natural shared dependency. The planned split is `annotations_overlay_edit` (form alter), `annotations_overlay_view` (view alter + Manage Display), and `annotations_field_group` (field_group bridge — see below). The service, library, and computed field would move to the base `annotations_overlay` module. Primary driver: edit overlays without view overlays (content editors only).
 - **field_group compatibility:** field_group nests fields into group containers during the theme preprocess phase — after `hook_entity_view_alter` and `hook_form_alter` have already run. Trigger buttons added here as top-level build siblings are left at the build root while their associated fields move into groups, breaking CSS positioning. The fix is `hook_field_group_build_pre_render_alter` (view) and `hook_field_group_form_process_build_alter` (form), which fire after nesting and allow trigger reparenting into the correct group container. This belongs in a dedicated `annotations_field_group` submodule rather than here: it requires declaring `field_group` as a hard module dependency, and conditional `moduleExists()` guards around hook implementations are a code smell. The fix is self-contained — the field_group hooks expose `#fieldgroups` children lists, so no access to this module's internals is needed. Paragraphs support stays here (no hard dependency; structural duck-typing works and is already shipped).
 - **Gin description toggle:** inject annotation text into `#description` + `#description_toggle: TRUE` to reuse Gin's reveal UX. Parked — ties module to Gin dependency.
 - **Chooser view mode:** dedicated `chooser` annotation view mode separate from `overlay`. Requires replacing `buildBundleAnnotationHtml()` with `buildBundleAnnotationRenderItems()`, which needs the preprocess-to-render-pipeline restriction resolved first (e.g. pre-rendering via a `KernelEvents::VIEW` subscriber).

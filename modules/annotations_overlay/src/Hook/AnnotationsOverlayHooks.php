@@ -137,7 +137,7 @@ class AnnotationsOverlayHooks {
    */
   #[Hook('form_alter')]
   public function formAlter(array &$form, FormStateInterface $form_state, string $form_id): void {
-    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+    if (!$this->currentUser->hasPermission('view annotations form overlay')) {
       return;
     }
 
@@ -253,7 +253,7 @@ class AnnotationsOverlayHooks {
     // invalidate cached view pages.
     $this->mergeCacheMetadata($build);
 
-    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+    if (!$this->currentUser->hasPermission('view annotations view overlay')) {
       return;
     }
 
@@ -383,7 +383,7 @@ class AnnotationsOverlayHooks {
     if (!$this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview')) {
       return;
     }
-    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+    if (!$this->currentUser->hasPermission('view annotations form overlay')) {
       return;
     }
 
@@ -454,7 +454,7 @@ class AnnotationsOverlayHooks {
     if (!$this->configFactory->get('annotations_overlay.settings')->get('show_bundle_chooser_overview')) {
       return;
     }
-    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+    if (!$this->currentUser->hasPermission('view annotations form overlay')) {
       return;
     }
 
@@ -798,7 +798,7 @@ class AnnotationsOverlayHooks {
 
     $build['#cache']['contexts'][] = 'user.permissions';
 
-    if (!$this->currentUser->hasPermission('view annotations overlay')) {
+    if (!$this->currentUser->hasPermission('view annotations form overlay')) {
       return;
     }
 

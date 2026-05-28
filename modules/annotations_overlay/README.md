@@ -34,9 +34,10 @@ ddev drush cr
 
 | Permission | Notes |
 | --- | --- |
-| `view annotations overlay` | Seeing "?" triggers, dialog panels, and chooser descriptions. Grant to editor roles. |
+| `view annotations form overlay` | Seeing "?" triggers and panels on entity edit/add forms and bundle chooser pages. Grant to editor roles. |
+| `view annotations view overlay` | Seeing "?" triggers and panels on entity view pages. Grant to learner/consumer roles. |
 
-Per-type `consume {type} annotations` permissions (defined by `annotations`) filter which annotation types appear inside consumer applications. A user with `view annotations overlay` but only `consume editorial annotations` will only see editorial content in e.g.overlays.
+Per-type `consume {type} annotations` permissions filter which annotation types appear inside panels. A user with `view annotations view overlay` but only `consume editorial annotations` will only see editorial content in overlays.
 
 ---
 

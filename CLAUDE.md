@@ -122,4 +122,3 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 - **Annotation types as config entities:** Behaviors (e.g. `affects_coverage`, `in_ai_context`) are third-party settings owned by the submodule that consumes them.
 - **`annotations_context` is the payload API:** `annotations_ai_context` is the AI Context consumer.
 - **Permissions:** `edit {type} annotations` (write + create per type), `delete {type} annotations` (delete per type), `consume {type} annotations` (context output visibility per role). Static: `administer annotations`, `administer annotation targets`, `edit any annotation`, `delete any annotation`, `access annotation collection`, `view annotation revisions`, `view annotations context`, `administer annotation types`. Entity-level access is enforced by `AnnotationAccessControlHandler`; `hook_entity_access` in `annotations_ui` handles revision-only operations.
-
