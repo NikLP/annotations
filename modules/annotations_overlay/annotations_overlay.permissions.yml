@@ -3,5 +3,5 @@ view annotations form overlay:
   restrict access: false
 
 view annotations view overlay:
-  title: 'View annotations overlay on entity view displays'
+  title: 'View annotations overlay on view displays'
   restrict access: false

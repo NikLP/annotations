@@ -1,11 +1,14 @@
 administer annotations:
   title: 'Administer annotations'
+  description: 'Create, edit, and delete annotation content across all types and targets.'
 
 administer annotation targets:
   title: 'Administer annotation targets'
+  description: 'Add, edit, and delete annotation target scope configuration.'
 
 access annotation collection:
   title: 'Access annotation collection'
+  description: 'View the site-wide annotation content listings.'
 
 permission_callbacks:
   - \Drupal\annotations\AnnotationsPermissions::permissions
