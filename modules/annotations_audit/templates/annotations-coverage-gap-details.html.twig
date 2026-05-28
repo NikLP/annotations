@@ -1,0 +1,14 @@
+{#
+/**
+ * @file
+ * Template for the collapsible gap details cell in the audit coverage report.
+ *
+ * Variables:
+ * - summary: Text shown in the <summary> element (e.g. "3 gaps (2 tracked)").
+ * - content: Render array of gap sections (empty, tracked, optional).
+ */
+#}
+<details class="annotations-report__gaps" name="annotations-report-gaps">
+  <summary>{{ summary }}</summary>
+  {{ content }}
+</details>

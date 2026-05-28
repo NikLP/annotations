@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install and uninstall functions for the annotations_audit module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function annotations_audit_schema(): array {
+  return [
+    'annotations_audit' => [
+      'description' => 'Stores the last accepted scan result per annotation target.',
+      'fields' => [
+        'target_id' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'Target key in {entity_type}__{bundle} format.',
+        ],
+        'data' => [
+          'type' => 'blob',
+          'size' => 'big',
+          'not null' => TRUE,
+          'description' => 'JSON-encoded scan result for this target.',
+        ],
+        'saved' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Unix timestamp when this snapshot was saved.',
+        ],
+      ],
+      'primary key' => ['target_id'],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function annotations_audit_uninstall(): void {
+  \Drupal::database()->schema()->dropTable('annotations_audit');
+}

@@ -1,0 +1,29 @@
+services:
+  annotations_audit.coverage_service:
+    class: Drupal\annotations_audit\CoverageService
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations.annotation_storage'
+
+  annotations_audit.scan_service:
+    class: Drupal\annotations_audit\ScanService
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.channel.annotations_audit'
+      - '@annotations.discovery'
+      - '@database'
+      - '@state'
+
+  Drupal\annotations_audit\ScanService:
+    alias: annotations_audit.scan_service
+
+  annotations_audit.hooks:
+    class: Drupal\annotations_audit\Hook\AnnotationsAuditHooks
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations_audit.scan_service'
+      - '@logger.channel.annotations_audit'
+
+  logger.channel.annotations_audit:
+    parent: logger.channel_base
+    arguments: ['annotations_audit']

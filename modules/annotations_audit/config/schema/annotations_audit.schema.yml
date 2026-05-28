@@ -1,0 +1,9 @@
+annotations.annotation_type.*.third_party.annotations_audit:
+  type: mapping
+  label: 'Annotations Audit annotation type settings'
+  constraints:
+    FullyValidatable: ~
+  mapping:
+    affects_coverage:
+      type: boolean
+      label: 'Include in coverage status'

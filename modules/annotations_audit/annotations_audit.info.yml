@@ -1,0 +1,11 @@
+name: 'Annotations Audit'
+type: module
+description: 'Provides site structure scanning and coverage reporting for annotations.'
+package: Annotations
+core_version_requirement: ^11
+
+dependencies:
+  - annotations:annotations
+
+suggests:
+  - annotations:annotations_ui

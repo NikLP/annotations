@@ -9,12 +9,11 @@ annotations/                ← root module (always required)
 ├── modules/
 │   ├── annotations_ui/
 │   ├── annotations_type_ui/
-│   ├── annotations_coverage/
+│   ├── annotations_audit/
 │   ├── annotations_context/
 │   ├── annotations_ai_context/
 │   ├── annotations_overlay/
 │   ├── annotations_workflows/
-│   ├── annotations_scan/
 │   ├── annotations_webform/
 │   ├── annotations_profile/
 │   ├── annotations_explorer/
@@ -98,10 +97,9 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 
 | Module | Purpose |
 | --- | --- |
-| `annotations_scan` | Crawls opted-in targets; manual trigger + cron; snapshot storage; `--diff`/`--strict` Drush flags for change detection |
+| `annotations_audit` | Site structure scanning (cron + on-demand) and annotation coverage reporting; `CoverageService` API; `--diff`/`--strict` Drush flags |
 | `annotations_ui` | Annotation editing UI; per-target and site-wide forms; revisions; permission model |
 | `annotations_type_ui` | Browser CRUD for annotation types |
-| `annotations_coverage` | Coverage tracking; `CoverageService` API; status rollup |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI |
 | `annotations_ai_context` | Bridges `annotations_context` into Context Control Center (CCC / `ai_context` module); injects assembled annotations documentation into agent system prompts via `BuildSystemPromptEvent` |
 | `annotations_overlay` | In-context overlays on entity edit/add forms; field-level "?" triggers; modal + inline modes; toolbar button |

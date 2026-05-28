@@ -44,9 +44,9 @@ drush ann:stats --format=yaml
 
 Use `drush list --filter=annotations` to see all registered annotations commands. Use `drush help ann:show` for full option docs.
 
-### Scan (`annotations_scan`)
+### Audit scan (`annotations_audit`)
 
-See [modules/annotations_scan/README.md](modules/annotations_scan/README.md) for `ann:scan` (`--diff`, `--strict`, `--fields`).
+See [modules/annotations_audit/README.md](modules/annotations_audit/README.md) for `ann:scan` (`--diff`, `--strict`, `--fields`).
 
 ### Export (`annotations_export`)
 

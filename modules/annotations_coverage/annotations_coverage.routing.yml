@@ -1,7 +1,0 @@
-annotations_coverage.report:
-  path: '/admin/reports/annotation-coverage'
-  defaults:
-    _controller: '\Drupal\annotations_coverage\Controller\CoverageController::page'
-    _title: 'Annotation coverage'
-  requirements:
-    _permission: 'view annotation coverage'

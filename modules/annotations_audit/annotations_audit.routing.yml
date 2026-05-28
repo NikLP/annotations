@@ -1,0 +1,15 @@
+annotations_audit.coverage:
+  path: '/admin/config/annotations/audit/coverage'
+  defaults:
+    _controller: '\Drupal\annotations_audit\Controller\CoverageController::page'
+    _title: 'Audit coverage'
+  requirements:
+    _permission: 'view annotation audit coverage'
+
+annotations_audit.scan:
+  path: '/admin/config/annotations/audit/scan'
+  defaults:
+    _controller: '\Drupal\annotations_audit\Controller\ScanController::overview'
+    _title: 'Audit scan'
+  requirements:
+    _permission: 'administer annotations audit scan'

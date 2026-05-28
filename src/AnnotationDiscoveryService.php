@@ -14,7 +14,7 @@ use Drupal\annotations\Plugin\Target\GenericTarget;
  * Collects and exposes all registered Target plugins.
  *
  * Used by the scope management UI (in annotations) and the scan executor (in
- * annotations_scan) to get the full list of available target plugins. Any
+ * annotations_audit) to get the full list of available target plugins. Any
  * module can contribute a plugin by tagging a service with annotations.target.
  * GenericTarget is auto-instantiated for any fieldable entity type
  * not claimed by a specific plugin.

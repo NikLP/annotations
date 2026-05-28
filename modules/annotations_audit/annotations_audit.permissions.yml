@@ -1,0 +1,8 @@
+view annotation audit coverage:
+  title: 'View annotation audit coverage'
+  description: 'View the annotation coverage report.'
+  restrict access: false
+
+administer annotations audit scan:
+  title: 'Administer Annotations Audit Scan'
+  description: 'Configure scan scope, run manual scans, and view scan results.'

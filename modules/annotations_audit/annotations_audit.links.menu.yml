@@ -1,0 +1,13 @@
+annotations_audit.coverage:
+  title: 'Audit coverage'
+  parent: annotations.admin
+  description: 'View annotation coverage across all included targets.'
+  route_name: annotations_audit.coverage
+  weight: 20
+
+annotations_audit.scan:
+  title: 'Audit scan'
+  parent: annotations.admin
+  description: 'Run site scans and view scan status.'
+  route_name: annotations_audit.scan
+  weight: 30

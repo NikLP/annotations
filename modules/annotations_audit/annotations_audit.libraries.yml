@@ -1,0 +1,4 @@
+annotations_audit.coverage:
+  css:
+    theme:
+      css/annotations-coverage.css: {}

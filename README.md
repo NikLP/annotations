@@ -79,8 +79,7 @@ Install annotations base module; enable submodules as needed.
 | `annotations_workflows` | Agency / dev | Stable | Ships the default three-state editorial workflow (`draft → needs_review → published`) for annotation entities. NB - any `content_moderation` workflow can be attached manually instead. |
 | `annotations_webform` | Dev / site builders | Stable | Webform compatibility for the `overlay` module. Requires the contributed `webform` module. |
 | `annotations_profile` | Dev / site builders | Stable | Profile compatibility for the `overlay` module, in user account edit and registration forms. Requires the contributed `profile` module. |
-| `annotations_scan` | Agency / dev | Stable | Crawls targets on demand and via cron. Provides a manual trigger UI, `drush ann:scan` with `--diff` and `--strict` flags for change detection, and snapshot storage for diffs. |
-| `annotations_coverage` | Agency / dev | Stable | Annotation coverage tracking and report. Owns the `affects_coverage` behavior on types and exposes `CoverageService` as a stable public API for enforcement or CI use. |
+| `annotations_audit` | Agency / dev | Stable | Site structure scanning (cron + on-demand) and annotation coverage reporting. Owns the `affects_coverage` behavior on types, exposes `CoverageService` as a stable public API, and provides `drush ann:scan` with `--diff` and `--strict` flags. |
 
 ---
 

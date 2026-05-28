@@ -36,7 +36,7 @@ class AnnotationsHooks {
    * Implements hook_entity_type_alter().
    *
    * Registers the field configuration form handler on annotation_target so
-   * that annotations_scan (and any other module) can use
+   * that annotations_audit (and any other module) can use
    * _entity_form: 'annotation_target.fields' in routes without annotations
    * needing to know about the specific form class.
    *
