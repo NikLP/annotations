@@ -1,13 +1,20 @@
+annotations_audit.reports:
+  title: 'Annotations audit'
+  parent: system.admin_reports
+  description: 'Annotation coverage and site structure audit tools.'
+  route_name: annotations_audit.coverage
+  weight: 0
+
 annotations_audit.coverage:
   title: 'Audit coverage'
-  parent: annotations.admin
+  parent: annotations_audit.reports
   description: 'View annotation coverage across all included targets.'
   route_name: annotations_audit.coverage
-  weight: 20
+  weight: 10
 
 annotations_audit.scan:
   title: 'Audit scan'
-  parent: annotations.admin
+  parent: annotations_audit.reports
   description: 'Run site scans and view scan status.'
   route_name: annotations_audit.scan
-  weight: 30
+  weight: 20

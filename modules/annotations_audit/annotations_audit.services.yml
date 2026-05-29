@@ -17,12 +17,14 @@ services:
   Drupal\annotations_audit\ScanService:
     alias: annotations_audit.scan_service
 
-  annotations_audit.hooks:
-    class: Drupal\annotations_audit\Hook\AnnotationsAuditHooks
+  Drupal\annotations_audit\Hook\AnnotationsAuditHooks:
     arguments:
       - '@entity_type.manager'
       - '@annotations_audit.scan_service'
       - '@logger.channel.annotations_audit'
+
+  annotations_audit.hooks:
+    alias: Drupal\annotations_audit\Hook\AnnotationsAuditHooks
 
   logger.channel.annotations_audit:
     parent: logger.channel_base
