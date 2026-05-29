@@ -37,7 +37,8 @@ final class AnnotationsExportCommands extends DrushCommands {
   #[CLI\Option(name: 'type', description: 'Limit to all targets of this entity type (e.g. node)')]
   #[CLI\Option(name: 'types', description: 'Comma-separated annotation type IDs to include (e.g. editorial,rules)')]
   #[CLI\Option(name: 'ref-depth', description: 'Entity-reference traversal depth (0–2, default 0)')]
-  #[CLI\Option(name: 'field-meta', description: 'Include field type, cardinality, and description')]
+  #[CLI\Option(name: 'inc-meta', description: 'Include field type, cardinality, and description')]
+  #[CLI\Option(name: 'inc-refs', description: 'Add incoming_refs to each target (reverse ER sources)')]
   #[CLI\Option(name: 'strip-headings', description: 'Remove markdown heading markers (plain-text terminal output)')]
   #[CLI\Usage(name: 'drush ann:ex', description: 'Full site context as markdown to stdout')]
   #[CLI\Usage(name: 'drush ann:ex --output=context.md', description: 'Write markdown to file')]
@@ -52,7 +53,8 @@ final class AnnotationsExportCommands extends DrushCommands {
       'type'           => NULL,
       'types'          => NULL,
       'ref-depth'      => 0,
-      'field-meta'     => FALSE,
+      'inc-meta'       => FALSE,
+      'inc-refs'       => FALSE,
       'strip-headings' => FALSE,
     ],
   ): void {
@@ -61,17 +63,25 @@ final class AnnotationsExportCommands extends DrushCommands {
     if (!empty($options['target'])) {
       $assemblerOptions['target_id'] = $options['target'];
     }
+
     if (!empty($options['type'])) {
       $assemblerOptions['entity_type'] = $options['type'];
     }
+
     if (!empty($options['types'])) {
       $assemblerOptions['types'] = array_map('trim', explode(',', $options['types']));
     }
+
     if ($options['ref-depth'] > 0) {
       $assemblerOptions['ref_depth'] = (int) $options['ref-depth'];
     }
-    if ($options['field-meta']) {
-      $assemblerOptions['include_field_meta'] = TRUE;
+
+    if ($options['inc-meta']) {
+      $assemblerOptions['inc_meta'] = TRUE;
+    }
+    
+    if ($options['inc-refs']) {
+      $assemblerOptions['inc_refs'] = TRUE;
     }
 
     $payload = $this->assembler->assemble($assemblerOptions);

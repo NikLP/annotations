@@ -55,12 +55,12 @@ use Drupal\field\FieldConfigInterface;
  *             ],
  *           ],
  *           'references'    => [...],  // present only when ref_depth > 0
- *           'incoming_refs' => [...],  // present only when include_incoming_refs = true
+ *           'incoming_refs' => [...],  // present only when inc_refs = TRUE
  *         ],
  *       ],
  *     ],
  *   ],
- *   'meta' => [ 'generated_at' => ..., 'ref_depth' => ..., 'include_incoming_refs' => ..., 'target_count' => ... ],
+ *   'meta' => [ 'generated_at' => ..., 'ref_depth' => ..., 'inc_refs' => ..., 'target_count' => ... ],
  * ]
  * @endcode
  */
@@ -85,19 +85,19 @@ class ContextAssembler {
   /**
    * Whether to include field type, cardinality, and help text in the payload.
    *
-   * Set by assemble() from the 'include_field_meta' option.
+   * Set by assemble() from the 'inc_meta' option.
    */
   private bool $includeFieldMeta = FALSE;
 
   /**
    * Whether to include incoming entity-reference sources in the payload.
    *
-   * Set by assemble() from the 'include_incoming_refs' option.
+   * Set by assemble() from the 'inc_refs' option.
    */
   private bool $includeIncomingRefs = FALSE;
 
   /**
-   * Reverse lookup idx built 1x per assemble() when include_incoming_refs=TRUE.
+   * Reverse lookup idx built 1x per assemble() when inc_refs=TRUE.
    *
    * Structure: [target_id =>
    * [source_target_id => ['label' => ..., 'via_fields' => [...]]]]
@@ -157,21 +157,21 @@ class ContextAssembler {
    *     (i.e. the union of all its roles). Ignored if 'role' is also set.
    *     Accounts with 'administer annotations' bypass filtering.
    *     Use this for real current-user context; use 'role' for previews.
-   *   - 'include_field_meta' (bool): If TRUE, each field entry in the payload
+   *   - 'inc_meta' (bool): If TRUE, each field entry in the payload
    *     gains a 'meta' key containing 'type', 'cardinality', and optionally
    *     'description' (the field's configured help text). Default FALSE.
-   *   - 'include_incoming_refs' (bool): If TRUE, each target entry gains an
-   *     'incoming_refs' key listing annotation targets that reference it via
-   *     entity-reference fields in their annotation scope. Flat only — no
-   *     recursive reverse traversal. Default FALSE.
+   *   - 'inc_refs' (bool): If TRUE, each target entry gains an 'incoming_refs'
+   *     key listing annotation targets that reference it via entity-reference
+   *     fields in their annotation scope. Flat only — no recursive reverse
+   *     traversal. Default FALSE.
    *
    * @return array
    *   The assembled payload. See class docblock for structure.
    */
   public function assemble(array $options = []): array {
     $this->fieldDefinitionCache = [];
-    $this->includeFieldMeta     = (bool) ($options['include_field_meta'] ?? FALSE);
-    $this->includeIncomingRefs  = (bool) ($options['include_incoming_refs'] ?? FALSE);
+    $this->includeFieldMeta     = (bool) ($options['inc_meta'] ?? FALSE);
+    $this->includeIncomingRefs  = (bool) ($options['inc_refs'] ?? FALSE);
 
     $entity_type_filter = $options['entity_type'] ?? NULL;
     $target_id_filter   = $options['target_id'] ?? NULL;
@@ -198,7 +198,7 @@ class ContextAssembler {
       'meta'   => [
         'generated_at'        => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
         'ref_depth'           => $ref_depth,
-        'include_incoming_refs' => $this->includeIncomingRefs,
+        'inc_refs'              => $this->includeIncomingRefs,
         'target_count'        => array_sum(array_map(
           fn($g) => count($g['targets']),
           $groups,

@@ -152,3 +152,25 @@ The permission model maps to a non-standard CRUD because annotations are editori
 Dynamic permissions (`edit {type} annotations`, `delete {type} annotations`, `consume {type} annotations`) require a cache rebuild after new annotation types are created.
 
 Each submodule documents its own permissions — see the relevant module's README.
+
+---
+
+## Drush commands
+
+Commands are provided by several modules in the suite.
+To list all available annotations Drush commands:
+
+```bash
+drush list --filter=annotations
+```
+
+| Command | Alias | Purpose |
+| --- | --- | --- |
+| `annotations:targets` | `ann:targets` | List annotation target config entities, with optional entity type filter |
+| `annotations:types` | `ann:types` | List annotation type config entities |
+| `annotations:show` | `ann:show` | Show stored annotation content with optional target/type/field filters |
+| `annotations:stats` | `ann:stats` | Annotation coverage counts per target, broken down by type |
+
+All commands support `--format=json` and `--format=yaml`. Run `drush help <command>` for full option details.
+
+Additional commands (`annotations:scan`, `annotations:export`, etc.) are documented in the README of the submodule that provides them.

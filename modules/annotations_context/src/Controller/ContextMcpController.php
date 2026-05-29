@@ -22,8 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
  *   annotation://target/{target_id}
  *
  * Optional URI query parameters (same semantics as the REST endpoint):
- *   ?ref_depth=0|1|2        — entity reference traversal depth
- *   ?include_field_meta=1   — include field type/cardinality/description
+ *   ?ref_depth=0|1|2  — entity reference traversal depth
+ *   ?inc_meta=1       — include field type/cardinality/description
+ *   ?inc_refs=1       — add incoming_refs (reverse ER sources)
  *
  * Supported JSON-RPC methods:
  *   initialize           — capability handshake; negotiates protocol version
@@ -33,18 +34,12 @@ use Symfony\Component\HttpFoundation\Response;
  *   ping                 — keep-alive; returns empty result object
  *
  * Migration note (mcp_core): this class is a candidate for replacement by an
- * McpServer + McpResource plugin pair using drupal/mcp_core (the same
- * infrastructure the ctx module uses). The JSON-RPC boilerplate here —
- * initialize, ping, notifications/*, error envelopes, protocol negotiation —
- * would be absorbed by mcp_core, leaving only the resource list/read logic.
- * Two blockers to resolve first:
- *   1. Auth: mcp_core controls auth at the endpoint level; verify it supports
- *      Bearer token or per-server access control before migrating (see
- *      McpAccessCheck — Bearer token is required for headless LMS agents).
- *   2. Separation: ctx is dev-only (PHP eval, raw SQL); this endpoint is
- *      production-facing. Confirm mcp_core allows separate authenticated
- *      servers rather than one shared endpoint.
- * Note: ctx requires PHP 8.4; check mcp_core's constraint before adding it.
+ * McpServer + McpResource plugin pair using drupal/mcp_core. The JSON-RPC
+ * boilerplate here — initialize, ping, notifications/*, error envelopes,
+ * protocol negotiation — would be absorbed by mcp_core, leaving only the
+ * resource list/read logic. Blocker: mcp_core controls auth at the endpoint
+ * level; verify it supports Bearer token or per-server access control before
+ * migrating (McpAccessCheck — Bearer token is required for headless LMS agents).
  */
 class ContextMcpController extends ControllerBase {
 
@@ -180,11 +175,17 @@ class ContextMcpController extends ControllerBase {
     // Parse optional query parameters embedded in the URI.
     if (!empty($matches[2])) {
       parse_str(ltrim($matches[2], '?'), $query);
+      
       if (isset($query['ref_depth'])) {
         $options['ref_depth'] = max(0, (int) $query['ref_depth']);
       }
-      if (($query['include_field_meta'] ?? '') === '1') {
-        $options['include_field_meta'] = TRUE;
+
+      if (($query['inc_meta'] ?? '') === '1') {
+        $options['inc_meta'] = TRUE;
+      }
+
+      if (($query['inc_refs'] ?? '') === '1') {
+        $options['inc_refs'] = TRUE;
       }
     }
 

@@ -77,10 +77,17 @@ class ContextFilterForm extends FormBase {
       '#default_value' => $options['ref_depth'] ?? ContextAssembler::DEFAULT_REF_DEPTH,
     ];
 
-    $form['include_field_meta'] = [
+    $form['inc_meta'] = [
       '#type'          => 'checkbox',
       '#title'         => $this->t('Include metadata'),
-      '#default_value' => !empty($options['include_field_meta']),
+      '#default_value' => !empty($options['inc_meta']),
+      '#return_value'  => '1',
+    ];
+
+    $form['inc_refs'] = [
+      '#type'          => 'checkbox',
+      '#title'         => $this->t('Include incoming references'),
+      '#default_value' => !empty($options['inc_refs']),
       '#return_value'  => '1',
     ];
 

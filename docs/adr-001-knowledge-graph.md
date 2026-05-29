@@ -31,7 +31,7 @@ Each `AnnotationTarget` (a bundle, or a field within one) appears as a node. Ann
 When `ref_depth > 0`, the assembler follows entity-reference fields outward from a target and recursively assembles the referenced targets. The edge label is the field name. Cycle detection via a `$visited` set prevents infinite loops.
 
 **Reverse edges**  
-The `include_incoming_refs` option adds a flat reverse index — which other targets reference the current one, and via which fields.
+The `inc_refs` option adds a flat reverse index — which other targets reference the current one, and via which fields.
 
 **Structured output**  
 The payload is a nested array grouped by entity type, then target, then field, with optional field metadata (type, cardinality, description). It is format-agnostic; the context module serialises it to JSON or markdown depending on the consumer.

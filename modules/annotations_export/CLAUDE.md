@@ -6,7 +6,7 @@ Exports assembled annotation context to markdown files or Obsidian vaults via Dr
 
 ## What it owns
 
-- `AnnotationsExportCommands` (`src/Drush/Commands/`) — `annotations:export` (alias `ann:ex`); options: `--format`, `--output`, `--target`, `--type`, `--types`, `--ref-depth`, `--field-meta`, `--strip-headings`
+- `AnnotationsExportCommands` (`src/Drush/Commands/`) — `annotations:export` (alias `ann:ex`); options: `--format`, `--output`, `--target`, `--type`, `--types`, `--ref-depth`, `--inc-meta`, `--inc-refs`, `--strip-headings`
 - `ObsidianVaultWriter` (`annotations_export.obsidian_vault_writer`) — writes one `.md` per target to a directory; generates YAML frontmatter and wikilinks between targets
 
 ## Services

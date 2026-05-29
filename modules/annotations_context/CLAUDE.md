@@ -35,7 +35,7 @@ $payload = $assembler->assemble([
   'ref_depth'             => 1,               // 0–2
   'role'                  => 'editor',        // simulate role (preview page); takes precedence over account
   'account'               => $currentUser,    // filter by real user permissions
-  'include_incoming_refs' => TRUE,            // flat, no recursion
+  'inc_refs'              => TRUE,            // flat, no recursion
 ]);
 ```
 
@@ -97,7 +97,7 @@ Custom renderers just consume the payload array — no base class needed.
 
 `POST /api/annotations/mcp` — MCP Streamable HTTP (2025-03-26 spec). Resource URIs: `annotation://target/{target_id}`. Content returned as `text/plain` markdown (token-efficient for AI).
 
-Query params: `?ref_depth=0|1|2`, `?include_field_meta=1`.
+Query params: `?ref_depth=0|1|2`, `?inc_meta=1`, `?inc_refs=1`.
 
 Supported methods: `initialize`, `notifications/*` (202 no-body), `resources/list`, `resources/read`, `ping`. Error codes: standard JSON-RPC 2.0 + MCP `-32002` for resource not found.
 
@@ -107,7 +107,7 @@ Auth: Drupal native permissions. Bearer token (for headless clients) requires `s
 
 ## REST JSON endpoint
 
-`GET /api/annotations/{target_id}` — `CacheableJsonResponse`. Query params: `ref_depth`, `include_field_meta`. Returns full assembler payload or 404 JSON error. Cache tags: `annotation_list`, `annotation_target_list`, `annotation_type_list`; contexts: `user.permissions`, `url.query_args`, `languages:language_interface`.
+`GET /api/annotations/{target_id}` — `CacheableJsonResponse`. Query params: `ref_depth`, `inc_meta`, `inc_refs`. Returns full assembler payload or 404 JSON error. Cache tags: `annotation_list`, `annotation_target_list`, `annotation_type_list`; contexts: `user.permissions`, `url.query_args`, `languages:language_interface`.
 
 ## Preview page
 

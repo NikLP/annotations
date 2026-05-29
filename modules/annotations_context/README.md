@@ -55,7 +55,7 @@ $payload = $assembler->assemble(['types' => ['editorial']]);       // explicit t
 $payload = $assembler->assemble(['ref_depth' => 1]);               // follow ER fields one hop
 $payload = $assembler->assemble(['account' => $currentUser]);      // filter by user permissions
 $payload = $assembler->assemble(['role' => 'editor']);             // simulate a role
-$payload = $assembler->assemble(['include_incoming_refs' => TRUE]); // add reverse ER sources
+$payload = $assembler->assemble(['inc_refs' => TRUE]); // add reverse ER sources
 ```
 
 All options are optional and combine freely.
@@ -70,8 +70,8 @@ All options are optional and combine freely.
 | `ref_depth` | `int` | `0` | Entity-reference traversal depth. `0` = no traversal; `1`–`2` follows linked targets. |
 | `role` | `string\|null` | `null` | Simulate context as this Drupal role — only types that role can `consume` are included. Takes precedence over `account`. |
 | `account` | `AccountInterface\|null` | `null` | Filter to types the given account can view via its combined role permissions. Accounts with `administer annotations` bypass filtering. |
-| `include_field_meta` | `bool` | `false` | Add `type`, `cardinality`, and `description` to each field entry. Useful for AI context; noisy for human review. |
-| `include_incoming_refs` | `bool` | `false` | Add an `incoming_refs` key to each target listing annotation targets that reference it via entity-reference fields. Flat only — no recursive reverse traversal. |
+| `inc_meta` | `bool` | `false` | Add `type`, `cardinality`, and `description` to each field entry. Useful for AI context; noisy for human review. |
+| `inc_refs` | `bool` | `false` | Add an `incoming_refs` key to each target listing annotation targets that reference it via entity-reference fields. Flat only — no recursive reverse traversal. |
 
 #### Role and account filtering
 
@@ -111,12 +111,12 @@ $payload = $assembler->assemble(['account' => $this->currentUser]);
             'body' => [
               'label'       => 'Body',
               'annotations' => ['editorial' => ['label' => 'Editorial', 'value' => '...']],
-              // 'meta' key present when include_field_meta = TRUE:
+              // 'meta' key present when inc_meta = TRUE:
               'meta' => ['type' => 'text_long', 'cardinality' => 'single value', 'description' => '...'],
             ],
           ],
           'references'    => [...], // only present when ref_depth > 0
-          'incoming_refs' => [      // only present when include_incoming_refs = TRUE
+          'incoming_refs' => [      // only present when inc_refs = TRUE
             'media__image' => [
               'label'      => 'Image',
               'via_fields' => ['field_featured_image'],
@@ -129,7 +129,7 @@ $payload = $assembler->assemble(['account' => $this->currentUser]);
   'meta' => [
     'generated_at'        => '2026-04-20T12:00:00+00:00',
     'ref_depth'           => 0,
-    'include_incoming_refs' => FALSE,
+    'inc_refs'            => FALSE,
     'target_count'        => 12,
   ],
 ]
@@ -211,12 +211,12 @@ Each referenced target is assembled in full and nested under `references` → fi
 
 ### Incoming references
 
-Set `include_incoming_refs => TRUE` to surface **reverse** relationships — which annotation targets reference a given target, rather than which targets it references. Useful for leaf entities: when assembling context for `media__image`, you can see that `node__article` and `node__landing_page` both reference it.
+Set `inc_refs => TRUE` (or `?inc_refs=1` on HTTP endpoints) to surface **reverse** relationships — which annotation targets reference a given target, rather than which targets it references. Useful for leaf entities: when assembling context for `media__image`, you can see that `node__article` and `node__landing_page` both reference it.
 
 ```php
 $payload = $assembler->assemble([
-  'target_id'            => 'media__image',
-  'include_incoming_refs' => TRUE,
+  'target_id' => 'media__image',
+  'inc_refs'  => TRUE,
 ]);
 ```
 
@@ -279,7 +279,7 @@ drush ann:ctx                                          # all targets
 drush ann:ctx --target=node__article                   # one target
 drush ann:ctx --type=node --ref-depth=1                # all node targets, follow ER one hop
 drush ann:ctx --types=editorial,rules                  # specific annotation types only
-drush ann:ctx --field-meta                             # include field type/cardinality/description
+drush ann:ctx --inc-meta                               # include field type/cardinality/description
 drush ann:ctx --strip-headings                         # plain-text output without # markers
 drush ann:ctx > context.md                             # export to file
 ```
@@ -290,7 +290,8 @@ drush ann:ctx > context.md                             # export to file
 | `--type` | — | Limit to all targets of a given entity type (e.g. `node`). |
 | `--types` | — | Comma-separated annotation type IDs to include. |
 | `--ref-depth` | `0` | Entity-reference traversal depth (0–2). |
-| `--field-meta` | off | Include field type, cardinality, and description. |
+| `--inc-meta` | off | Include field type, cardinality, and description. |
+| `--inc-refs` | off | Add incoming references to each target — reverse ER sources. |
 | `--strip-headings` | off | Remove `#` heading markers for plain-text terminal output. |
 
 All options are optional and combine freely. Outputs a summary line (target count, ref depth, generated timestamp) before the markdown block.
@@ -304,8 +305,8 @@ All options are optional and combine freely. Outputs a summary line (target coun
 ```code
 GET /api/annotations/node__article
 GET /api/annotations/node__article?ref_depth=1
-GET /api/annotations/node__article?include_field_meta=1
-GET /api/annotations/media__image?include_incoming_refs=1
+GET /api/annotations/node__article?inc_meta=1
+GET /api/annotations/media__image?inc_refs=1
 ```
 
 **Query parameters** (all optional):
@@ -313,8 +314,8 @@ GET /api/annotations/media__image?include_incoming_refs=1
 | Parameter | Values | Default | Description |
 | --- | --- | --- | --- |
 | `ref_depth` | `0`, `1`, `2` | `0` | Entity reference traversal depth. |
-| `include_field_meta` | `1` | off | Include field type, cardinality, and description. |
-| `include_incoming_refs` | `1` | off | Add `incoming_refs` to each target — reverse ER sources. |
+| `inc_meta` | `1` | off | Include field type, cardinality, and description. |
+| `inc_refs` | `1` | off | Add `incoming_refs` to each target — reverse ER sources. |
 
 **Responses:**
 
@@ -357,7 +358,7 @@ GET /api/annotations/media__image?include_incoming_refs=1
   "meta": {
     "generated_at": "2026-04-21T12:00:00+01:00",
     "ref_depth": 0,
-    "include_incoming_refs": false,
+    "inc_refs": false,
     "target_count": 1
   }
 }
@@ -386,9 +387,10 @@ The response is the raw assembler structure. Consumers that need a flatter shape
 | Parameter | Values | Default | Description |
 | --- | --- | --- | --- |
 | `ref_depth` | `0`, `1`, `2` | `0` | Entity reference traversal depth. |
-| `include_field_meta` | `1` | off | Include field type, cardinality, and description. |
+| `inc_meta` | `1` | off | Include field type, cardinality, and description. |
+| `inc_refs` | `1` | off | Add `incoming_refs` to each target — reverse ER sources. |
 
-Example URI: `annotation://target/node__article?ref_depth=1&include_field_meta=1`
+Example URI: `annotation://target/node__article?ref_depth=1&inc_meta=1`
 
 **Type filtering:** `resources/read` only returns annotation types where the `annotations_context.in_ai_context` third-party setting is `TRUE`. Types must be opted in via the annotation type edit form — default is off. If no types are opted in the response content will be empty.
 
@@ -431,3 +433,14 @@ To make annotation context available to Claude Code during development sessions,
 ```
 
 Restart Claude Code after saving. The `resources/list` and `resources/read` tools will be available in session, allowing annotation context to be pulled for any target on demand.
+
+### Claude Code skill
+
+A Claude Code skill ships with this module at `.claude/skills/annotations-context/`. It teaches Claude how to interpret annotation payloads, use the MCP endpoint query parameters, and check annotation coverage. To install it in a project:
+
+```bash
+cp -r annotations/modules/annotations_context/.claude/skills/annotations-context \
+  .claude/skills/
+```
+
+The skill is self-contained and works independently of this module's codebase — copy it into any project that has the MCP endpoint configured.

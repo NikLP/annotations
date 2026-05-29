@@ -33,7 +33,8 @@ drush ann:ex --target=node__article                       # single target
 drush ann:ex --type=node                                  # all targets of an entity type
 drush ann:ex --types=editorial,rules                      # filter by annotation type IDs
 drush ann:ex --ref-depth=1                                # follow entity-reference fields one hop
-drush ann:ex --field-meta                                 # include field type/cardinality/description
+drush ann:ex --inc-meta                                   # include field type/cardinality/description
+drush ann:ex --inc-refs                                   # add incoming_refs (reverse ER sources)
 drush ann:ex --strip-headings                             # remove # markers for plain-text terminal output
 ```
 
@@ -47,7 +48,8 @@ drush ann:ex --strip-headings                             # remove # markers for
 | `--type` | — | Limit to all targets of a given entity type (e.g. `node`). |
 | `--types` | — | Comma-separated annotation type IDs to include (e.g. `editorial,rules`). |
 | `--ref-depth` | `0` | Entity-reference traversal depth (0–2). Follows ER fields into referenced targets. |
-| `--field-meta` | off | Include field type, cardinality, and help-text description alongside annotations. |
+| `--inc-meta` | off | Include field type, cardinality, and help-text description alongside annotations. |
+| `--inc-refs` | off | Add `incoming_refs` to each target — reverse ER sources. |
 | `--strip-headings` | off | Strip `#` heading markers — useful for piping to plain-text tools. |
 
 All options are optional and combine freely.

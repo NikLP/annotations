@@ -75,9 +75,10 @@ Append query parameters to the URI string for richer context:
 | Parameter | Values | Effect |
 |---|---|---|
 | `?ref_depth=1` | `1` or `2` | Follow entity-reference fields into referenced targets |
-| `?include_field_meta=1` | `1` | Add Drupal field type, cardinality, and help text |
+| `?inc_meta=1` | `1` | Add Drupal field type, cardinality, and help text |
+| `?inc_refs=1` | `1` | Add `incoming_refs` to each target (reverse ER sources) |
 
-Example: `annotation://target/node__article?ref_depth=1&include_field_meta=1`
+Example: `annotation://target/node__article?ref_depth=1&inc_meta=1`
 
 Read all relevant targets in parallel — `resources/read` calls are independent.
 
@@ -95,7 +96,7 @@ See @references/schema-changes.md for the pre-flight checklist before recommendi
 ```bash
 ddev drush ann:ctx                            # all targets
 ddev drush ann:ctx --target=node__article    # one target
-ddev drush ann:ctx --field-meta              # include field type/cardinality
+ddev drush ann:ctx --inc-meta                # include field type/cardinality
 ddev drush ann:ctx --ref-depth=1             # follow ER fields one hop
 ```
 

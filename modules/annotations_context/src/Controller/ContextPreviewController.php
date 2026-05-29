@@ -64,7 +64,7 @@ class ContextPreviewController extends ControllerBase {
     if (!isset($options['role'])) {
       $options['account'] = $this->currentUser();
     }
-    
+
     $payload = $this->assembler->assemble($options);
 
     $build = [];
@@ -85,14 +85,21 @@ class ContextPreviewController extends ControllerBase {
     elseif (!empty($options['target_id'])) {
       $export_query['target_id'] = $options['target_id'];
     }
+
     if (isset($options['ref_depth']) && $options['ref_depth'] !== ContextAssembler::DEFAULT_REF_DEPTH) {
       $export_query['ref_depth'] = $options['ref_depth'];
     }
+
     if (!empty($options['role'])) {
       $export_query['role'] = $options['role'];
     }
-    if (!empty($options['include_field_meta'])) {
-      $export_query['include_field_meta'] = '1';
+
+    if (!empty($options['inc_meta'])) {
+      $export_query['inc_meta'] = '1';
+    }
+
+    if (!empty($options['inc_refs'])) {
+      $export_query['inc_refs'] = '1';
     }
 
     $export_url = Url::fromRoute('annotations_context.export', [], ['query' => $export_query]);
@@ -234,8 +241,12 @@ class ContextPreviewController extends ControllerBase {
       $options['ref_depth'] = max(0, (int) $ref_depth_raw);
     }
 
-    if ($request->query->get('include_field_meta') === '1') {
-      $options['include_field_meta'] = TRUE;
+    if ($request->query->get('inc_meta') === '1') {
+      $options['inc_meta'] = TRUE;
+    }
+    
+    if ($request->query->get('inc_refs') === '1') {
+      $options['inc_refs'] = TRUE;
     }
 
     $role = (string) $request->query->get('role', '');

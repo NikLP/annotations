@@ -37,8 +37,9 @@ class ContextApiController extends ControllerBase {
    * Returns the assembled context payload for a target as JSON.
    *
    * Query parameters (all optional):
-   *   ref_depth=0|1|2        — entity reference traversal depth (default 0)
-   *   include_field_meta=1   — include field type/cardinality/description.
+   *   ref_depth=0|1|2  — entity reference traversal depth (default 0)
+   *   inc_meta=1       — include field type/cardinality/description
+   *   inc_refs=1       — add incoming_refs to each target (reverse ER sources)
    */
   public function endpoint(string $target_id, Request $request): CacheableJsonResponse {
     $target = $this->entityTypeManager()->getStorage('annotation_target')->load($target_id);
@@ -49,7 +50,7 @@ class ContextApiController extends ControllerBase {
       // Cache 404 against tag so it invalidates if target is later created.
       $meta->addCacheTags(['annotation_target_list']);
       $response->addCacheableDependency($meta);
-      
+
       return $response;
     }
 
@@ -59,12 +60,17 @@ class ContextApiController extends ControllerBase {
     ];
 
     $ref_depth_raw = $request->query->get('ref_depth');
+    
     if ($ref_depth_raw !== NULL) {
       $options['ref_depth'] = max(0, (int) $ref_depth_raw);
     }
 
-    if ($request->query->get('include_field_meta') === '1') {
-      $options['include_field_meta'] = TRUE;
+    if ($request->query->get('inc_meta') === '1') {
+      $options['inc_meta'] = TRUE;
+    }
+
+    if ($request->query->get('inc_refs') === '1') {
+      $options['inc_refs'] = TRUE;
     }
 
     $payload = $this->assembler->assemble($options);

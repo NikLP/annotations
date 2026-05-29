@@ -36,7 +36,7 @@ Bundle-level text covers why the type exists, how it fits into the site's broade
 
 **Status gate language.** If an annotation says a field must be populated before a status transition (e.g. "fill in before setting status to Available"), a new field with similar characteristics may need the same gate. Check whether that configuration exists or needs to be added.
 
-**Coverage gaps.** A field that appears in the Drupal field list but has no annotation entry is undocumented from the AI's perspective. Use `?include_field_meta=1` to get Drupal's own field type and help text as a fallback signal, and flag the gap.
+**Coverage gaps.** A field that appears in the Drupal field list but has no annotation entry is undocumented from the AI's perspective. Use `?inc_meta=1` to get Drupal's own field type and help text as a fallback signal, and flag the gap. Use `?inc_refs=1` to surface which other targets reference the current one via entity-reference fields.
 
 ---
 
@@ -45,7 +45,7 @@ Bundle-level text covers why the type exists, how it fits into the site's broade
 The JSON API returns the full structured payload — useful for inspecting which fields have annotations and which don't:
 
 ```bash
-curl -s "https://<site>/api/annotations/node__article?include_field_meta=1" \
+curl -s "https://<site>/api/annotations/node__article?inc_meta=1" \
   -H "Authorization: Bearer <key>"
 ```
 
