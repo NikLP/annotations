@@ -6,7 +6,7 @@ Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project 
 
 Combines site structure scanning and annotation coverage reporting into a single audit module.
 
-**Audit scan** crawls opted-in `annotation_target` entities on cron (and on demand) to produce a structured snapshot of the Drupal content architecture. It detects structural drift and stores a pending diff for review.
+**Audit scan** crawls opted-in `annotation_target` entities on cron (and on demand) to produce a structured snapshot of the Drupal content architecture. Manual scan = sets the waypoint (snapshot + clears change list). Cron = compares against the waypoint, accumulates newly detected changes, logs each one at warning level (visible in `drush cron` output). The change list grows until the next manual scan.
 
 **Audit coverage** computes how completely each target has been annotated, driving the coverage report at `/admin/config/annotations/audit/coverage`. `CoverageService` is a stable public API for other modules to build on (workflow conditions, CI checks, export enrichment).
 
@@ -21,12 +21,16 @@ Combines site structure scanning and annotation coverage reporting into a single
   - `computeDiff(array $current, array $stored)` — returns `['added' => ..., 'removed' => ..., 'changed' => ...]`
   - `diffHasChanges(array $diff)` — returns `bool`
   - `getLastScanTimestamp()` — returns `?int`
-  - `storePendingDiff()` / `getPendingDiff()` / `clearPendingDiff()` — state-backed pending diff display
-- `ScanController` — audit scan page at `/admin/config/annotations/audit/scan`; shows last scan timestamp, snapshot table, and "Run scan now" button
-- `ScanRunForm` — CSRF-protected one-button form to trigger a manual scan
-- `AnnotationsAuditCommands` — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`, `--diff`, `--strict`
+  - `getAccumulatedChanges()` — returns all changes detected since last waypoint, keyed by stable change key
+  - `clearAccumulatedChanges()` — clears the accumulated list (called when setting a new waypoint)
+  - `mergeNewChanges(array $diff)` — flattens diff into individual change items, merges into accumulated state, removes reverted items, returns only newly added entries
+  - `getScopeDrift()` — returns fields present in Drupal (FieldConfig + notable base fields) but not yet in any target's scope, keyed by `target_id`
+- `ScanController` — audit scan page at `/admin/config/annotations/audit/scan`; shows accumulated changes warning (with per-item timestamps), scope drift section (out-of-scope fields), snapshot table grouped by entity type, `CheckChangesForm`, and `ScanRunForm`
+- `CheckChangesForm` — on-demand cron-equivalent: scans, diffs, merges new changes; does not update the waypoint or clear the accumulated list
+- `ScanRunForm` — CSRF-protected one-button form ("Save waypoint"); sets a new waypoint (`saveSnapshot` + `clearAccumulatedChanges`)
+- `AnnotationsAuditCommands` — `annotations:scan` (alias `ann:scan`); flags: `--fields`, `--format=json|yaml`, `--diff`, `--check`; all snapshot-saving paths also call `clearAccumulatedChanges()`
 - DB table: `annotations_audit` (`target_id` PK, `data` longblob JSON, `saved` unix timestamp)
-- State key: `annotations_audit.pending_diff`
+- State key: `annotations_audit.accumulated_changes` — flat map of change entries since last waypoint
 
 ### Coverage
 

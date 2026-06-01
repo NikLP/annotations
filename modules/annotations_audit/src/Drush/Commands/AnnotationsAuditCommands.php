@@ -37,14 +37,14 @@ final class AnnotationsAuditCommands extends DrushCommands {
   #[CLI\Option(name: 'fields', description: 'Show per-target field names instead of a field count')]
   #[CLI\Option(name: 'format', description: 'Output format: table (default), json, yaml')]
   #[CLI\Option(name: 'diff', description: 'Show structural delta against the last stored snapshot and save the new snapshot')]
-  #[CLI\Option(name: 'strict', description: 'Like --diff but exits non-zero if annotation-relevant changes are detected (does not save snapshot)')]
+  #[CLI\Option(name: 'check', description: 'Like --diff but exits non-zero if annotation-relevant changes are detected (does not save snapshot)')]
   #[CLI\Usage(name: 'drush annotations:scan', description: 'Run scan, print summary table, save snapshot')]
   #[CLI\Usage(name: 'drush annotations:scan --fields', description: 'Include field names in output')]
   #[CLI\Usage(name: 'drush ann:scan --format=json', description: 'Output full scan result as JSON')]
   #[CLI\Usage(name: 'drush ann:scan --diff', description: 'Show delta against last snapshot')]
-  #[CLI\Usage(name: 'drush ann:scan --strict', description: 'Exit 1 if structural changes detected (pre-commit use)')]
-  public function scan(array $options = ['fields' => FALSE, 'format' => 'table', 'diff' => FALSE, 'strict' => FALSE]): int {
-    $strict    = (bool) $options['strict'];
+  #[CLI\Usage(name: 'drush ann:scan --check', description: 'Exit 1 if structural changes detected (pre-commit use)')]
+  public function scan(array $options = ['fields' => FALSE, 'format' => 'table', 'diff' => FALSE, 'check' => FALSE]): int {
+    $strict    = (bool) $options['check'];
     $show_diff = $strict || (bool) $options['diff'];
 
     $result = $this->scanner->scan();
@@ -59,6 +59,7 @@ final class AnnotationsAuditCommands extends DrushCommands {
     }
 
     $this->scanner->saveSnapshot($result);
+    $this->scanner->clearAccumulatedChanges();
 
     if ($options['format'] === 'json') {
       $this->io()->writeln(\json_encode($result, JSON_PRETTY_PRINT));
@@ -86,6 +87,7 @@ final class AnnotationsAuditCommands extends DrushCommands {
       $this->io()->warning('No snapshot stored yet. Run `ann:scan` first to establish a baseline.');
       if (!$strict) {
         $this->scanner->saveSnapshot($result);
+        $this->scanner->clearAccumulatedChanges();
         $this->io()->note('Snapshot saved from this run.');
       }
       return self::EXIT_SUCCESS;
@@ -108,6 +110,7 @@ final class AnnotationsAuditCommands extends DrushCommands {
       $this->io()->success('No structural changes detected.');
       if (!$strict) {
         $this->scanner->saveSnapshot($result);
+        $this->scanner->clearAccumulatedChanges();
       }
       return self::EXIT_SUCCESS;
     }
@@ -119,6 +122,7 @@ final class AnnotationsAuditCommands extends DrushCommands {
 
     $this->io()->note('Structural changes detected. Snapshot updated.');
     $this->scanner->saveSnapshot($result);
+    $this->scanner->clearAccumulatedChanges();
 
     return self::EXIT_SUCCESS;
   }

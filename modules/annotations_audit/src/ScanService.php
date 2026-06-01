@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Drupal\annotations_audit;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\annotations\AnnotationDiscoveryService;
+use Drupal\annotations\Plugin\Target\TargetBase;
+use Drupal\field\FieldConfigInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -31,6 +34,7 @@ class ScanService {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
     protected AnnotationDiscoveryService $discovery,
+    protected EntityFieldManagerInterface $fieldManager,
     protected Connection $database,
     protected StateInterface $state,
   ) {}
@@ -50,6 +54,7 @@ class ScanService {
     }
 
     $result = [];
+    $failures = 0;
 
     foreach ($this->discovery->getPlugins() as $plugin) {
       if (!$plugin->isAvailable()) {
@@ -63,7 +68,8 @@ class ScanService {
           $result[$key] = $bundle_data;
         }
       }
-      catch (\Throwable $e) {
+      catch (\Exception $e) {
+        $failures++;
         $this->logger->error('Annotations Audit: plugin @plugin failed: @message', [
           '@plugin' => get_class($plugin),
           '@message' => $e->getMessage(),
@@ -74,6 +80,12 @@ class ScanService {
     $this->logger->info('Annotations Audit: scan complete. @count targets discovered.', [
       '@count' => count($result),
     ]);
+
+    if ($failures > 0) {
+      $this->logger->warning('Annotations Audit: @failures plugin(s) failed during scan; check previous log entries for details.', [
+        '@failures' => $failures,
+      ]);
+    }
 
     return $result;
   }
@@ -205,29 +217,156 @@ class ScanService {
   }
 
   /**
-   * Stores a pending diff in state for display on the audit scan page.
-   */
-  public function storePendingDiff(array $diff): void {
-    $this->state->set('annotations_audit.pending_diff', [
-      'diff'     => $diff,
-      'detected' => time(),
-    ]);
-  }
-
-  /**
-   * Returns the stored pending diff, or NULL if none exists.
+   * Returns all accumulated structural changes since the last manual scan.
    *
-   * @return array{diff: array, detected: int}|null
+   * Keyed by a stable change key, e.g. "added:node__article" or
+   * "changed:node__page:field_added:field_foo".
+   *
+   * @return array<string, array{target_id: string, change_type: string, field?: string, detected: int}>
    */
-  public function getPendingDiff(): ?array {
-    return $this->state->get('annotations_audit.pending_diff');
+  public function getAccumulatedChanges(): array {
+    return $this->state->get('annotations_audit.accumulated_changes', []);
   }
 
   /**
-   * Clears the stored pending diff.
+   * Clears all accumulated changes (called when a new waypoint is set).
    */
-  public function clearPendingDiff(): void {
-    $this->state->delete('annotations_audit.pending_diff');
+  public function clearAccumulatedChanges(): void {
+    $this->state->delete('annotations_audit.accumulated_changes');
+  }
+
+  /**
+   * Returns all dismissed scope drift items as "target_id:field_name" strings.
+   *
+   * @return list<string>
+   */
+  public function getDismissedDrift(): array {
+    return $this->state->get('annotations_audit.dismissed_drift', []);
+  }
+
+  /**
+   * Suppresses a specific field from the scope drift notice.
+   */
+  public function dismissDriftField(string $target_id, string $field_name): void {
+    $dismissed = $this->getDismissedDrift();
+    $key = "{$target_id}:{$field_name}";
+    if (!in_array($key, $dismissed, TRUE)) {
+      $dismissed[] = $key;
+      $this->state->set('annotations_audit.dismissed_drift', $dismissed);
+    }
+  }
+
+  /**
+   * Clears all scope drift dismissals.
+   */
+  public function clearDismissedDrift(): void {
+    $this->state->delete('annotations_audit.dismissed_drift');
+  }
+
+  /**
+   * Merges a diff into the accumulated changes list.
+   *
+   * Adds entries for changes not previously seen; removes entries for changes
+   * that have reverted to the waypoint baseline. Returns only the newly added
+   * entries so callers can log or notify once per change.
+   *
+   * @param array $diff
+   *   A diff result from computeDiff().
+   *
+   * @return array<string, array{target_id: string, change_type: string, field?: string, detected: int}>
+   *   Only the newly detected changes, keyed by change key.
+   */
+  public function mergeNewChanges(array $diff): array {
+    $current  = $this->flattenDiff($diff);
+    $stored   = $this->getAccumulatedChanges();
+    $new      = array_diff_key($current, $stored);
+    $reverted = array_diff_key($stored, $current);
+
+    $now = time();
+    $new_with_time = [];
+
+    foreach ($new as $key => $info) {
+      $entry = $info + ['detected' => $now];
+      $stored[$key] = $entry;
+      $new_with_time[$key] = $entry;
+    }
+
+    foreach (array_keys($reverted) as $key) {
+      unset($stored[$key]);
+    }
+
+    $this->state->set('annotations_audit.accumulated_changes', $stored);
+
+    return $new_with_time;
+  }
+
+  /**
+   * Flattens a diff result into individual change items keyed by a stable key.
+   *
+   * @param array $diff
+   *   A diff result from computeDiff().
+   *
+   * @return array<string, array{target_id: string, change_type: string, field?: string}>
+   */
+  private function flattenDiff(array $diff): array {
+    $items = [];
+
+    foreach (array_keys($diff['added'] ?? []) as $target_id) {
+      $items["added:{$target_id}"] = ['target_id' => $target_id, 'change_type' => 'added'];
+    }
+
+    foreach (array_keys($diff['removed'] ?? []) as $target_id) {
+      $items["removed:{$target_id}"] = ['target_id' => $target_id, 'change_type' => 'removed'];
+    }
+    
+    foreach ($diff['changed'] ?? [] as $target_id => $changes) {
+      $target_id = (string) $target_id;
+      foreach ($changes['fields_added'] ?? [] as $field) {
+        $items["changed:{$target_id}:field_added:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_added', 'field' => $field];
+      }
+      foreach ($changes['fields_removed'] ?? [] as $field) {
+        $items["changed:{$target_id}:field_removed:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_removed', 'field' => $field];
+      }
+      foreach ($changes['fields_changed'] ?? [] as $field) {
+        $items["changed:{$target_id}:field_changed:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_changed', 'field' => $field];
+      }
+    }
+
+    return $items;
+  }
+
+  /**
+   * Returns fields that exist in Drupal but are not included in any target's scope.
+   *
+   * Reports FieldConfig instances (explicitly added fields) and notable base
+   * fields (title, body, name, description) that the site builder may want to
+   * track. Intentionally excluded fields remain in the result — use the Targets
+   * admin to add them to scope or accept the gap.
+   *
+   * @return array<string, list<string>>
+   *   Keyed by target_id, value is the list of out-of-scope field names.
+   */
+  public function getScopeDrift(): array {
+    $scopes    = $this->loadScopes();
+    $dismissed = $this->getDismissedDrift();
+    $drift     = [];
+
+    foreach ($scopes as $target_id => $target) {
+      $entity_type = $target->getTargetEntityTypeId();
+      $bundle      = $target->getBundle();
+
+      foreach ($this->fieldManager->getFieldDefinitions($entity_type, $bundle) as $field_name => $definition) {
+        $trackable = ($definition instanceof FieldConfigInterface)
+          || in_array($field_name, TargetBase::NOTABLE_BASE_FIELDS, TRUE);
+
+        if ($trackable && !$target->isFieldIncluded($field_name)
+            && !in_array("{$target_id}:{$field_name}", $dismissed, TRUE)) {
+          $drift[$target_id][] = $field_name;
+        }
+      }
+    }
+
+    return array_filter($drift);
   }
 
   /**

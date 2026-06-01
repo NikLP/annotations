@@ -9,7 +9,7 @@ Combines site structure scanning and annotation coverage reporting. Crawls opted
 | Path | Permission | Description |
 | --- | --- | --- |
 | `/admin/config/annotations/audit/coverage` | `view annotation audit coverage` | Coverage report with score, status per target, and gap details |
-| `/admin/config/annotations/audit/scan` | `administer annotations audit scan` | Scan status, snapshot table, manual scan trigger |
+| `/admin/config/annotations/audit/scan` | `administer annotations audit scan` | Last waypoint timestamp, accumulated structural changes, scope drift (out-of-scope fields), snapshot grouped by entity type, "Check for changes" and "Save waypoint" buttons |
 
 ## Drush
 
@@ -24,7 +24,7 @@ ddev drush ann:scan --fields
 ddev drush ann:scan --diff
 
 # Exit non-zero if structural changes detected (pre-commit hook use)
-ddev drush ann:scan --strict
+ddev drush ann:scan --check
 
 # Output as JSON or YAML
 ddev drush ann:scan --format=json

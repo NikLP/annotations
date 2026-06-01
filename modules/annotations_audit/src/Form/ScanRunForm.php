@@ -41,7 +41,7 @@ class ScanRunForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Run scan now'),
+      '#value' => $this->t('Create waypoint'),
       '#button_type' => 'primary',
     ];
 
@@ -54,10 +54,10 @@ class ScanRunForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $result = $this->scanner->scan();
     $this->scanner->saveSnapshot($result);
-    $this->scanner->clearPendingDiff();
+    $this->scanner->clearAccumulatedChanges();
 
     $this->messenger()->addStatus(
-      $this->t('Scan complete. @count targets discovered. Snapshot saved.', ['@count' => count($result)])
+      $this->t('Scan complete. @count target(s) discovered. Waypoint created.', ['@count' => count($result)])
     );
   }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_audit\Hook;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -20,7 +20,6 @@ class AnnotationsAuditHooks {
   use StringTranslationTrait;
 
   public function __construct(
-    private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly ScanService $scanner,
     private readonly LoggerInterface $logger,
   ) {}
@@ -29,7 +28,7 @@ class AnnotationsAuditHooks {
    * Implements hook_help().
    */
   #[Hook('help')]
-  public function help(string $route_name, RouteMatchInterface $route_match): string {
+  public function help(string $route_name, RouteMatchInterface $_route_match): string {
     return match ($route_name) {
       'help.page.annotations_audit' => '<p>' . $this->t(
         'The Annotations Audit module crawls your site structure and reports annotation coverage. Configure targets at <a href=":url">Annotations &rsaquo; Targets</a>.',
@@ -67,16 +66,26 @@ class AnnotationsAuditHooks {
    */
   #[Hook('cron')]
   public function cron(): void {
-    $stored = $this->scanner->loadSnapshot();
-    $result = $this->scanner->scan();
-    $diff = $this->scanner->computeDiff($result, $stored);
-    if ($this->scanner->diffHasChanges($diff)) {
-      $this->scanner->storePendingDiff($diff);
-      $this->logger->warning('Annotations Audit: site structure has changed since the last accepted scan. Visit the <a href=":url">audit scan page</a> to review.', [
-        ':url' => '/admin/config/annotations/audit/scan',
-      ]);
+    $snapshot = $this->scanner->loadSnapshot();
+
+    if (empty($snapshot)) {
+      return;
     }
-    $this->scanner->saveSnapshot($result);
+
+    $result = $this->scanner->scan();
+    $diff   = $this->scanner->computeDiff($result, $snapshot);
+
+    $new_changes = $this->scanner->mergeNewChanges($diff);
+
+    if (!empty($new_changes)) {
+      $this->logger->warning(
+        'Annotations Audit: @count new structural change(s) detected. Review at <a href=":url">the audit scan page</a>.',
+        [
+          '@count' => count($new_changes),
+          ':url'   => '/admin/config/annotations/audit/scan',
+        ]
+      );
+    }
   }
 
   /**
@@ -84,8 +93,9 @@ class AnnotationsAuditHooks {
    */
   #[Hook('form_annotation_type_form_alter')]
   public function formAnnotationTypeFormAlter(array &$form, FormStateInterface $form_state): void {
-    /** @var \Drupal\annotations\Entity\AnnotationTypeInterface $entity */
-    $entity = $form_state->getFormObject()->getEntity();
+    /** @var EntityFormInterface $form_object */
+    $form_object = $form_state->getFormObject();
+    $entity = $form_object->getEntity();
 
     $form['behavior']['affects_coverage'] = [
       '#type' => 'checkbox',

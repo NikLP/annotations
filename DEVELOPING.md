@@ -108,6 +108,8 @@ foreach ($plugins as $entity_type_id => $plugin) {
 
 ### Adding a custom Target plugin
 
+The default `TargetBase::discover()` includes `FieldConfig` fields and the four common editorial base fields (`title`, `body`, `name`, `description`). If you need to surface additional base fields — for example, a contrib entity type that uses a different machine name for its main content field — override `discover()` in a custom plugin.
+
 Tag a service with `annotations.target` and implement `TargetInterface` (extend `TargetBase`):
 
 ```yaml

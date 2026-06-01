@@ -11,6 +11,7 @@ services:
       - '@entity_type.manager'
       - '@logger.channel.annotations_audit'
       - '@annotations.discovery'
+      - '@entity_field.manager'
       - '@database'
       - '@state'
 
@@ -19,7 +20,6 @@ services:
 
   Drupal\annotations_audit\Hook\AnnotationsAuditHooks:
     arguments:
-      - '@entity_type.manager'
       - '@annotations_audit.scan_service'
       - '@logger.channel.annotations_audit'
 

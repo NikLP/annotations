@@ -97,7 +97,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 
 | Module | Purpose |
 | --- | --- |
-| `annotations_audit` | Site structure scanning (cron + on-demand) and annotation coverage reporting; `CoverageService` API; `--diff`/`--strict` Drush flags |
+| `annotations_audit` | Site structure scanning (cron + on-demand), waypoint/accumulated-changes model, scope drift detection, and annotation coverage reporting; `CoverageService` API; `--diff`/`--check` Drush flags |
 | `annotations_ui` | Annotation editing UI; per-target and site-wide forms; revisions; permission model |
 | `annotations_type_ui` | Browser CRUD for annotation types |
 | `annotations_context` | `ContextAssembler` payload API; markdown + HTML renderers; preview/export UI |
