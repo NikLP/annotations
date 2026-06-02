@@ -58,7 +58,6 @@ The prompt type is `annotations_docs__generate`. No variables or tokens — cont
 ## Dependencies
 
 - `annotations:annotations_context` — context assembly and markdown rendering
-- `annotations:annotations_ui` — provides the Annotations section under Admin > Content (menu parent)
 - `ai:ai` — `AiProviderPluginManager` for chat calls and `ai_prompt` config entity
 - `node:node` — document storage
 

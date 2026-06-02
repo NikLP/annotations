@@ -5,7 +5,7 @@ services:
       - '@entity_type.manager'
       - '@annotations_context.assembler'
       - '@annotations_context.renderer'
-      - '@ai.provider_manager'
+      - '@ai.provider'
       - '@keyvalue.expirable'
       - '@datetime.time'
       - '@config.factory'
