@@ -5,6 +5,13 @@ annotations.admin:
   route_name: annotations.admin
   weight: -100
 
+annotations.content:
+  title: 'Annotations'
+  parent: system.admin_content
+  description: 'Browse and manage annotations.'
+  route_name: '<nolink>'
+  weight: 0
+
 annotations.admin.targets:
   title: 'Manage targets'
   parent: annotations.admin
