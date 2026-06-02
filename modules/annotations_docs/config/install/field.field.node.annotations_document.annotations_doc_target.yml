@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.annotations_doc_target
+    - node.type.annotations_document
+id: node.annotations_document.annotations_doc_target
+field_name: annotations_doc_target
+entity_type: node
+bundle: annotations_document
+label: 'Annotation target'
+description: 'The annotation_target machine name this document was generated for.'
+required: true
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: string

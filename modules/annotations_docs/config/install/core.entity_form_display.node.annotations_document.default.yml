@@ -1,0 +1,53 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.annotations_document.annotations_doc_body
+    - field.field.node.annotations_document.annotations_doc_target
+    - node.type.annotations_document
+  module:
+    - path
+    - text
+id: node.annotations_document.default
+targetEntityType: node
+bundle: annotations_document
+mode: default
+content:
+  annotations_doc_body:
+    type: text_textarea
+    weight: 1
+    settings:
+      rows: 20
+      placeholder: ''
+    third_party_settings: {}
+    region: content
+  annotations_doc_target:
+    type: string_textfield
+    weight: 2
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {}
+    region: content
+  path:
+    type: path
+    weight: 10
+    settings: {}
+    third_party_settings: {}
+    region: content
+  created:
+    type: datetime_timestamp
+    weight: 11
+    settings: {}
+    third_party_settings: {}
+    region: content
+  status:
+    type: boolean_checkbox
+    weight: 12
+    settings:
+      display_label: true
+    third_party_settings: {}
+    region: content
+hidden:
+  promote: true
+  sticky: true

@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {}
+id: annotations_docs__generate
+label: 'Annotations document generator'
+variables: []
+tokens: {}

@@ -1,0 +1,110 @@
+.annotations-documents {
+  display: flex;
+  min-height: 60vh;
+}
+
+.annotations-documents__nav {
+  width: 220px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.annotations-documents__main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.annotations-documents__main-inner {
+  border-left: 1px solid currentColor;
+  padding-left: 2rem;
+}
+
+.annotations-documents__nav-list {
+  margin: 0;
+  padding: 0;
+}
+
+.annotations-documents__nav-group-heading {
+  list-style: none;
+  margin-top: 1.25em;
+  font-weight: 600;
+  padding: 0 0 0.5em 0;
+}
+
+.annotations-documents__nav-list > li.annotations-documents__nav-group-heading:first-child {
+  margin-top: 0;
+}
+
+.annotations-documents__nav-item {
+  list-style: none;
+  margin: 0.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.annotations-documents__nav-item--no-doc {
+  opacity: 0.55;
+}
+
+.annotations-documents__nav-item--no-doc .annotations-documents__generate-link {
+  opacity: 1;
+}
+
+.annotations-documents__nav-link,
+.annotations-documents__nav-label {
+  flex: 1;
+}
+
+.annotations-documents__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.annotations-documents__target-heading {
+  margin: 0;
+}
+
+.annotations-documents__status-chip {
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 600;
+  padding: 0.15em 0.5em;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.annotations-documents__status-chip--published {
+  background: #d4edda;
+  color: #155724;
+}
+
+.annotations-documents__status-chip--draft {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.annotations-documents__status-chip--stale {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.annotations-documents__status-chip--none {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.annotations-documents__generated-time {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.annotations-documents__empty {
+  color: #666;
+  font-style: italic;
+}

@@ -1,0 +1,6 @@
+annotations_docs.page:
+  title: 'Documents'
+  parent: annotations_ui.admin.annotate
+  description: 'AI-generated documentation for annotation targets.'
+  route_name: annotations_docs.page
+  weight: 14

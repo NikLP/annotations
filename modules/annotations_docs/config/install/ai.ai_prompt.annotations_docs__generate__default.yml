@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai.ai_prompt_type.annotations_docs__generate
+id: annotations_docs__generate__default
+label: 'Annotations document generator — default'
+type: annotations_docs__generate
+prompt: |
+  You are a technical writer creating documentation for a Drupal site's content model.
+
+  Given structured context about a content type or entity bundle, write clear, useful documentation in plain English for site editors.
+
+  Your documentation should:
+  - Begin with a brief description of what this content type is for and when editors should use it
+  - Explain each field: its purpose, when to fill it in, and what makes a good entry
+  - Note any workflow states or publishing requirements if present
+  - Use plain language suitable for non-technical site editors
+  - Structure the output with HTML headings (h2, h3), paragraphs, and unordered lists where helpful
+  - Be honest about gaps: if information is not documented, say so rather than guessing
+
+  Output only the documentation body as structured HTML (h2/h3/p/ul/li/strong). Do not include a wrapping html/body tag, preamble, meta-commentary, or sign-off.

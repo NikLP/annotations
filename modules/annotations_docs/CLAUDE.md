@@ -1,0 +1,73 @@
+# CLAUDE.md — annotations_docs
+
+Submodule of Annotations. See the root [CLAUDE.md](../../CLAUDE.md) for project overview, conventions, coding standards, and data model.
+
+Generates AI-authored documentation for annotation targets and stores it as `annotations_document` nodes in a two-panel explorer UI at `/annotations/documents`.
+
+## What it does
+
+1. Assembles context for an `annotation_target` via `annotations_context.assembler` (all annotation types, with field metadata)
+2. Sends it to the configured AI chat provider (via `ai.provider_manager`) with a configurable system prompt (stored as an `ai_prompt` config entity)
+3. Stores the response as an `annotations_document` node (draft by default)
+4. Displays all targets and their documents in a two-panel browser
+
+## Routes
+
+| Route | Path | Permission |
+| --- | --- | --- |
+| `annotations_docs.page` | `/annotations/documents` | `access annotation documents` |
+| `annotations_docs.target` | `/annotations/documents/{annotation_target}` | `access annotation documents` (AJAX panel) |
+| `annotations_docs.generate` | `/annotations/documents/generate/{annotation_target}` | `generate annotation documents` |
+
+## Permissions
+
+| Permission | Purpose |
+| --- | --- |
+| `access annotation documents` | View the browser UI and `annotations_document` nodes directly |
+| `generate annotation documents` | Trigger AI generation/regeneration |
+| `administer annotation documents` | Full administration (implies the above two) |
+
+Node view access for `annotations_document` nodes is granted via `hook_node_access` when the account has `access annotation documents`, regardless of publish status.
+
+## Key classes
+
+| Class | Purpose |
+| --- | --- |
+| `DocumentGeneratorService` | Assembles context, calls AI, saves node, writes KV timestamp |
+| `DocumentsController` | Two-panel page and AJAX target panel |
+| `GenerateDocumentForm` | Confirmation form for generate/regenerate; plain POST |
+
+## Content type: `annotations_document`
+
+| Field | Machine name | Type | Notes |
+| --- | --- | --- | --- |
+| Title | `title` | node base field | Auto-set to `{label} — Documentation` |
+| Body | `annotations_doc_body` | `text_long` | AI-generated HTML; stored as `full_html` |
+| Target | `annotations_doc_target` | `string` | `annotation_target` machine name; one doc per target enforced at service level |
+
+## Generation timestamp
+
+Last-generated timestamp stored in `annotation_docs.generated.{target_id}` via the expirable key-value store (expires after 2 years). Displayed in the main panel as "Last generated: N days ago". No staleness threshold — regeneration is always free.
+
+## Generation prompt
+
+The system prompt is stored as an `ai_prompt` config entity: `ai.ai_prompt.annotations_docs__generate__default`. Site admins can edit it at `/admin/config/ai/prompts`. The service falls back to a hardcoded default if the config entity is absent.
+
+The prompt type is `annotations_docs__generate`. No variables or tokens — context is sent as the user message, not interpolated into the system prompt.
+
+## Dependencies
+
+- `annotations:annotations_context` — context assembly and markdown rendering
+- `annotations:annotations_ui` — provides the Annotations section under Admin > Content (menu parent)
+- `ai:ai` — `AiProviderPluginManager` for chat calls and `ai_prompt` config entity
+- `node:node` — document storage
+
+## Deferred
+
+- Personalised documents per user/role: generate a document scoped to what a specific role can see and do. Requires passing `role` or `account` to `ContextAssembler::assemble()`.
+- Multiple document types per target (e.g. editor guide vs developer reference) with separate prompts.
+- Site overview document covering all enabled targets.
+- Content moderation workflow as an optional layer over draft/published.
+- Staleness detection wired to `annotations_audit` structural change fingerprints.
+- Drush command / ECA automation for bulk generation.
+- Settings form to select a non-default `ai_prompt` entity.

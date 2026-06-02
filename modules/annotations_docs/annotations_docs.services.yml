@@ -1,0 +1,11 @@
+services:
+  annotations_docs.generator:
+    class: Drupal\annotations_docs\DocumentGeneratorService
+    arguments:
+      - '@entity_type.manager'
+      - '@annotations_context.assembler'
+      - '@annotations_context.renderer'
+      - '@ai.provider_manager'
+      - '@keyvalue.expirable'
+      - '@datetime.time'
+      - '@config.factory'

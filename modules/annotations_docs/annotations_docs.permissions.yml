@@ -1,0 +1,13 @@
+access annotation documents:
+  title: 'Access annotation documents'
+  description: 'View the annotation documents browser and individual annotation document nodes.'
+
+generate annotation documents:
+  title: 'Generate annotation documents'
+  description: 'Enable generation of annotations documents via AI.'
+  restrict access: true
+
+administer annotation documents:
+  title: 'Administer annotation documents'
+  description: 'Full administration of annotation documents including generation, editing, and deletion.'
+  restrict access: true

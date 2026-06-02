@@ -1,0 +1,10 @@
+annotations_docs.page:
+  js:
+    js/annotations-documents.js: {}
+  css:
+    component:
+      css/annotations-documents.css: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupal.ajax

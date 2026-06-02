@@ -1,0 +1,31 @@
+annotations_docs.page:
+  path: '/annotations/documents'
+  defaults:
+    _controller: '\Drupal\annotations_docs\Controller\DocumentsController::page'
+    _title: 'Annotation Documents'
+  requirements:
+    _permission: 'access annotation documents'
+
+annotations_docs.target:
+  path: '/annotations/documents/{annotation_target}'
+  defaults:
+    _controller: '\Drupal\annotations_docs\Controller\DocumentsController::targetPanel'
+    _title: 'Annotation Documents'
+  requirements:
+    _permission: 'access annotation documents'
+  options:
+    parameters:
+      annotation_target:
+        type: entity:annotation_target
+
+annotations_docs.generate:
+  path: '/annotations/documents/generate/{annotation_target}'
+  defaults:
+    _form: '\Drupal\annotations_docs\Form\GenerateDocumentForm'
+    _title: 'Generate document'
+  requirements:
+    _permission: 'generate annotation documents'
+  options:
+    parameters:
+      annotation_target:
+        type: entity:annotation_target

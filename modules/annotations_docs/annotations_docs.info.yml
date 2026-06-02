@@ -1,0 +1,12 @@
+name: 'Annotations Documents'
+type: module
+description: 'AI-generated documentation for annotation targets.'
+package: Annotations
+core_version_requirement: ^11
+
+dependencies:
+  - annotations:annotations
+  - annotations:annotations_context
+  - annotations:annotations_ui
+  - ai:ai
+  - node:node

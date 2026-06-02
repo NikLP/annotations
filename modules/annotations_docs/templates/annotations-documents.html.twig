@@ -1,0 +1,16 @@
+{#
+  annotations-documents.html.twig
+  Variables:
+    nav: left-panel navigation render array
+    main: main panel content render array
+#}
+<div class="annotations-documents">
+  <nav class="annotations-documents__nav" aria-label="{{ 'Annotation targets'|t }}">
+    <div id="annotations-documents-nav">
+      {{ nav }}
+    </div>
+  </nav>
+  <div id="annotations-documents-main" class="annotations-documents__main">
+    {{ main }}
+  </div>
+</div>
