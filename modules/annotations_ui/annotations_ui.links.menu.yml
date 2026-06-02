@@ -1,18 +1,12 @@
-annotations_ui.admin.annotate:
-  title: 'Annotations'
-  parent: system.admin_content
-  description: 'Manage annotations.'
-  route_name: annotations_ui.annotate.collection
-  weight: 0
-
 annotations_ui.admin.annotate.overview:
   title: 'Overview'
-  parent: annotations_ui.admin.annotate
+  parent: annotations.content
+  description: 'Manage annotations.'
   route_name: annotations_ui.annotate.collection
   weight: 0
 
 annotations_ui.admin.annotate.list:
   title: 'List'
-  parent: annotations_ui.admin.annotate
+  parent: annotations.content
   route_name: view.annotations.page_1
   weight: 10

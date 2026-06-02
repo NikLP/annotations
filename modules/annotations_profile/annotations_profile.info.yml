@@ -1,6 +1,6 @@
 name: Annotations Profile
 type: module
-description: 'Injects annotation overlays into Profile fields embedded in user account and registration forms.'
+description: 'Injects annotation overlays into user account and registration forms for Profile fields.'
 core_version_requirement: ^11
 package: Annotations
 dependencies:

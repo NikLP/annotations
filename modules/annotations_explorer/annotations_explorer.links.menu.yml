@@ -1,6 +1,6 @@
 annotations_explorer.page:
   title: 'Explorer'
-  parent: annotations.admin
+  parent: annotations.content
   description: 'Browse annotations in an explorer-style viewer.'
   route_name: annotations_explorer.page
   weight: 12

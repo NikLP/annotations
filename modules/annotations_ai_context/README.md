@@ -8,6 +8,7 @@ Bridges the [Annotations](../../README.md) module suite into [AI Context](https:
 - `ai_agents:ai_agents`
 - `ai_context:ai_context`
 - `ai:ai_assistant_api`
+- `ai:ai_chatbot`
 
 ## Installation
 

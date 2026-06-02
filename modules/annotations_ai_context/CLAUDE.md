@@ -20,6 +20,7 @@ When an agent fires, annotations documentation is injected into the system promp
 - `ai_agents:ai_agents` — `BuildSystemPromptEvent`
 - `ai_context:ai_context` — gates installation on the `ai_context` module being available
 - `ai:ai_assistant_api` — provides the `ai_assistant` config entity type shipped in `config/install`
+- `ai:ai_chatbot` — provides the AI Chatbot block used to expose the bundled assistant
 
 ## Bundled config
 
