@@ -882,14 +882,7 @@ display:
       display_extenders: {  }
       path: admin/content/annotations/list
       menu:
-        type: normal
-        title: 'Annotations list'
-        description: ''
-        weight: 0
-        expanded: false
-        menu_name: admin
-        parent: system.admin_content
-        context: '0'
+        type: none
       tab_options:
         type: none
     cache_metadata:

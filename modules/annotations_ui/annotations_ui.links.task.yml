@@ -1,3 +1,15 @@
+annotations_ui.annotate.collection.tab:
+  route_name: annotations_ui.annotate.collection
+  title: 'Overview'
+  base_route: annotations_ui.annotate.collection
+  weight: 0
+
+annotations_ui.annotate.list.tab:
+  route_name: view.annotations.page_1
+  title: 'List'
+  base_route: annotations_ui.annotate.collection
+  weight: 10
+
 # Annotations tab on the per-target collection page.
 annotations_ui.target.collection.tab:
   route_name: annotations_ui.target.collection
