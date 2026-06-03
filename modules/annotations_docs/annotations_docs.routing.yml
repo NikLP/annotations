@@ -2,7 +2,7 @@ annotations_docs.page:
   path: '/annotations/documents'
   defaults:
     _controller: '\Drupal\annotations_docs\Controller\DocumentsController::page'
-    _title: 'Annotation Documents'
+    _title: 'Annotations Documents'
   requirements:
     _permission: 'access annotation documents'
 
@@ -10,7 +10,7 @@ annotations_docs.target:
   path: '/annotations/documents/{annotation_target}'
   defaults:
     _controller: '\Drupal\annotations_docs\Controller\DocumentsController::targetPanel'
-    _title: 'Annotation Documents'
+    _title: 'Annotations Documents'
   requirements:
     _permission: 'access annotation documents'
   options:

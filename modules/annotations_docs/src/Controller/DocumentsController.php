@@ -59,11 +59,6 @@ class DocumentsController extends ControllerBase {
     $active_id = (string) $request->query->get('target', $first_with_doc?->id() ?? '');
     $active_target = isset($targets[$active_id]) ? $targets[$active_id] : $first_with_doc;
 
-    // Only allow a target with a document to be the active target.
-    if ($active_target && $doc_map[$active_target->id()] === NULL) {
-      $active_target = $first_with_doc;
-    }
-
     return [
       '#attached' => ['library' => ['annotations_docs/annotations_docs.page']],
       '#cache' => [
@@ -108,8 +103,9 @@ class DocumentsController extends ControllerBase {
   /**
    * Builds the left-panel navigation.
    *
-   * Targets with a document are clickable AJAX links. Targets without a
-   * document are non-clickable but show a "Generate" link.
+   * All targets are clickable AJAX links. Status chips (Published/Draft) are
+   * shown only for targets that have a document; undocumented targets show
+   * just their name. The Generate action appears in the main panel instead.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
    * @param array<string, \Drupal\node\NodeInterface|null> $doc_map
@@ -154,9 +150,6 @@ class DocumentsController extends ControllerBase {
         $is_active = $active && $target->id() === $active->id();
         $has_doc = $doc !== NULL;
 
-        $status_label = $this->getStatusLabel($doc);
-        $status_class = $this->getStatusClass($doc);
-
         $item_classes = ['annotations-documents__nav-item'];
         if (!$has_doc) {
           $item_classes[] = 'annotations-documents__nav-item--no-doc';
@@ -165,49 +158,31 @@ class DocumentsController extends ControllerBase {
           $item_classes[] = 'is-active';
         }
 
-        $label_inner = Markup::create(
-          Html::escape((string) $target->label())
-          . ' <span class="annotations-documents__status-chip annotations-documents__status-chip--' . Html::escape($status_class) . '">'
-          . Html::escape($status_label)
-          . '</span>',
-        );
-
         if ($has_doc) {
-          // Clickable AJAX link.
-          $label_element = [
+          $status_label = $this->getStatusLabel($doc);
+          $status_class = $this->getStatusClass($doc);
+          $label_inner = Markup::create(
+            Html::escape((string) $target->label())
+            . ' <span class="annotations-documents__status-chip annotations-documents__status-chip--' . Html::escape($status_class) . '">'
+            . Html::escape($status_label)
+            . '</span>',
+          );
+        }
+        else {
+          $label_inner = Html::escape((string) $target->label());
+        }
+
+        $nav_list[] = [
+          '#type' => 'html_tag',
+          '#tag' => 'li',
+          '#attributes' => ['class' => $item_classes],
+          'label' => [
             '#type' => 'link',
             '#title' => $label_inner,
             '#url' => Url::fromRoute('annotations_docs.target', ['annotation_target' => $target->id()]),
             '#attributes' => ['class' => ['use-ajax', 'annotations-documents__nav-link']],
-          ];
-        }
-        else {
-          // Non-clickable span; Generate link alongside.
-          $label_element = [
-            '#type' => 'html_tag',
-            '#tag' => 'span',
-            '#value' => $label_inner,
-            '#attributes' => ['class' => ['annotations-documents__nav-label']],
-          ];
-        }
-
-        $item = [
-          '#type' => 'html_tag',
-          '#tag' => 'li',
-          '#attributes' => ['class' => $item_classes],
-          'label' => $label_element,
+          ],
         ];
-
-        if (!$has_doc && $this->currentUser()->hasPermission('generate annotation documents')) {
-          $item['generate'] = [
-            '#type' => 'link',
-            '#title' => $this->t('Generate'),
-            '#url' => Url::fromRoute('annotations_docs.generate', ['annotation_target' => $target->id()]),
-            '#attributes' => ['class' => ['annotations-documents__generate-link', 'button', 'button--extrasmall']],
-          ];
-        }
-
-        $nav_list[] = $item;
       }
     }
 
@@ -232,12 +207,31 @@ class DocumentsController extends ControllerBase {
 
     $doc = $doc_map[$target->id()] ?? NULL;
     if ($doc === NULL) {
-      return [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => $this->t('No document for this target.'),
-        '#attributes' => ['class' => ['annotations-documents__empty']],
+      $build = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['annotations-documents__main-inner']],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => Html::escape((string) $target->label()),
+          '#attributes' => ['class' => ['annotations-documents__target-heading']],
+        ],
+        'empty' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('No document for this target yet.'),
+          '#attributes' => ['class' => ['annotations-documents__empty']],
+        ],
       ];
+      if ($this->currentUser()->hasPermission('generate annotation documents')) {
+        $build['generate'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Generate'),
+          '#url' => Url::fromRoute('annotations_docs.generate', ['annotation_target' => $target->id()]),
+          '#attributes' => ['class' => ['button', 'button--small']],
+        ];
+      }
+      return $build;
     }
 
     $build = [

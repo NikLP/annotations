@@ -71,13 +71,18 @@ class DocumentGeneratorService {
       new ChatMessage('user', $this->userMessage((string) $target->label(), $context_markdown)),
     ]);
 
-    $generated_text = $set['provider_id']->chat($input, $set['model_id'])->getNormalized()->getText();
+    $markdown = html_entity_decode(
+      $set['provider_id']->chat($input, $set['model_id'])->getNormalized()->getText(),
+      ENT_QUOTES | ENT_HTML5,
+      'UTF-8',
+    );
+    $generated_text = (new \League\CommonMark\CommonMarkConverter())->convert($markdown)->getContent();
 
     $node = $this->loadDocumentNode($target_id);
     if ($node === NULL) {
       $node = $this->entityTypeManager->getStorage('node')->create([
         'type' => 'annotations_document',
-        'title' => $target->label() . ' — Documentation',
+        'title' => $target->label(),
         'status' => NodeInterface::NOT_PUBLISHED,
         'annotations_doc_target' => $target_id,
       ]);
@@ -166,10 +171,10 @@ Your documentation should:
 - Explain each field: its purpose, when to fill it in, and what makes a good entry
 - Note any workflow states or publishing requirements if present
 - Use plain language suitable for non-technical site editors
-- Structure the output with HTML headings (h2, h3), paragraphs, and unordered lists where helpful
+- Structure the output with markdown headings (##, ###), paragraphs, and unordered lists where helpful
 - Be honest about gaps: if information is not documented, say so rather than guessing
 
-Output only the documentation body as structured HTML (h2/h3/p/ul/li/strong). Do not include a wrapping html/body tag, preamble, meta-commentary, or sign-off.
+Output only the documentation body as markdown. Do not open with a heading for the content type name — the page title already provides that. Do not include a wrapping code fence, preamble, meta-commentary, or sign-off.
 PROMPT;
   }
 

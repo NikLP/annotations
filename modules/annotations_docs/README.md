@@ -22,7 +22,7 @@ The module installs an `annotations_document` content type with two fields: `ann
 1. Navigate to **Content > Annotations > Documents** (`/annotations/documents`)
 2. The left panel lists all annotation targets grouped by entity type
 3. Targets with existing documents are clickable; targets without show a **Generate** link
-4. Click **Generate** to open the confirmation form — generation calls the configured AI provider and saves a draft document
+4. Click **Generate** to open the confirmation form — click the button to trigger generation; a progress indicator appears while the AI provider is called, then the page redirects to the document on completion
 5. Review the draft in the main panel; click **Edit** to refine, then set the node status to **Published**
 6. Click **Regenerate** at any time to produce a new draft from the current annotations
 

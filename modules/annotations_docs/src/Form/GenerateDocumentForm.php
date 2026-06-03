@@ -6,8 +6,12 @@ namespace Drupal\annotations_docs\Form;
 
 use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\annotations_docs\DocumentGeneratorService;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\MessageCommand;
+use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -58,12 +62,20 @@ class GenerateDocumentForm extends FormBase {
       '#type' => 'submit',
       '#value' => $existing ? $this->t('Regenerate') : $this->t('Generate'),
       '#button_type' => 'primary',
+      '#ajax' => [
+        'callback' => '::ajaxGenerate',
+        'wrapper' => 'annotations-docs-generate-wrapper',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Generating documentation, this may take a moment…'),
+        ],
+      ],
     ];
-    
+
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('annotations_docs.page', [], ['query' => ['target' => $annotation_target->id()]]),
+      '#url' => Url::fromRoute('annotations_docs.page', [], ['query' => ['target' => $annotation_target->id()]]),
       '#attributes' => ['class' => ['button']],
     ];
 
@@ -71,9 +83,38 @@ class GenerateDocumentForm extends FormBase {
   }
 
   /**
+   * AJAX callback: runs generation and redirects to the documents page.
+   */
+  public function ajaxGenerate(array &$form, FormStateInterface $form_state): AjaxResponse {
+    $target_id = (string) $form_state->get('target_id');
+    $response = new AjaxResponse();
+
+    try {
+      $this->generator->generate($target_id);
+      $response->addCommand(new RedirectCommand(
+        Url::fromRoute('annotations_docs.page', [], ['query' => ['target' => $target_id]])->toString(),
+      ));
+    }
+    catch (\Throwable $e) {
+      $this->getLogger('annotations_docs')->error('Document generation failed for @target: @message', [
+        '@target' => $target_id,
+        '@message' => $e->getMessage(),
+      ]);
+      $response->addCommand(new MessageCommand(
+        (string) $this->t('Generation failed: @message', ['@message' => $e->getMessage()]),
+        NULL,
+        ['type' => 'error'],
+      ));
+    }
+
+    return $response;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    // Non-JS fallback: run generation synchronously and redirect.
     $target_id = (string) $form_state->get('target_id');
 
     try {
