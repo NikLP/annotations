@@ -369,7 +369,7 @@ class DocumentsController extends ControllerBase {
       $nodes = $this->entityTypeManager()->getStorage('node')->loadMultiple($nids);
       foreach ($nodes as $node) {
         $tid = (string) $node->get('annotations_doc_target')->value;
-        if (isset($map[$tid])) {
+        if (array_key_exists($tid, $map)) {
           $map[$tid] = $node;
         }
       }
