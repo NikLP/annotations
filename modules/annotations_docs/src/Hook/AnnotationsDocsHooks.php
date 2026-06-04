@@ -38,7 +38,8 @@ class AnnotationsDocsHooks {
   #[Hook('node_access')]
   public function nodeAccess(NodeInterface $node, string $op, AccountInterface $account): AccessResult {
     if ($node->bundle() === 'annotations_document' && $op === 'view') {
-      return AccessResult::allowedIfHasPermission($account, 'access annotation documents');
+      return AccessResult::allowedIfHasPermission($account, 'access annotation documents')
+        ->orIf(AccessResult::allowedIfHasPermission($account, 'administer annotation documents'));
     }
     return AccessResult::neutral();
   }
@@ -51,7 +52,7 @@ class AnnotationsDocsHooks {
    * /node/add/annotations_document directly.
    */
   #[Hook('entity_create_access')]
-  public function entityCreateAccess(AccountInterface $account, array $context, ?string $entity_bundle): AccessResult {
+  public function entityCreateAccess(AccountInterface $_account, array $context, ?string $entity_bundle): AccessResult {
     if ($context['entity_type_id'] === 'node' && $entity_bundle === 'annotations_document') {
       return AccessResult::forbidden();
     }

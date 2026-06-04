@@ -4,7 +4,7 @@ annotations_docs.page:
     _controller: '\Drupal\annotations_docs\Controller\DocumentsController::page'
     _title: 'Annotations Documents'
   requirements:
-    _permission: 'access annotation documents'
+    _custom_access: '\Drupal\annotations_docs\Controller\DocumentsController::accessPage'
 
 annotations_docs.target:
   path: '/annotations/documents/{annotation_target}'
@@ -12,7 +12,7 @@ annotations_docs.target:
     _controller: '\Drupal\annotations_docs\Controller\DocumentsController::targetPanel'
     _title: 'Annotations Documents'
   requirements:
-    _permission: 'access annotation documents'
+    _custom_access: '\Drupal\annotations_docs\Controller\DocumentsController::accessPage'
   options:
     parameters:
       annotation_target:

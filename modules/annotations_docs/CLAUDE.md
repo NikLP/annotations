@@ -15,8 +15,8 @@ Generates AI-authored documentation for annotation targets and stores it as `ann
 
 | Route | Path | Permission |
 | --- | --- | --- |
-| `annotations_docs.page` | `/annotations/documents` | `access annotation documents` |
-| `annotations_docs.target` | `/annotations/documents/{annotation_target}` | `access annotation documents` (AJAX panel) |
+| `annotations_docs.page` | `/annotations/documents` | `access annotation documents` or `administer annotation documents` (custom access) |
+| `annotations_docs.target` | `/annotations/documents/{annotation_target}` | `access annotation documents` or `administer annotation documents` (custom access, AJAX panel) |
 | `annotations_docs.generate` | `/annotations/documents/generate/{annotation_target}` | `generate annotation documents` |
 
 ## Permissions
@@ -25,9 +25,9 @@ Generates AI-authored documentation for annotation targets and stores it as `ann
 | --- | --- |
 | `access annotation documents` | View the browser UI and `annotations_document` nodes directly |
 | `generate annotation documents` | Trigger AI generation/regeneration |
-| `administer annotation documents` | Full administration (implies the above two) |
+| `administer annotation documents` | Full administration; implies `access annotation documents` (view) but **not** `generate annotation documents` — generation must always be explicitly granted because it potentially triggers paid AI API calls |
 
-Node view access for `annotations_document` nodes is granted via `hook_node_access` when the account has `access annotation documents`, regardless of publish status.
+Node view access for `annotations_document` nodes is granted via `hook_node_access` when the account has `access annotation documents` or `administer annotation documents`, regardless of publish status.
 
 ## Key classes
 

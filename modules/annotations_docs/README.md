@@ -6,7 +6,6 @@ Generates AI-authored documentation for your annotation targets and stores it in
 
 - [Annotations](../../README.md) (root module)
 - [Annotations Context](../annotations_context/README.md)
-- [Annotations UI](../annotations_ui/README.md)
 - [Drupal AI](https://www.drupal.org/project/ai) with a configured default chat provider
 
 ## Installation
@@ -29,10 +28,10 @@ The module installs an `annotations_document` content type with two fields: `ann
 ## Permissions
 
 | Permission | Purpose |
-|---|---|
+| --- | --- |
 | `access annotation documents` | View the browser and document nodes directly |
 | `generate annotation documents` | Trigger AI generation and regeneration |
-| `administer annotation documents` | Full administration (implies the above two) |
+| `administer annotation documents` | Full administration; implies `access annotation documents` but not `generate annotation documents` — generation must always be explicitly granted because it triggers potentially paid AI API calls |
 
 ## Customising the system prompt
 

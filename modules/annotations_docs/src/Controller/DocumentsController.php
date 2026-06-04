@@ -9,9 +9,12 @@ use Drupal\annotations\Entity\AnnotationTargetInterface;
 use Drupal\annotations_docs\DocumentGeneratorService;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
@@ -39,6 +42,11 @@ class DocumentsController extends ControllerBase {
       $container->get('annotations.discovery'),
       $container->get('datetime.time'),
     );
+  }
+
+  public function accessPage(AccountInterface $account): AccessResultInterface {
+    return AccessResult::allowedIfHasPermission($account, 'access annotation documents')
+      ->orIf(AccessResult::allowedIfHasPermission($account, 'administer annotation documents'));
   }
 
   /**

@@ -17,7 +17,8 @@ annotations/                ← root module (always required)
 │   ├── annotations_webform/
 │   ├── annotations_profile/
 │   ├── annotations_explorer/
-│   └── annotations_export/
+│   ├── annotations_export/
+│   └── annotations_docs/
 └── recipes/
     ├── annotations_demo_types/     ← shared base: editorial/technical/rules annotation types; dependency of other demo recipes
     ├── annotations_demo_lgd/       ← bolt-on recipe targeting LocalGov Drupal content types
@@ -108,6 +109,7 @@ Fields: `id`, `uuid`, `target_id` (string, `annotation_target` machine name), `f
 | `annotations_profile` | Injects annotation overlay triggers into Profile fields embedded in user account edit and registration forms; requires the contributed `profile` module |
 | `annotations_explorer` | Read-only two-panel browser at `/annotations/explorer`; consume-permission filtered; AJAX target switching |
 | `annotations_export` | Drush-only export to markdown or Obsidian vault; no web UI; delegates to `annotations_context` for assembly |
+| `annotations_docs` | AI-generated documentation for annotation targets; two-panel browser at `/annotations/documents`; stores output as `annotations_document` nodes; requires `ai:ai` with a configured default chat provider |
 
 ---
 
