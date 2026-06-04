@@ -6,5 +6,21 @@
     "maintainer": "NikLP",
     "support": {
         "source": "https://github.com/NikLP/annotations"
+    },
+    "require-dev": {
+        "drupal/webform": "^6.0",
+        "drupal/diff": "^1.0",
+        "drupal/profile": "^1.0",
+        "drupal/ai": "^1.0",
+        "drupal/ai_agents": "^1.0",
+        "drupal/ai_context": "^1.0"
+    },
+    "suggest": {
+        "drupal/webform": "Required by the annotations_webform submodule.",
+        "drupal/diff": "Used by the annotations_ui submodule.",
+        "drupal/profile": "Required by the annotations_profile submodule.",
+        "drupal/ai": "Required by annotations AI-related submodules.",
+        "drupal/ai_agents": "Required by the annotations_ai_context submodule.",
+        "drupal/ai_context": "Required by the annotations_ai_context and annotations_docs submodules."
     }
 }
