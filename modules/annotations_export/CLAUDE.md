@@ -45,7 +45,7 @@ Would hook `annotation` postsave/postdelete to re-export just the affected targe
 
 ## Design notes
 
-`annotations_context` ships its own `ann:ctx` command for quick stdout inspection. `annotations_export` is the dedicated export layer:
+`annotations_export` is the dedicated export layer (`ann:ctx` was retired; use `ann:ex --format=markdown` for stdout):
 
 - `--output` writes directly to file or directory rather than relying on shell redirection
 - Obsidian vault format requires `ObsidianVaultWriter` — justified as a separate module so sites that never use Obsidian don't carry the dependency
