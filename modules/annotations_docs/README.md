@@ -15,7 +15,7 @@ Generates AI-authored documentation for your annotation targets and stores it in
 ddev drush en annotations_docs
 ```
 
-The module installs an `annotations_document` content type with two fields: `annotations_doc_body` and `annotations_doc_target`.
+The module installs an `annotations_document` content type with two fields: `annotations_doc_body` and `annotations_doc_target`. This content type is intentionally excluded from the annotation targets list.
 
 ## Usage
 

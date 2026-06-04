@@ -47,6 +47,8 @@ Node view access for `annotations_document` nodes is granted via `hook_node_acce
 
 Both `uid` and `annotations_doc_target` are hidden from the node edit form — they are set programmatically and must not be user-editable.
 
+`annotations_document` is intentionally excluded from the annotation targets list. `NodeTarget::getBundles()` in the root module filters out any node type whose machine name starts with `annotations_` — annotating internally generated content would be circular, and the `annotations_` prefix is the established convention for module-owned node types.
+
 ## Generation timestamp
 
 Last-generated timestamp stored in `annotation_docs.generated.{target_id}` via the expirable key-value store (expires after 2 years). Displayed in the main panel as "Last generated: N days ago". No staleness threshold — regeneration is always free.

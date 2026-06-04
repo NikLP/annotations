@@ -51,7 +51,7 @@ class AnnotationsDocsHooks {
    * /node/add/annotations_document directly.
    */
   #[Hook('entity_create_access')]
-  public function entityCreateAccess(AccountInterface $account, array $context, string $entity_bundle): AccessResult {
+  public function entityCreateAccess(AccountInterface $account, array $context, ?string $entity_bundle): AccessResult {
     if ($context['entity_type_id'] === 'node' && $entity_bundle === 'annotations_document') {
       return AccessResult::forbidden();
     }

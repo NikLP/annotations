@@ -46,9 +46,11 @@ class AnnotationDiscoveryService {
       $plugins[$plugin->getEntityTypeId()] = $plugin;
     }
 
-    // Auto-discover any fieldable entity types not covered by a specific plugin.
-    // This ensures custom entity types from ECK, hand-rolled modules, etc.
-    // appear in the scope UI automatically without requiring a dedicated plugin.
+    /**
+     * Auto-discover fieldable entity types not covered by a specific plugin.
+     * This ensures custom entity types from ECK, hand-rolled modules, etc.
+     * appear in the scope UI without requiring a dedicated plugin.
+     */
     /** @var array<string, \Drupal\Core\Entity\EntityTypeInterface> $definitions */
     $definitions = $this->entityTypeManager->getDefinitions();
 
@@ -57,11 +59,12 @@ class AnnotationDiscoveryService {
         continue;
       }
 
-      // Only auto-discover fieldable entity types. GenericTarget is
-      // field-oriented and produces a broken UX for non-fieldable entities.
-      // Non-fieldable entity types that Annotations supports (roles, views,
-      // menus, workflows) have dedicated plugins and are already collected in
-      // the loop above — they never reach this fallback.
+      /**
+       * Only auto-discover fieldable entity types. GenericTarget is
+       * field-oriented and produces a broken UX for non-fieldable entities.
+       * Non-fieldable types that Annotations supports (roles, views, menus,
+       * workflows) have dedicated plugins and are collected in the loop above.
+       */
       if (!$definition->entityClassImplements(FieldableEntityInterface::class)) {
         continue;
       }
