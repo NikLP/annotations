@@ -1,0 +1,247 @@
+diff --git a/ai_context.services.yml b/ai_context.services.yml
+index e0253b7..aca9a97 100644
+--- a/ai_context.services.yml
++++ b/ai_context.services.yml
+@@ -7,6 +7,13 @@ services:
+       - '@module_handler'
+       - '@cache_tags.invalidator'
+ 
++  plugin.manager.ai_context_provider:
++    class: Drupal\ai_context\AiContextProviderManager
++    arguments:
++      - '@container.namespaces'
++      - '@cache.discovery'
++      - '@module_handler'
++
+   ai_context.scope_index:
+     class: Drupal\ai_context\Service\AiContextScopeIndexService
+     arguments:
+@@ -107,6 +114,7 @@ services:
+       - '@current_route_match'
+       - '@request_stack'
+       - '@config.factory'
++      - '@plugin.manager.ai_context_provider'
+     tags:
+       - { name: event_subscriber }
+ 
+diff --git a/src/EventSubscriber/AiContextSystemPromptSubscriber.php b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
+index ce9d9bf..ae3e200 100644
+--- a/src/EventSubscriber/AiContextSystemPromptSubscriber.php
++++ b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
+@@ -6,6 +6,7 @@ namespace Drupal\ai_context\EventSubscriber;
+ 
+ use Drupal\ai_agents\Event\AgentStartedExecutionEvent;
+ use Drupal\ai_agents\Event\BuildSystemPromptEvent;
++use Drupal\ai_context\AiContextProviderManager;
+ use Drupal\ai_context\Service\AiContextRequestFactory;
+ use Drupal\ai_context\Service\AiContextSelectorInterface;
+ use Drupal\ai_context\Service\AiContextUsageTracker;
+@@ -64,6 +65,7 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
+     private readonly RouteMatchInterface $routeMatch,
+     private readonly RequestStack $requestStack,
+     private readonly ConfigFactoryInterface $configFactory,
++    private readonly AiContextProviderManager $providerManager,
+   ) {}
+ 
+   /**
+@@ -130,6 +132,17 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
+     $result = $this->selector->select($request);
+ 
+     $contextText = $result->getRenderedText();
++
++    // Collect dynamic provider content after item assembly.
++    foreach ($this->providerManager->getProvidersSortedByWeight() as $provider) {
++      if ($provider->isApplicable($event)) {
++        $chunk = $provider->getContent($event);
++        if ($chunk !== '') {
++          $contextText .= ($contextText !== '' ? "\n\n" : '') . $chunk;
++        }
++      }
++    }
++
+     if (empty($contextText)) {
+       return;
+     }
+diff --git a/src/AiContextProviderManager.php b/src/AiContextProviderManager.php
+new file mode 100644
+index 0000000..e04d8c6
+--- /dev/null
++++ b/src/AiContextProviderManager.php
+@@ -0,0 +1,70 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\ai_context;
++
++use Drupal\ai_context\Attribute\AiContextProvider;
++use Drupal\ai_context\Plugin\AiContextProvider\AiContextProviderInterface;
++use Drupal\Core\Cache\CacheBackendInterface;
++use Drupal\Core\Extension\ModuleHandlerInterface;
++use Drupal\Core\Plugin\DefaultPluginManager;
++
++/**
++ * Plugin manager for AiContextProvider plugins.
++ *
++ * Manages discovery and instantiation of provider plugins that contribute
++ * dynamic context content to agent system prompts alongside curated
++ * AiContextItem entities.
++ *
++ * @see \Drupal\ai_context\Attribute\AiContextProvider
++ * @see \Drupal\ai_context\Plugin\AiContextProvider\AiContextProviderInterface
++ */
++class AiContextProviderManager extends DefaultPluginManager {
++
++  /**
++   * Constructs an AiContextProviderManager object.
++   *
++   * @param \Traversable $namespaces
++   *   Root paths keyed by namespace for plugin discovery.
++   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
++   *   The cache backend.
++   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
++   *   The module handler.
++   */
++  public function __construct(
++    \Traversable $namespaces,
++    CacheBackendInterface $cache_backend,
++    ModuleHandlerInterface $module_handler,
++  ) {
++    parent::__construct(
++      'Plugin/AiContextProvider',
++      $namespaces,
++      $module_handler,
++      AiContextProviderInterface::class,
++      AiContextProvider::class,
++    );
++    $this->alterInfo('ai_context_provider_info');
++    $this->setCacheBackend($cache_backend, 'ai_context_provider_plugins');
++  }
++
++  /**
++   * Gets all provider instances sorted ascending by weight.
++   *
++   * @return \Drupal\ai_context\Plugin\AiContextProvider\AiContextProviderInterface[]
++   *   Provider instances keyed by plugin ID.
++   */
++  public function getProvidersSortedByWeight(): array {
++    $instances = [];
++    foreach ($this->getDefinitions() as $plugin_id => $definition) {
++      $instances[$plugin_id] = $this->createInstance($plugin_id);
++    }
++
++    uasort($instances, static function (AiContextProviderInterface $a, AiContextProviderInterface $b): int {
++      return $a->getWeight() <=> $b->getWeight();
++    });
++
++    return $instances;
++  }
++
++}
+diff --git a/src/Attribute/AiContextProvider.php b/src/Attribute/AiContextProvider.php
+new file mode 100644
+index 0000000..9149fa2
+--- /dev/null
++++ b/src/Attribute/AiContextProvider.php
+@@ -0,0 +1,44 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\ai_context\Attribute;
++
++use Drupal\Component\Plugin\Attribute\Plugin;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++
++/**
++ * Defines an AI Context Provider plugin attribute.
++ *
++ * Plugin Namespace: Plugin\AiContextProvider.
++ *
++ * Provider plugins contribute dynamic content to agent system prompts,
++ * supplementing curated AiContextItem entities with programmatic context.
++ *
++ * @see \Drupal\ai_context\Plugin\AiContextProvider\AiContextProviderInterface
++ * @see \Drupal\ai_context\AiContextProviderManager
++ * @see plugin_api
++ */
++#[\Attribute(\Attribute::TARGET_CLASS)]
++final class AiContextProvider extends Plugin {
++
++  /**
++   * Constructs an AiContextProvider attribute.
++   *
++   * @param string $id
++   *   The plugin ID.
++   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $label
++   *   The human-readable label.
++   * @param int $weight
++   *   The weight for ordering. Lower weights run first.
++   * @param class-string|null $deriver
++   *   (optional) The deriver class.
++   */
++  public function __construct(
++    public readonly string $id,
++    public readonly TranslatableMarkup $label,
++    public readonly int $weight = 0,
++    public readonly ?string $deriver = NULL,
++  ) {}
++
++}
+diff --git a/src/Plugin/AiContextProvider/AiContextProviderInterface.php b/src/Plugin/AiContextProvider/AiContextProviderInterface.php
+new file mode 100644
+index 0000000..c093948
+--- /dev/null
++++ b/src/Plugin/AiContextProvider/AiContextProviderInterface.php
+@@ -0,0 +1,51 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\ai_context\Plugin\AiContextProvider;
++
++use Drupal\ai_agents\Event\BuildSystemPromptEvent;
++use Drupal\Component\Plugin\PluginInspectionInterface;
++
++/**
++ * Interface for AI Context Provider plugins.
++ *
++ * Provider plugins contribute dynamic text content to agent system prompts
++ * alongside curated AiContextItem entities.
++ *
++ * @see \Drupal\ai_context\Attribute\AiContextProvider
++ * @see \Drupal\ai_context\AiContextProviderManager
++ */
++interface AiContextProviderInterface extends PluginInspectionInterface {
++
++  /**
++   * Determines whether this provider should run for the given event.
++   *
++   * @param \Drupal\ai_agents\Event\BuildSystemPromptEvent $event
++   *   The system prompt event.
++   *
++   * @return bool
++   *   TRUE if this provider's content should be included.
++   */
++  public function isApplicable(BuildSystemPromptEvent $event): bool;
++
++  /**
++   * Returns the context content to append to the system prompt.
++   *
++   * @param \Drupal\ai_agents\Event\BuildSystemPromptEvent $event
++   *   The system prompt event.
++   *
++   * @return string
++   *   The content string, or '' if nothing to contribute.
++   */
++  public function getContent(BuildSystemPromptEvent $event): string;
++
++  /**
++   * Gets the weight for ordering relative to other providers.
++   *
++   * @return int
++   *   The weight. Lower values run first.
++   */
++  public function getWeight(): int;
++
++}
