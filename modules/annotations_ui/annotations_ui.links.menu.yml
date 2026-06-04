@@ -1,5 +1,5 @@
 annotations_ui.admin.annotate.overview:
-  title: 'Overview'
+  title: 'Manage'
   parent: annotations.content
   description: 'Manage annotations.'
   route_name: annotations_ui.annotate.collection

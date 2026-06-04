@@ -1,6 +1,6 @@
 annotations_ui.annotate.collection.tab:
   route_name: annotations_ui.annotate.collection
-  title: 'Overview'
+  title: 'Manage'
   base_route: annotations_ui.annotate.collection
   weight: 0
 
