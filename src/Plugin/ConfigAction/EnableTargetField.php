@@ -41,12 +41,18 @@ final class EnableTargetField implements ConfigActionPluginInterface, ContainerF
     private readonly ConfigManagerInterface $configManager,
   ) {}
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get(ConfigManagerInterface::class),
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function apply(string $configName, mixed $value): void {
     $target = $this->configManager->loadConfigEntityByName($configName);
     if (!$target) {

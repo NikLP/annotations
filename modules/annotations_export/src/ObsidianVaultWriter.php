@@ -45,6 +45,9 @@ final class ObsidianVaultWriter {
     return $count;
   }
 
+  /**
+   * Writes one target markdown file.
+   */
   private function writeTarget(array $targetData, string $outputDir): void {
     $filename = $outputDir . '/' . $targetData['id'] . '.md';
     $content  = $this->buildFrontmatter($targetData) . "\n" . $this->buildBody($targetData);
@@ -54,6 +57,9 @@ final class ObsidianVaultWriter {
     }
   }
 
+  /**
+   * Builds YAML front matter for a target.
+   */
   private function buildFrontmatter(array $targetData): string {
     $tags = [];
     if (!empty($targetData['annotations']) || !empty($targetData['fields'])) {
@@ -78,6 +84,9 @@ final class ObsidianVaultWriter {
     return "---\n" . Yaml::dump($data, 2, 2) . "---\n";
   }
 
+  /**
+   * Builds the Markdown body for a target.
+   */
   private function buildBody(array $targetData): string {
     $parts = ['# ' . $targetData['label']];
 

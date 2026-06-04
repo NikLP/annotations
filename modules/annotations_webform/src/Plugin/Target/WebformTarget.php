@@ -11,11 +11,15 @@ use Drupal\annotations\Plugin\Target\TargetBase;
  *
  * Each webform is its own annotatable target using scope key
  * "webform__{webform_id}" (e.g. "webform__contact"). No field-level
- * annotations — to annotate individual form elements use WebformSubmissionTarget
- * (scope "webform_submission__{webform_id}") instead.
+ * annotations; use WebformSubmissionTarget for individual form elements.
  */
 class WebformTarget extends TargetBase {
 
+  /**
+   * The target entity type ID.
+   *
+   * @var string
+   */
   protected string $entityTypeId = 'webform';
 
   /**
@@ -56,7 +60,7 @@ class WebformTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
-    
+
     $results = [];
     foreach ($this->entityTypeManager->getStorage('webform')->loadMultiple() as $webform_id => $webform) {
       $scope_key = 'webform__' . $webform_id;

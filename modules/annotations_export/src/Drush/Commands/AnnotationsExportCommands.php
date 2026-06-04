@@ -79,7 +79,7 @@ final class AnnotationsExportCommands extends DrushCommands {
     if ($options['inc-meta']) {
       $assemblerOptions['inc_meta'] = TRUE;
     }
-    
+
     if ($options['inc-refs']) {
       $assemblerOptions['inc_refs'] = TRUE;
     }
@@ -100,6 +100,9 @@ final class AnnotationsExportCommands extends DrushCommands {
     };
   }
 
+  /**
+   * Writes the assembled payload as Markdown.
+   */
   private function writeMarkdown(array $payload, ?string $output, bool $stripHeadings): void {
     $content = $this->renderer->render($payload);
 
@@ -126,6 +129,9 @@ final class AnnotationsExportCommands extends DrushCommands {
     $this->io()->success(sprintf('Exported %d target(s) to %s', $payload['meta']['target_count'], $resolved));
   }
 
+  /**
+   * Writes the assembled payload as an Obsidian vault.
+   */
   private function writeObsidian(array $payload, ?string $output): void {
     if ($output === NULL) {
       $this->io()->error('--output is required for obsidian format.');

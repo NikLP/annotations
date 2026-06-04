@@ -15,7 +15,7 @@ use Drupal\Core\Session\AccountInterface;
  * Drupal maps entity operations as follows:
  *   view   → canonical / revision view
  *   update → edit-form
- *   delete → delete-form / delete-multiple-form
+ *   delete → delete-form / delete-multiple-form.
  *
  * Revision-specific operations (revert, delete revision, view all revisions,
  * view revision) are handled by hook_entity_access in AnnotationsUiHooks

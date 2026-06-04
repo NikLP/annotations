@@ -463,6 +463,9 @@ class AnnotationController extends ControllerBase {
     ];
   }
 
+  /**
+   * Loads annotation types the current user may use.
+   */
   private function loadAnnotationTypes(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $types */
     $types = $this->entityTypeManager()

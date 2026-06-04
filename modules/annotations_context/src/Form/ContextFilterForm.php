@@ -164,7 +164,7 @@ class ContextFilterForm extends FormBase {
         $options[$group_label][$target->id()] = (string) $target->label();
       }
     }
-    
+
     return $options;
   }
 

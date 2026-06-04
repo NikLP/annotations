@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_docs;
 
+use League\CommonMark\CommonMarkConverter;
 use Drupal\ai\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
@@ -76,7 +77,7 @@ class DocumentGeneratorService {
       ENT_QUOTES | ENT_HTML5,
       'UTF-8',
     );
-    $generated_text = (new \League\CommonMark\CommonMarkConverter())->convert($markdown)->getContent();
+    $generated_text = (new CommonMarkConverter())->convert($markdown)->getContent();
 
     $node = $this->loadDocumentNode($target_id);
     if ($node === NULL) {
@@ -94,7 +95,7 @@ class DocumentGeneratorService {
     $node->setRevisionLogMessage('Generated via Annotations Documents');
     $node->save();
 
-    // Store the generation timestamp; expires after 2 years (informational only).
+    // Store the timestamp; expires after 2 years for display only.
     $this->keyValueFactory->get(self::KV_COLLECTION)->setWithExpire(
       $target_id,
       $this->time->getRequestTime(),

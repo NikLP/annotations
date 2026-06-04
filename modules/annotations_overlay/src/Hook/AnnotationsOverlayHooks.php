@@ -24,7 +24,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Html;
 use Drupal\annotations\AnnotationStorageService;
-use Drupal\annotations\Entity\Annotation;
 use Drupal\annotations_overlay\Service\AnnotationsOverlayService;
 
 /**
@@ -402,9 +401,9 @@ class AnnotationsOverlayHooks {
     // No save is triggered.
     //
     // We build the HTML string directly here instead of using renderInIsolation
-    // because this preprocess runs deep inside Drupal's render pipeline. Calling
-    // renderInIsolation at that depth exhausts the PHP call stack when Twig
-    // compiles templates for the first time (e.g. after drush cr).
+    // because this preprocess runs deep inside Drupal's render pipeline.
+    // Calling renderInIsolation at that depth exhausts the PHP call stack when
+    // Twig compiles templates for the first time (e.g. after drush cr).
     //
     // $built collects the computed HTML per type so loop 2 can reuse it without
     // re-running buildBundleAnnotationHtml or reading a mutated entity.
@@ -537,6 +536,7 @@ class AnnotationsOverlayHooks {
    * @return array|null
    *   Render array wrapping one rendered entity per visible type, or NULL.
    */
+  // phpcs:ignore DrupalPractice.Objects.UnusedPrivateMethod.UnusedMethod -- Kept for the render-array chooser path.
   private function buildBundleAnnotationRenderItems(string $target_id, array $visible_types): ?array {
     $target = $this->entityTypeManager->getStorage('annotation_target')->load($target_id);
     if ($target === NULL) {

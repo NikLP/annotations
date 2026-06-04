@@ -127,7 +127,8 @@ class ScanService {
    * Loads the stored snapshot.
    *
    * @return array<string, array<string, mixed>>
-   *   Last saved scan result keyed by "{entity_type}__{bundle}", or empty array.
+   *   Last saved scan result keyed by "{entity_type}__{bundle}", or an empty
+   *   array.
    */
   public function loadSnapshot(): array {
     $rows = $this->database->select('annotations_audit', 's')
@@ -157,7 +158,11 @@ class ScanService {
    * @return array{
    *   added: array<string, array<string, mixed>>,
    *   removed: array<string, array<string, mixed>>,
-   *   changed: array<string, array{fields_added: list<string>, fields_removed: list<string>, fields_changed: list<string>}>
+   *   changed: array<string, array{
+   *     fields_added: list<string>,
+   *     fields_removed: list<string>,
+   *     fields_changed: list<string>
+   *   }>
    *   }
    */
   public function computeDiff(array $current, array $stored): array {
@@ -223,6 +228,7 @@ class ScanService {
    * "changed:node__page:field_added:field_foo".
    *
    * @return array<string, array{target_id: string, change_type: string, field?: string, detected: int}>
+   *   Accumulated changes keyed by stable change key.
    */
   public function getAccumulatedChanges(): array {
     return $this->state->get('annotations_audit.accumulated_changes', []);
@@ -239,6 +245,7 @@ class ScanService {
    * Returns all dismissed scope drift items as "target_id:field_name" strings.
    *
    * @return list<string>
+   *   Dismissed drift keys.
    */
   public function getDismissedDrift(): array {
     return $this->state->get('annotations_audit.dismissed_drift', []);
@@ -307,6 +314,7 @@ class ScanService {
    *   A diff result from computeDiff().
    *
    * @return array<string, array{target_id: string, change_type: string, field?: string}>
+   *   Flattened change items keyed by stable change key.
    */
   private function flattenDiff(array $diff): array {
     $items = [];
@@ -318,17 +326,29 @@ class ScanService {
     foreach (array_keys($diff['removed'] ?? []) as $target_id) {
       $items["removed:{$target_id}"] = ['target_id' => $target_id, 'change_type' => 'removed'];
     }
-    
+
     foreach ($diff['changed'] ?? [] as $target_id => $changes) {
       $target_id = (string) $target_id;
       foreach ($changes['fields_added'] ?? [] as $field) {
-        $items["changed:{$target_id}:field_added:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_added', 'field' => $field];
+        $items["changed:{$target_id}:field_added:{$field}"] = [
+          'target_id' => $target_id,
+          'change_type' => 'field_added',
+          'field' => $field,
+        ];
       }
       foreach ($changes['fields_removed'] ?? [] as $field) {
-        $items["changed:{$target_id}:field_removed:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_removed', 'field' => $field];
+        $items["changed:{$target_id}:field_removed:{$field}"] = [
+          'target_id' => $target_id,
+          'change_type' => 'field_removed',
+          'field' => $field,
+        ];
       }
       foreach ($changes['fields_changed'] ?? [] as $field) {
-        $items["changed:{$target_id}:field_changed:{$field}"] = ['target_id' => $target_id, 'change_type' => 'field_changed', 'field' => $field];
+        $items["changed:{$target_id}:field_changed:{$field}"] = [
+          'target_id' => $target_id,
+          'change_type' => 'field_changed',
+          'field' => $field,
+        ];
       }
     }
 
@@ -336,7 +356,7 @@ class ScanService {
   }
 
   /**
-   * Returns fields that exist in Drupal but are not included in any target's scope.
+   * Returns fields that exist in Drupal but are not in any target's scope.
    *
    * Reports FieldConfig instances (explicitly added fields) and notable base
    * fields (title, body, name, description) that the site builder may want to

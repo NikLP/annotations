@@ -14,6 +14,9 @@ use Drupal\node\NodeInterface;
  */
 class AnnotationsDocsHooks {
 
+  /**
+   * Implements hook_theme()
+   */
   #[Hook('theme')]
   public function theme(): array {
     return [
@@ -27,7 +30,7 @@ class AnnotationsDocsHooks {
   }
 
   /**
-   * Grants view access to annotations_document nodes via the browser permission.
+   * Grants view access to annotations_document nodes via the permission.
    *
    * This allows the permission to cover both the browser UI and direct node
    * URLs, regardless of node publish status.

@@ -58,16 +58,18 @@ class AnnotationsOverlayService {
    *   When non-empty, only fields in this list are included. Used by the view
    *   alter hook to restrict to fields visible in the active display mode.
    * @param string $key_prefix
-   *   Prefix applied to all dialog array keys and data-annotations-field values.
+   *   Prefix applied to dialog array keys and data-annotations-field values.
    *   Used by paragraph subform injection to avoid key collisions with parent
    *   form fields that share the same machine name.
    *
    * @return array{
    *   target_label: string,
    *   bundle_annotations: array<string, \Drupal\annotations\Entity\Annotation>,
-   *   fields_with_annotations: array<string, array<string, \Drupal\annotations\Entity\Annotation>>,
+   *   fields_with_annotations: array<string, array<string,
+   *     \Drupal\annotations\Entity\Annotation
+   *   >>,
    *   dialogs: array<string, array>,
-   * }|null
+   *   }|null
    *   NULL when no annotation_target exists for $target_id. Otherwise the
    *   annotation data and built dialog render arrays for this target.
    */
@@ -217,6 +219,7 @@ class AnnotationsOverlayService {
    *   Annotation types visible to the current user.
    *
    * @return array<string, \Drupal\annotations\Entity\Annotation>
+   *   Visible annotation entities keyed by type ID.
    */
   private function filterAnnotationEntities(array $entities, array $visible_types): array {
     $result = [];

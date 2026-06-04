@@ -262,7 +262,7 @@ class ContextAssembler {
         // Unknown role ID — return nothing rather than leaking all types.
         return [];
       }
-      
+
       // Admin roles bypass all permission checks — filtering is meaningless.
       if (!$role_entity->isAdmin()) {
         $all = array_filter($all, fn($t) => $role_entity->hasPermission($t->getConsumePermission()));

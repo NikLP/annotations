@@ -27,6 +27,11 @@ use Drupal\annotations\Plugin\Target\TargetBase;
  */
 class WebformSubmissionTarget extends TargetBase {
 
+  /**
+   * The target entity type ID.
+   *
+   * @var string
+   */
   protected string $entityTypeId = 'webform_submission';
 
   /**
@@ -47,7 +52,7 @@ class WebformSubmissionTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
-    
+
     return array_map(
       fn($info) => (string) $info['label'],
       $this->bundleInfo->getBundleInfo($this->entityTypeId),
@@ -83,7 +88,7 @@ class WebformSubmissionTarget extends TargetBase {
           if (!$scope->isFieldIncluded((string) $element_key)) {
             continue;
           }
-          // Prefer #title (what the user sees); fall back to #admin_title then key.
+          // Prefer #title, then fall back to #admin_title and the element key.
           $title = $element['#title'] ?: ($element['#admin_title'] ?: $element_key);
           $fields[(string) $element_key] = [
             'label' => (string) $title,

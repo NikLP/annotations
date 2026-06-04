@@ -12,6 +12,11 @@ namespace Drupal\annotations\Plugin\Target;
  */
 class ViewTarget extends TargetBase {
 
+  /**
+   * The target entity type ID.
+   *
+   * @var string
+   */
   protected string $entityTypeId = 'view';
 
   /**
@@ -37,7 +42,7 @@ class ViewTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
-    
+
     $result = [];
     foreach ($this->entityTypeManager->getStorage('view')->loadMultiple() as $id => $view) {
       $result[$id] = (string) $view->label();

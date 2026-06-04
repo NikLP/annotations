@@ -57,7 +57,7 @@ class DocumentsController extends ControllerBase {
     }
 
     $active_id = (string) $request->query->get('target', $first_with_doc?->id() ?? '');
-    $active_target = isset($targets[$active_id]) ? $targets[$active_id] : $first_with_doc;
+    $active_target = $targets[$active_id] ?? $first_with_doc;
 
     return [
       '#attached' => ['library' => ['annotations_docs/annotations_docs.page']],
@@ -108,8 +108,11 @@ class DocumentsController extends ControllerBase {
    * just their name. The Generate action appears in the main panel instead.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
+   *   Annotation targets to list.
    * @param array<string, \Drupal\node\NodeInterface|null> $doc_map
+   *   Document nodes keyed by annotation target ID.
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface|null $active
+   *   The currently selected annotation target.
    */
   private function buildNav(array $targets, array $doc_map, ?AnnotationTargetInterface $active): array {
     if (empty($targets)) {
@@ -193,7 +196,9 @@ class DocumentsController extends ControllerBase {
    * Builds the main panel for the selected target.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface|null $target
+   *   The selected annotation target.
    * @param array<string, \Drupal\node\NodeInterface|null> $doc_map
+   *   Document nodes keyed by annotation target ID.
    */
   private function buildMain(?AnnotationTargetInterface $target, array $doc_map): array {
     if ($target === NULL) {
@@ -257,7 +262,12 @@ class DocumentsController extends ControllerBase {
       '#type' => 'html_tag',
       '#tag' => 'span',
       '#value' => Html::escape($status_label),
-      '#attributes' => ['class' => ['annotations-documents__status-chip', 'annotations-documents__status-chip--' . $status_class]],
+      '#attributes' => [
+        'class' => [
+          'annotations-documents__status-chip',
+          'annotations-documents__status-chip--' . $status_class,
+        ],
+      ],
     ];
 
     $ts = $this->generator->getLastGeneratedTimestamp($target->id());
@@ -338,8 +348,10 @@ class DocumentsController extends ControllerBase {
    * Builds a map of target_id to annotations_document node (or NULL).
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
+   *   Annotation targets to map to document nodes.
    *
    * @return array<string, \Drupal\node\NodeInterface|null>
+   *   Document nodes keyed by annotation target ID.
    */
   private function buildDocMap(array $targets): array {
     if (empty($targets)) {
@@ -376,6 +388,7 @@ class DocumentsController extends ControllerBase {
    * Loads all annotation_target entities sorted by entity type then label.
    *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   *   Annotation targets keyed by ID.
    */
   private function loadAllTargets(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $all */

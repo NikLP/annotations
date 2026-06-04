@@ -117,7 +117,7 @@ final class AnnotationsAiContextSubscriber implements EventSubscriberInterface {
         return $value;
       }
     }
-    
+
     return NULL;
   }
 

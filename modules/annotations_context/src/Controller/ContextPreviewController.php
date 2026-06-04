@@ -244,7 +244,7 @@ class ContextPreviewController extends ControllerBase {
     if ($request->query->get('inc_meta') === '1') {
       $options['inc_meta'] = TRUE;
     }
-    
+
     if ($request->query->get('inc_refs') === '1') {
       $options['inc_refs'] = TRUE;
     }

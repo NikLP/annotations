@@ -39,7 +39,7 @@ use Symfony\Component\HttpFoundation\Response;
  * protocol negotiation — would be absorbed by mcp_core, leaving only the
  * resource list/read logic. Blocker: mcp_core controls auth at the endpoint
  * level; verify it supports Bearer token or per-server access control before
- * migrating (McpAccessCheck — Bearer token is required for headless LMS agents).
+ * migrating. McpAccessCheck's Bearer token required for headless agents.
  */
 class ContextMcpController extends ControllerBase {
 
@@ -175,7 +175,7 @@ class ContextMcpController extends ControllerBase {
     // Parse optional query parameters embedded in the URI.
     if (!empty($matches[2])) {
       parse_str(ltrim($matches[2], '?'), $query);
-      
+
       if (isset($query['ref_depth'])) {
         $options['ref_depth'] = max(0, (int) $query['ref_depth']);
       }

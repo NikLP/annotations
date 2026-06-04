@@ -331,7 +331,7 @@ class ContextHtmlRenderer {
         }
       }
     }
-    
+
     return count($ids);
   }
 

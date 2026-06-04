@@ -103,7 +103,7 @@ class AnnotationTypeForm extends EntityForm {
       '@op' => $op,
     ]));
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
-    
+
     return $result;
   }
 

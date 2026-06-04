@@ -11,6 +11,9 @@ use Drupal\Core\Hook\Attribute\Hook;
  */
 class AnnotationsExplorerHooks {
 
+  /**
+   * Implements hook_theme()
+   */
   #[Hook('theme')]
   public function theme(): array {
     return [

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\annotations_audit\Hook;
 
-use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -93,7 +92,7 @@ class AnnotationsAuditHooks {
    */
   #[Hook('form_annotation_type_form_alter')]
   public function formAnnotationTypeFormAlter(array &$form, FormStateInterface $form_state): void {
-    /** @var EntityFormInterface $form_object */
+    /** @var \Drupal\Core\Entity\EntityFormInterface $form_object */
     $form_object = $form_state->getFormObject();
     $entity = $form_object->getEntity();
 

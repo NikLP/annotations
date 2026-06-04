@@ -13,7 +13,7 @@ use Drupal\annotations\AnnotationStorageService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Confirmation form for deleting AnnotationTarget entities that have annotation data.
+ * Confirm deletion of AnnotationTarget entities that have annotation data.
  *
  * Reached automatically from TargetOverviewForm when an unticked target
  * has non-empty annotation text in annotation rows. Lists each target so the
@@ -137,14 +137,19 @@ class TargetDeleteConfirmForm extends ConfirmFormBase {
   }
 
   /**
+   * Loads annotation targets by ID.
+   *
    * @param string[] $ids
+   *   Annotation target IDs.
+   *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   *   Loaded annotation targets keyed by ID.
    */
   protected function loadTargetsById(array $ids): array {
     if (empty($ids)) {
       return [];
     }
-    
+
     return $this->entityTypeManager->getStorage('annotation_target')->loadMultiple($ids) ?: [];
   }
 

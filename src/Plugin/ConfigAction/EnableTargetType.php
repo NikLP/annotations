@@ -37,10 +37,16 @@ final class EnableTargetType implements ConfigActionPluginInterface, ContainerFa
     private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($container->get(ConfigFactoryInterface::class));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function apply(string $configName, mixed $value): void {
     if ($configName !== 'annotations.target_types') {
       throw new ConfigActionException(sprintf('The enableTargetType action only applies to annotations.target_types, got "%s".', $configName));

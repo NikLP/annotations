@@ -20,6 +20,11 @@ namespace Drupal\annotations\Plugin\Target;
  */
 class MenuTarget extends TargetBase {
 
+  /**
+   * The target entity type ID.
+   *
+   * @var string
+   */
   protected string $entityTypeId = 'menu';
 
   /**
@@ -46,7 +51,7 @@ class MenuTarget extends TargetBase {
     if (!$this->isAvailable()) {
       return [];
     }
-    
+
     $result = [];
     foreach ($this->entityTypeManager->getStorage('menu')->loadMultiple() as $id => $menu) {
       $result[$id] = (string) $menu->label();

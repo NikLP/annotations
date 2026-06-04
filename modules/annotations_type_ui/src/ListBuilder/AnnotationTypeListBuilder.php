@@ -62,7 +62,7 @@ class AnnotationTypeListBuilder extends DraggableListBuilder {
     if (empty($this->entities)) {
       return;
     }
-    
+
     parent::submitForm($form, $form_state);
     $this->messenger()->addStatus($this->t('Annotation type order saved.'));
   }

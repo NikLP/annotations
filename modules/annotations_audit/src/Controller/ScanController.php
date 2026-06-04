@@ -53,15 +53,36 @@ class ScanController extends ControllerBase {
     if ($accumulated = $this->scanner->getAccumulatedChanges()) {
       $items = [];
       foreach ($accumulated as $change) {
-        $time   = $this->dateFormatter->format($change['detected'], 'short');
-        $target = $target_labels[$change['target_id']] ?? $change['target_id'];
+        $time    = $this->dateFormatter->format($change['detected'], 'short');
+        $target  = $target_labels[$change['target_id']] ?? $change['target_id'];
         $items[] = match ($change['change_type']) {
-          'added'         => $this->t('New target: @target (detected @time)', ['@target' => $target, '@time' => $time]),
-          'removed'       => $this->t('Target removed: @target (detected @time)', ['@target' => $target, '@time' => $time]),
-          'field_added'   => $this->t('@target: field @field added (detected @time)', ['@target' => $target, '@field' => $change['field'], '@time' => $time]),
-          'field_removed' => $this->t('@target: field @field removed (detected @time)', ['@target' => $target, '@field' => $change['field'], '@time' => $time]),
-          'field_changed' => $this->t('@target: field @field changed (detected @time)', ['@target' => $target, '@field' => $change['field'], '@time' => $time]),
-          default         => $this->t('Change in @target (detected @time)', ['@target' => $target, '@time' => $time]),
+          'added'         => $this->t('New target: @target (detected @time)', [
+            '@target' => $target,
+            '@time' => $time,
+          ]),
+          'removed'       => $this->t('Target removed: @target (detected @time)', [
+            '@target' => $target,
+            '@time' => $time,
+          ]),
+          'field_added'   => $this->t('@target: field @field added (detected @time)', [
+            '@target' => $target,
+            '@field' => $change['field'],
+            '@time' => $time,
+          ]),
+          'field_removed' => $this->t('@target: field @field removed (detected @time)', [
+            '@target' => $target,
+            '@field' => $change['field'],
+            '@time' => $time,
+          ]),
+          'field_changed' => $this->t('@target: field @field changed (detected @time)', [
+            '@target' => $target,
+            '@field' => $change['field'],
+            '@time' => $time,
+          ]),
+          default         => $this->t('Change in @target (detected @time)', [
+            '@target' => $target,
+            '@time' => $time,
+          ]),
         };
       }
 

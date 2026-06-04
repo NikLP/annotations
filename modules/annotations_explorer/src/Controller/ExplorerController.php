@@ -43,7 +43,7 @@ class ExplorerController extends ControllerBase {
   }
 
   /**
-   * Access callback: allow if the user can consume at least one annotation type.
+   * Allows access when the user can consume at least one annotation type.
    */
   public function access(): AccessResultInterface {
     return AccessResult::allowedIf(!empty($this->loadAccessibleTypes()))
@@ -59,7 +59,7 @@ class ExplorerController extends ControllerBase {
 
     $first = !empty($targets) ? reset($targets) : NULL;
     $active_id = (string) $request->query->get('target', $first?->id() ?? '');
-    $active_target = isset($targets[$active_id]) ? $targets[$active_id] : $first;
+    $active_target = $targets[$active_id] ?? $first;
 
     return [
       '#attached' => ['library' => ['annotations_explorer/annotations_explorer.page']],
@@ -106,8 +106,11 @@ class ExplorerController extends ControllerBase {
    * Builds the left-panel navigation.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface[] $targets
+   *   Annotation targets to list.
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface|null $active
+   *   The currently selected annotation target.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Annotation types visible to the current user.
    */
   private function buildNav(array $targets, ?AnnotationTargetInterface $active, array $types): array {
     if (empty($targets)) {
@@ -190,7 +193,12 @@ class ExplorerController extends ControllerBase {
         $nav_list[] = [
           '#type' => 'html_tag',
           '#tag' => 'li',
-          '#attributes' => ['class' => array_values(array_filter(['annotations-explorer__nav-item', $is_active ? 'is-active' : NULL]))],
+          '#attributes' => [
+            'class' => array_values(array_filter([
+              'annotations-explorer__nav-item',
+              $is_active ? 'is-active' : NULL,
+            ])),
+          ],
           'details' => $details,
         ];
       }
@@ -218,7 +226,9 @@ class ExplorerController extends ControllerBase {
    * Builds the main panel content for a target.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface|null $target
+   *   The selected annotation target.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Annotation types visible to the current user.
    */
   private function buildMain(?AnnotationTargetInterface $target, array $types): array {
     if (!$target) {
@@ -295,9 +305,13 @@ class ExplorerController extends ControllerBase {
    * Builds a group of annotations for one location (overview or field).
    *
    * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup $label
-   * @param array<string, string> $annotations  Keyed by type_id.
+   *   The group label.
+   * @param array<string, string> $annotations
+   *   Keyed by type_id.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
-   * @param string $machine_name  Field machine name shown beneath the heading.
+   *   Annotation types visible to the current user.
+   * @param string $machine_name
+   *   Field machine name shown beneath the heading.
    */
   private function buildAnnotationGroup(mixed $label, array $annotations, array $types, string $machine_name = ''): array {
     $items = [];
@@ -350,9 +364,12 @@ class ExplorerController extends ControllerBase {
    * identifier (for anchor href), value is the human-readable label.
    *
    * @param \Drupal\annotations\Entity\AnnotationTargetInterface $target
+   *   The annotation target to inspect.
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Annotation types visible to the current user.
    *
    * @return array<string, string>
+   *   Visible section labels keyed by section identifier.
    */
   private function getVisibleSections(AnnotationTargetInterface $target, array $types): array {
     $annotations = $this->storageService->getForTarget($target->id(), TRUE);
@@ -391,8 +408,10 @@ class ExplorerController extends ControllerBase {
    * Loads annotation_target entities that have visible content for this user.
    *
    * @param \Drupal\annotations\Entity\AnnotationTypeInterface[] $types
+   *   Annotation types visible to the current user.
    *
    * @return \Drupal\annotations\Entity\AnnotationTargetInterface[]
+   *   Annotation targets that have visible content.
    */
   private function loadAccessibleTargets(array $types): array {
     /** @var \Drupal\annotations\Entity\AnnotationTargetInterface[] $all */
@@ -409,6 +428,7 @@ class ExplorerController extends ControllerBase {
    * Loads annotation types the current user has consume access to.
    *
    * @return \Drupal\annotations\Entity\AnnotationTypeInterface[]
+   *   Annotation types keyed by ID.
    */
   private function loadAccessibleTypes(): array {
     /** @var \Drupal\annotations\Entity\AnnotationTypeInterface[] $all */

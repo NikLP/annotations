@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Install and uninstall functions for the annotations_audit module.
  */
+
+declare(strict_types=1);
 
 /**
  * Implements hook_schema().

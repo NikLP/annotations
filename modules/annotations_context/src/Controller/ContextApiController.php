@@ -60,7 +60,7 @@ class ContextApiController extends ControllerBase {
     ];
 
     $ref_depth_raw = $request->query->get('ref_depth');
-    
+
     if ($ref_depth_raw !== NULL) {
       $options['ref_depth'] = max(0, (int) $ref_depth_raw);
     }
