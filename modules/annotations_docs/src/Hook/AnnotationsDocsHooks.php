@@ -43,4 +43,19 @@ class AnnotationsDocsHooks {
     return AccessResult::neutral();
   }
 
+  /**
+   * Blocks manual node creation for annotations_document.
+   *
+   * Documents are always AI-generated via DocumentGeneratorService. Denying
+   * create access removes the type from the "Add content" menu and blocks
+   * /node/add/annotations_document directly.
+   */
+  #[Hook('entity_create_access')]
+  public function entityCreateAccess(AccountInterface $account, array $context, string $entity_bundle): AccessResult {
+    if ($context['entity_type_id'] === 'node' && $entity_bundle === 'annotations_document') {
+      return AccessResult::forbidden();
+    }
+    return AccessResult::neutral();
+  }
+
 }
