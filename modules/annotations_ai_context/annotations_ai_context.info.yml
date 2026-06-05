@@ -1,4 +1,4 @@
-name: 'Annotations AI Context'
+name: 'Annotations AI Context (WIP)'
 type: module
 description: 'Injects annotations context into AI Context agent system prompts.'
 package: Annotations
